@@ -62,14 +62,12 @@ end
 end
 
 @inline function _prepare_cache(c,x...)
-  s = _sizes(x...)
-  bs = Base.Broadcast.broadcast_shape(s...)
-  if bs != size(c)
-    # TODO, we can use a CachedArray in the future
-    r = similar(c,eltype(c),s)
-  else
-    r = c
-  end
+  #s = _sizes(x...)
+  #bs = Base.Broadcast.broadcast_shape(s...)
+  r = c
+  #if bs != size(c)
+  #  error("Size of inputs has changed. Function not prepared yet")
+  #end
   r
 end
 
@@ -125,6 +123,7 @@ function evaluate!(cache,f::Applied,x...)
   cg, cfs = cache
   fxs = _evaluate_fs!(cfs,x,f.f...)
   y = evaluate!(cg,f.g,fxs...)
+  y
 end
 
 function _new_caches(x,f1,f...)
@@ -138,20 +137,20 @@ function _new_caches(x,f1)
   (cf1,)
 end
 
-function _evaluate_fs!(cfs,x,f1,f...)
+@inline function _evaluate_fs!(cfs,x,f1,f...)
   cf1, cf = _split(cfs...)
   f1x = evaluate!(cf1,f1,x...)
   fx = _evaluate_fs!(cf,x,f...)
   (f1x,fx...)
 end
 
-function _evaluate_fs!(cfs,x,f1)
+@inline function _evaluate_fs!(cfs,x,f1)
   cf1, = cfs
   f1x = evaluate!(cf1,f1,x...)
   (f1x,)
 end
 
-function _split(a,b...)
+@inline function _split(a,b...)
   (a,b)
 end
 
