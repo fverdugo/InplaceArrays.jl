@@ -51,6 +51,4 @@ c = 5
 d = (b-c) + a
 test_functor(f,(b,c),d)
 
-@show typeof(f)
-
 #end # module
