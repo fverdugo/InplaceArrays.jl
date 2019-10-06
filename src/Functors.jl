@@ -28,11 +28,19 @@ function test_functor(f,x,y,cmp=(==))
 end
 
 
-# Make all functions functors
+# Include some well-known types in this interface
 
 @inline new_cache(f::Function,args...) = nothing
 
 @inline evaluate!(::Nothing,f::Function,args...) = f(args...)
+
+@inline new_cache(f::Number,args...) = nothing
+
+@inline evaluate!(::Nothing,f::Number,args...) = f
+
+@inline new_cache(f::AbstractArray,args...) = nothing
+
+@inline evaluate!(::Nothing,f::AbstractArray,args...) = f
 
 """
 A functor acting as the broadcast of a given function
@@ -42,7 +50,6 @@ struct BCasted{F<:Function}
 end
 
 bcast(f::Function) = BCasted(f)
-
 
 function new_cache(f::BCasted,x...)
   broadcast(f.f,x...)
