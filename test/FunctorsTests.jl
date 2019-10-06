@@ -1,71 +1,48 @@
-module FunctorsTests
+#module FunctorsTests
+
+include("../src/Functors.jl")
 
 using Test
 
-abstract type Functor end
+test_functor(+,(3,2),5)
 
-"""
-evaluate!(t,f::Functor,s,cache)
-"""
-function evaluate! end
+f = bcast(+)
 
-"""
-Version of evaluate! that allocates memory
-"""
-function evaluate(f::Functor,s)
-  cache = new_cache(f)
-  t = new_value(f)
-  prepare_value!(t,f,s)
-  r = evaluate!(t,f,s,cache)
-  r
-end
+a = rand(3,2)
+b = 3
+c = a .+ b
+test_functor(f,(a,b),c)
 
-"""
-new_cache(f::Functor)::Any
-"""
-function new_cache end
+f = apply(-,+)
 
-"""
-new_value(::Functor)
-"""
-function new_value end
+a = 2
+b = 3
+c = -5
+test_functor(f,(a,b),c)
 
-"""
-prepare_value!(t,f,s)
-"""
-function prepare_value! end
+f = apply(bcast(-),bcast(+))
 
-function test_functor(f::Functor,t,s,cmp=(==))
-  r = evaluate(f,s)
-  @test cmp(r,t)
-end
+a = rand(3,2)
+b = 3
+c = .-( a .+ b)
+test_functor(f,(a,b),c)
 
-struct MockFunctor{T,N} <: Functor
-  shape::NTuple{N,Int}
-end
+f = apply(*,-,+)
 
-function MockFunctor(::Type{T},shape::Vararg{Integer,N}) where {T,N}
-  MockFunctor{T,N}(shape)
-end
+a = 2
+b = 3
+c = (a-b) * (a+b)
+test_functor(f,(a,b),c)
 
-new_cache(::MockFunctor) = nothing
+f = apply(bcast(-),bcast(*),bcast(+))
 
-function new_value(f::MockFunctor{T,N}) where {T,N}
-  Array{T,N}(undef,f.shape)
-end
+a = rand(3,2)
+b = 3
+c = .-( (a.*b) , (a.+b))
+test_functor(f,(a,b),c)
 
-prepare_value!(t,f::MockFunctor,s) = nothing
+@show typeof(f)
 
-function evaluate!(t,f::MockFunctor,s,cache)
-  for i in eachindex(s)
-    t[i] = 2*s[i]
-  end
-  t
-end
 
-f = MockFunctor(Float64,3,5)
-s = rand(3,5)
-t = 2*s
-test_functor(f,t,s)
 
-end # module
+#end # module
