@@ -1,7 +1,8 @@
 module FunctorsTests
 
-using InplaceArrays
 using Test
+using InplaceArrays
+#include("../src/Functors.jl")
 
 test_functor(+,(3,2),5)
 

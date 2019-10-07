@@ -1,6 +1,8 @@
 module FunctorsBenchs
 
 using InplaceArrays
+#using Test
+#include("../src/Functors.jl")
 
 function run(f,n)
   @time f(n)
