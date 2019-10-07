@@ -1,7 +1,6 @@
-#module FunctorsTests
+module FunctorsTests
 
-include("../src/Functors.jl")
-
+using InplaceArrays
 using Test
 
 test_functor(+,(3,2),5)
@@ -51,4 +50,4 @@ c = 5
 d = (b-c) + a
 test_functor(f,(b,c),d)
 
-#end # module
+end # module

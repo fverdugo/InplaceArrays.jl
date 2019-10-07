@@ -1,6 +1,5 @@
 
-using Test
-
+# Define Functor interface
 
 """
 `cache = new_cache(f,x...)`
@@ -42,6 +41,8 @@ end
 
 @inline evaluate!(::Nothing,f::AbstractArray,args...) = f
 
+# Some particular cases
+
 """
 A functor acting as the broadcast of a given function
 """
@@ -62,12 +63,12 @@ end
 end
 
 @inline function _prepare_cache(c,x...)
-  #s = _sizes(x...)
-  #bs = Base.Broadcast.broadcast_shape(s...)
+  s = _sizes(x...)
+  bs = Base.Broadcast.broadcast_shape(s...)
   r = c
-  #if bs != size(c)
-  #  error("Size of inputs has changed. Function not prepared yet")
-  #end
+  if bs != size(c)
+    error("Size of inputs has changed. Function not prepared yet")
+  end
   r
 end
 
@@ -95,7 +96,7 @@ function new_cache(f::Composed,x...)
   (cg,cf)
 end
 
-function evaluate!(cache,f::Composed,x...)
+@inline function evaluate!(cache,f::Composed,x...)
   cg, cf = cache
   fx = evaluate!(cf,f.f,x...)
   gfx = evaluate!(cg,f.g,fx)
@@ -119,7 +120,7 @@ function new_cache(f::Applied,x...)
   (cg,cfs)
 end
 
-function evaluate!(cache,f::Applied,x...)
+@inline function evaluate!(cache,f::Applied,x...)
   cg, cfs = cache
   fxs = _evaluate_fs!(cfs,x,f.f...)
   y = evaluate!(cg,f.g,fxs...)
