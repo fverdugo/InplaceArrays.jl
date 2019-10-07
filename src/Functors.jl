@@ -114,7 +114,8 @@ end
 apply(g,f...) = Applied(g,f...)
 
 function new_cache(f::Applied,x...)
-  cfs = _new_caches(x,f.f...)
+  hash = Dict{UInt64,Any}()
+  cfs = _new_caches(hash,x,f.f...)
   fxs = _evaluate_fs!(cfs,x,f.f...)
   cg = new_cache(f.g,fxs...)
   (cg,cfs)
@@ -127,31 +128,62 @@ end
   y
 end
 
-function _new_caches(x,f1,f...)
-  cf1 = new_cache(f1,x...)
-  csf = _new_caches(x,f...)
+function _new_caches(hash,x,f1,f...)
+  cf1 = _new_cache_f1(hash,f1,x...)
+  csf = _new_caches(hash,x,f...)
   (cf1, csf...)
 end
 
-function _new_caches(x,f1)
-  cf1 = new_cache(f1,x...)
+function _new_cache_f1(hash,f1,x...)
+  i = objectid(f1)
+  if ! haskey(hash,i)
+    c = new_cache(f1,x...)
+    fx = evaluate!(c,f1,x...)
+    e = Evaluation(x,fx)
+    cf1 = (e,c)
+    hash[i] = cf1
+  end
+  hash[i]
+end
+
+function _new_caches(hash,x,f1)
+  cf1 = _new_cache_f1(hash,f1,x...)
   (cf1,)
 end
 
 @inline function _evaluate_fs!(cfs,x,f1,f...)
   cf1, cf = _split(cfs...)
-  f1x = evaluate!(cf1,f1,x...)
+  f1x = _evaluate_fs1!(cf1,f1,x)
   fx = _evaluate_fs!(cf,x,f...)
   (f1x,fx...)
 end
 
 @inline function _evaluate_fs!(cfs,x,f1)
   cf1, = cfs
-  f1x = evaluate!(cf1,f1,x...)
+  f1x = _evaluate_fs1!(cf1,f1,x)
   (f1x,)
+end
+
+@inline function _evaluate_fs1!(cf1,f1,x)
+  e, c = cf1
+  f1x = e.fx[]
+  if !(e.x[] === x)
+    f1x = evaluate!(c,f1,x...)
+    e.x[] = x
+    e.fx[] = f1x
+  end
+  f1x
 end
 
 @inline function _split(a,b...)
   (a,b)
+end
+
+struct Evaluation{X,F}
+  x::Ref{X}
+  fx::Ref{F}
+  function Evaluation(x::X,fx::F) where {X,F}
+    new{X,F}(Ref(x),Ref(fx))
+  end
 end
 
