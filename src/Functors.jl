@@ -179,11 +179,14 @@ end
 
 @inline function _evaluate_fs1!(cf1,f1,x)
   e, c = cf1
-  f1x = e.fx[]
-  if !(e.x[] === x)
+  f1x = e.fx
+  if !(e.x === x)
     f1x = evaluate!(c,f1,x...)
-    e.x[] = x
-    e.fx[] = f1x
+    e.x = x
+    e.fx = f1x
+  #  println("Not reusing")
+  #else
+  #  println("Reusing")
   end
   f1x
 end
@@ -192,11 +195,11 @@ end
   (a,b)
 end
 
-struct Evaluation{X,F}
-  x::Ref{X}
-  fx::Ref{F}
+mutable struct Evaluation{X,F}
+  x::X
+  fx::F
   function Evaluation(x::X,fx::F) where {X,F}
-    new{X,F}(Ref(x),Ref(fx))
+    new{X,F}(x,fx)
   end
 end
 

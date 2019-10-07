@@ -62,12 +62,22 @@ C = bcast(+)
 D = rand(2,3)
 B = apply(bcast(-),C,D)
 A = apply(bcast(*),B,C)
-
 x = rand(2,3)
 y = 3
 c = (x .+ y)
 b = c .- D
 a = b .* c
 test_functor(A,(x,y),a)
+cache = new_cache(A,x,y)
+r = evaluate!(cache,A,x,y)
+@test a == r
+x = rand(2,3)
+y = -2
+c = (x .+ y)
+b = c .- D
+a = b .* c
+r = evaluate!(cache,A,x,y)
+@test a == r
+
 
 end # module
