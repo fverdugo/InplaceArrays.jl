@@ -52,6 +52,15 @@ function bench5(n)
   repeat(n,evaluate!,cache,f,a,b)
 end
 
+function bench6(n)
+  a = rand(2,3)
+  f = apply(bcast(+),bcast(-),a)
+  b = 3
+  c = rand(1,3)
+  cache = new_cache(f,b,c)
+  repeat(n,evaluate!,cache,f,b,c)
+end
+
 for n in (1,1,10,1000,100000)
   @eval begin
     println("+++ runing suite for n = $($n) +++")
@@ -60,6 +69,7 @@ for n in (1,1,10,1000,100000)
     run(bench3,$n)
     run(bench4,$n)
     run(bench5,$n)
+    run(bench6,$n)
   end
 end
 
