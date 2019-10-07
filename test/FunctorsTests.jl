@@ -51,5 +51,22 @@ c = rand(1,3)
 d = (b.-c) .+ a
 test_functor(f,(b,c),d)
 
+a = rand(2,3)
+b = 4
+f = apply(bcast(-),a,b)
+d = a .- b
+test_functor(f,(),d)
+
+C = bcast(+)
+D = rand(2,3)
+B = apply(bcast(-),C,D)
+A = apply(bcast(*),B,C)
+
+x = rand(2,3)
+y = 3
+c = (x .+ y)
+b = c .- D
+a = b .* c
+test_functor(A,(x,y),a)
 
 end # module
