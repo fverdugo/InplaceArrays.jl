@@ -33,6 +33,13 @@ b = rand(0)
 c = evaluate_functor_elemwise(bcast(-),a,b)
 test_inplace_array(c,[ai.-bi for (ai,bi) in zip(a,b)])
 
+a = fill(rand(2,3),12)
+b = rand(12)
+c = evaluate_functor_elemwise(bcast(-),a,b)
+d = evaluate_functor_elemwise(bcast(+),a,c)
+test_inplace_array(d,[(ai.-bi) .+ ai for (ai,bi) in zip(a,b)])
+
+
 #import InplaceArrays: evaluate_functor_elemwise
 #import InplaceArrays: getindex!
 #import InplaceArrays: array_cache

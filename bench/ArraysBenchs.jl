@@ -36,12 +36,22 @@ function bench3(n)
   loop(c,cache)
 end
 
+function bench4(n)
+  a = fill(rand(2,3),n)
+  b = rand(n)
+  c = evaluate_functor_elemwise(bcast(-),a,b)
+  d = evaluate_functor_elemwise(bcast(+),a,c)
+  cache = array_cache(d)
+  loop(d,cache)
+end
+
 for n in (1,1,10,1000,100000)
   @eval begin
     println("+++ runing suite for n = $($n) +++")
     run(bench1,$n)
     run(bench2,$n)
     run(bench3,$n)
+    run(bench4,$n)
   end
 end
 

@@ -63,7 +63,7 @@ end
 @inline function _evaluate_functors!(cfs,x,f1,f...)
   cf1, cf = _split(cfs...)
   f1x = evaluate_functor!(cf1,f1,x...)
-  fx = _evaluate_functors!(cf,x,f...)
+  fx = evaluate_functors!(cf,f,x...)
   (f1x,fx...)
 end
 
