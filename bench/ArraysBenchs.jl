@@ -15,7 +15,7 @@ end
 
 function bench1(n)
   a = rand(n)
-  c = data_array_apply(-,a)
+  c = evaluate_functor_elemwise(-,a)
   cache = array_cache(c)
   loop(c,cache)
 end
@@ -23,7 +23,7 @@ end
 function bench2(n)
   a = rand(n)
   b = rand(n)
-  c = data_array_apply(-,a,b)
+  c = evaluate_functor_elemwise(-,a,b)
   cache = array_cache(c)
   loop(c,cache)
 end
@@ -31,7 +31,7 @@ end
 function bench3(n)
   a = fill(rand(2,3),n)
   b = rand(n)
-  c = data_array_apply(bcast(-),a,b)
+  c = evaluate_functor_elemwise(bcast(-),a,b)
   cache = array_cache(c)
   loop(c,cache)
 end

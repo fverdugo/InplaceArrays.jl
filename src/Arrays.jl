@@ -4,12 +4,12 @@ using Test
 using InplaceArrays
 
 export test_inplace_array
-export data_array_apply
+export evaluate_functor_elemwise
 export array_cache
 export getindex!
 
-import InplaceArrays: new_cache
-import InplaceArrays: evaluate!
+import InplaceArrays: functor_cache
+import InplaceArrays: evaluate_functor!
 
 """
 array_cache(a)
@@ -52,19 +52,19 @@ struct ArrayFunctor{A}
   end
 end
 
-new_cache(f::ArrayFunctor,i...) = array_cache(f.array)
+functor_cache(f::ArrayFunctor,i...) = array_cache(f.array)
 
-evaluate!(cache,f::ArrayFunctor,i...) = getindex!(cache,f.array,i...)
+evaluate_functor!(cache,f::ArrayFunctor,i...) = getindex!(cache,f.array,i...)
 
 # Wrap an index-wise functor with array metadata
 
-function data_array_apply(f,a::AbstractArray...)
+function evaluate_functor_elemwise(f,a::AbstractArray...)
   x = _test_values(a...)
   N, size, I = _prepare_shape(a...)
-  v = evaluate(f,x...)
+  v = evaluate_functor(f,x...)
   T = typeof(v)
   b = _array_functors(a...)
-  r = apply(f,b...)
+  r = apply_functor(f,b...)
   F = typeof(r)
   AppliedDataArray{T,N,I,F}(size,r)
 end
@@ -75,17 +75,17 @@ struct AppliedDataArray{T,N,I,F} <: AbstractArray{T,N}
 end
 
 function Base.getindex(a::AppliedDataArray,i...)
-  cache = new_cache(a.f,i...)
-  evaluate!(cache,a.f,i...)
+  cache = functor_cache(a.f,i...)
+  evaluate_functor!(cache,a.f,i...)
 end
 
 function getindex!(cache,a::AppliedDataArray,i...)
-  evaluate!(cache,a.f,i...)
+  evaluate_functor!(cache,a.f,i...)
 end
 
 function array_cache(a::AppliedDataArray)
   if length(a)>0
-    new_cache(a.f,1)
+    functor_cache(a.f,1)
   else
     nothing
   end
