@@ -41,8 +41,9 @@ function bench4(n)
   b = rand(n)
   c = evaluate_functor_elemwise(bcast(-),a,b)
   d = evaluate_functor_elemwise(bcast(+),a,c)
-  cache = array_cache(d)
-  loop(d,cache)
+  e = evaluate_functor_elemwise(bcast(*),d,c)
+  cache = array_cache(e)
+  loop(e,cache)
 end
 
 for n in (1,1,10,1000,100000)
