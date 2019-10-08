@@ -13,6 +13,15 @@ import InplaceArrays: functor_cache
 import InplaceArrays: evaluate_functor!
 
 """
+testvalue(::Type)
+"""
+function testvalue end
+
+testvalue(::Type{T}) where T = zero(T)
+
+testvalue(::Type{Array{T,N}}) where {T,N} = zeros(T,fill(0,N)...)
+
+"""
 array_cache(a)
 """
 function array_cache end
@@ -67,24 +76,24 @@ function evaluate_functor_elemwise(f,a::AbstractArray...)
   b = _array_functors(a...)
   r = apply_functor(f,b...)
   F = typeof(r)
-  AppliedDataArray{T,N,I,F}(size,r)
+  ResultArray{T,N,I,F}(size,r)
 end
 
-struct AppliedDataArray{T,N,I,F} <: AbstractArray{T,N}
+struct ResultArray{T,N,I,F} <: AbstractArray{T,N}
   size::NTuple{N,Int}
   f::F
 end
 
-function Base.getindex(a::AppliedDataArray,i...)
+function Base.getindex(a::ResultArray,i...)
   cache = functor_cache(a.f,i...)
   evaluate_functor!(cache,a.f,i...)
 end
 
-function getindex!(cache,a::AppliedDataArray,i...)
+function getindex!(cache,a::ResultArray,i...)
   evaluate_functor!(cache,a.f,i...)
 end
 
-function array_cache(a::AppliedDataArray)
+function array_cache(a::ResultArray)
   if length(a)>0
     functor_cache(a.f,1)
   else
@@ -92,11 +101,11 @@ function array_cache(a::AppliedDataArray)
   end
 end
 
-function Base.IndexStyle(::Type{AppliedDataArray{T,N,I,F}}) where {T,N,I,F}
+function Base.IndexStyle(::Type{ResultArray{T,N,I,F}}) where {T,N,I,F}
   I
 end
 
-Base.size(a::AppliedDataArray) = a.size
+Base.size(a::ResultArray) = a.size
 
 function _test_values(a,b...)
   va = _test_value(a)
@@ -116,16 +125,6 @@ function _test_value(a::AbstractArray{T}) where T
     testvalue(T)
   end::T
 end
-
-
-"""
-testvalue(::Type)
-"""
-function testvalue end
-
-testvalue(::Type{T}) where T = zero(T)
-
-testvalue(::Type{Array{T,N}}) where {T,N} = zeros(T,fill(0,N)...)
 
 function _array_functors(a,b...)
   c = ArrayFunctor(a)
