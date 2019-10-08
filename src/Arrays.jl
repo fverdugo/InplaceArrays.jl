@@ -33,6 +33,10 @@ getindex!(cache,a,index...)
 """
 function getindex! end
 
+array_cache(::AbstractArray) = nothing
+
+getindex!(cache,a::AbstractArray,i...) = a[i...]
+
 # Test the interface
 
 function test_inplace_array(
@@ -50,26 +54,14 @@ function test_inplace_array(
   true
 end
 
-# Add a default interface for all AbstractArrays
+"""
+evaluate_functor_elemwise(f,a::AbstractArray...)
 
-array_cache(::AbstractArray) = nothing
-
-getindex!(cache,a::AbstractArray,i...) = a[i...]
-
-# Construct a index-wise functor from an array
-struct ArrayFunctor{A}
-  array::A
-  function ArrayFunctor(a::AbstractArray)
-    new{typeof(a)}(a)
-  end
-end
-
-functor_cache(f::ArrayFunctor,i...) = array_cache(f.array)
-
-evaluate_functor!(cache,f::ArrayFunctor,i...) = getindex!(cache,f.array,i...)
-
-# Wrap an index-wise functor with array metadata
-
+Returns a (lazy) array representing the evaluation of the
+given functor `f` to the entries of the input arrays `a`.
+The returned array `r` is such that
+`r[i] = evaluate(f,a1[i],a2[i],...)`
+"""
 function evaluate_functor_elemwise(f,a::AbstractArray...)
   x = _test_values(a...)
   N, size, I = _prepare_shape(a...)
@@ -80,6 +72,17 @@ function evaluate_functor_elemwise(f,a::AbstractArray...)
   F = typeof(r)
   ResultArray{T,N,I,F}(size,r)
 end
+
+struct ArrayFunctor{A}
+  array::A
+  function ArrayFunctor(a::AbstractArray)
+    new{typeof(a)}(a)
+  end
+end
+
+functor_cache(f::ArrayFunctor,i...) = array_cache(f.array)
+
+evaluate_functor!(cache,f::ArrayFunctor,i...) = getindex!(cache,f.array,i...)
 
 struct ResultArray{T,N,I,F} <: AbstractArray{T,N}
   size::NTuple{N,Int}

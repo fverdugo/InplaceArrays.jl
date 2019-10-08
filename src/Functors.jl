@@ -4,6 +4,7 @@ using Test
 
 export functor_cache
 export evaluate_functor!
+export evaluate_functors!
 export evaluate_functor
 export test_functor
 export bcast
@@ -36,6 +37,45 @@ function test_functor(f,x,y,cmp=(==))
   @test cmp(z,y)
 end
 
+# Get the cache of several functors at once
+
+function functor_caches(fs::Tuple,x...)
+  _functor_caches(x,fs...)
+end
+
+function _functor_caches(x,a,b...)
+  ca = functor_cache(a,x...)
+  cb = _functor_caches(x,b...)
+  (ca,cb...)
+end
+
+function _functor_caches(x,a)
+  ca = functor_cache(a,x...)
+  (ca,)
+end
+
+# Evaluate several functors at once
+
+@inline function evaluate_functors!(cfs,f::Tuple,x...)
+  _evaluate_functors!(cfs,x,f...)
+end
+
+@inline function _evaluate_functors!(cfs,x,f1,f...)
+  cf1, cf = _split(cfs...)
+  f1x = evaluate_functor!(cf1,f1,x...)
+  fx = _evaluate_functors!(cf,x,f...)
+  (f1x,fx...)
+end
+
+@inline function _evaluate_functors!(cfs,x,f1)
+  cf1, = cfs
+  f1x = evaluate_functor!(cf1,f1,x...)
+  (f1x,)
+end
+
+@inline function _split(a,b...)
+  (a,b)
+end
 
 # Include some well-known types in this interface
 
@@ -98,20 +138,15 @@ end
 apply_functor(g,f) = Composed(g,f)
 
 function functor_cache(f::Composed,x...)
-  hash = Dict{UInt64,Any}()
-  _functor_cache(hash,f,x...)
-end
-
-function _functor_cache(hash::Dict,f::Composed,x...)
-  cf = _functor_cache_f1(hash,f.f,x...)
-  fx = _evaluate_functor_fs1!(cf,f.f,x)
+  cf = functor_cache(f.f,x...)
+  fx = evaluate_functor!(cf,f.f,x...)
   cg = functor_cache(f.g,fx)
   (cg,cf)
 end
 
 @inline function evaluate_functor!(cache,f::Composed,x...)
   cg, cf = cache
-  fx = _evaluate_functor_fs1!(cf,f.f,x)
+  fx = evaluate_functor!(cf,f.f,x...)
   gfx = evaluate_functor!(cg,f.g,fx)
   gfx
 end
@@ -127,80 +162,17 @@ end
 apply_functor(g,f...) = Applied(g,f...)
 
 function functor_cache(f::Applied,x...)
-  hash = Dict{UInt64,Any}()
-  _functor_cache(hash,f,x...)
-end
-
-function _functor_cache(hash::Dict,f::Applied,x...)
-  cfs = _functor_caches(hash,x,f.f...)
-  fxs = _evaluate_functor_fs!(cfs,x,f.f...)
+  cfs = functor_caches(f.f,x...)
+  fxs = evaluate_functors!(cfs,f.f,x...)
   cg = functor_cache(f.g,fxs...)
   (cg,cfs)
 end
 
-function _functor_cache(hash::Dict,f,x...)
-  functor_cache(f,x...)
-end
-
 @inline function evaluate_functor!(cache,f::Applied,x...)
   cg, cfs = cache
-  fxs = _evaluate_functor_fs!(cfs,x,f.f...)
+  fxs = evaluate_functors!(cfs,f.f,x...)
   y = evaluate_functor!(cg,f.g,fxs...)
   y
-end
-
-function _functor_caches(hash,x,f1,f...)
-  cf1 = _functor_cache_f1(hash,f1,x...)
-  csf = _functor_caches(hash,x,f...)
-  (cf1, csf...)
-end
-
-function _functor_cache_f1(hash,f1,x...)
-  i = objectid(f1)
-  if ! haskey(hash,i)
-    c = _functor_cache(hash,f1,x...)
-    fx = evaluate_functor!(c,f1,x...)
-    e = Evaluation(x,fx)
-    cf1 = (e,c)
-    hash[i] = cf1
-  end
-  hash[i]
-end
-
-function _functor_caches(hash,x,f1)
-  cf1 = _functor_cache_f1(hash,f1,x...)
-  (cf1,)
-end
-
-@inline function _evaluate_functor_fs!(cfs,x,f1,f...)
-  cf1, cf = _split(cfs...)
-  f1x = _evaluate_functor_fs1!(cf1,f1,x)
-  fx = _evaluate_functor_fs!(cf,x,f...)
-  (f1x,fx...)
-end
-
-@inline function _evaluate_functor_fs!(cfs,x,f1)
-  cf1, = cfs
-  f1x = _evaluate_functor_fs1!(cf1,f1,x)
-  (f1x,)
-end
-
-@inline function _evaluate_functor_fs1!(cf1,f1,x)
-  e, c = cf1
-  f1x = e.fx
-  if !(e.x === x)
-    f1x = evaluate_functor!(c,f1,x...)
-    e.x = x
-    e.fx = f1x
-  #  println("Not reusing")
-  #else
-  #  println("Reusing")
-  end
-  f1x
-end
-
-@inline function _split(a,b...)
-  (a,b)
 end
 
 mutable struct Evaluation{X,F}
