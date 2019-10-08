@@ -180,12 +180,4 @@ end
   y
 end
 
-mutable struct Evaluation{X,F}
-  x::X
-  fx::F
-  function Evaluation(x::X,fx::F) where {X,F}
-    new{X,F}(x,fx)
-  end
-end
-
 end # module

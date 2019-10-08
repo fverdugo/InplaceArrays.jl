@@ -100,14 +100,32 @@ function Base.getindex(a::ResultArray,i...)
 end
 
 function getindex!(cache,a::ResultArray,i...)
-  evaluate_functor!(cache,a.f,i...)
+  cf, e = cache
+  v = e.fx
+  if e.x != i
+    v = evaluate_functor!(cf,a.f,i...)
+    e.x = i
+    e.fx = v
+  end
+   v
 end
 
 function array_cache(hash::Dict,a::ResultArray)
   if length(a)>0
-    functor_cache(hash,a.f,1)
+    id = objectid(a)
+    if haskey(hash,id)
+      cache = hash[id]
+    else
+      i = 1
+      cf = functor_cache(hash,a.f,i)
+      fi = evaluate_functor!(cf,a.f,i)
+      e = Evaluation((i,),fi)
+      cache = (cf,e)
+      hash[id] = cache
+    end
+    return cache
   else
-    nothing
+    return nothing
   end
 end
 
@@ -158,6 +176,14 @@ function _prepare_shape(a...)
   s = (length(a1),)
   I = IndexLinear()
   (N,s,I)
+end
+
+mutable struct Evaluation{X,F}
+  x::X
+  fx::F
+  function Evaluation(x::X,fx::F) where {X,F}
+    new{X,F}(x,fx)
+  end
 end
 
 end # module
