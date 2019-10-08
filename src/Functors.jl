@@ -13,9 +13,14 @@ export apply_functor
 # Define Functor interface
 
 """
-`cache = functor_cache(f,x...)`
+`cache = functor_cache(hash::Dict,f,x...)`
 """
 function functor_cache end
+
+function functor_cache(f,x...)
+  hash = Dict{UInt,Any}()
+  functor_cache(hash,f,x...)
+end
 
 """
 `y = evaluate_functor!(cache,f,x...)`
@@ -39,18 +44,18 @@ end
 
 # Get the cache of several functors at once
 
-function functor_caches(fs::Tuple,x...)
-  _functor_caches(x,fs...)
+function functor_caches(hash::Dict,fs::Tuple,x...)
+  _functor_caches(hash,x,fs...)
 end
 
-function _functor_caches(x,a,b...)
-  ca = functor_cache(a,x...)
-  cb = _functor_caches(x,b...)
+function _functor_caches(hash,x,a,b...)
+  ca = functor_cache(hash,a,x...)
+  cb = _functor_caches(hash,x,b...)
   (ca,cb...)
 end
 
-function _functor_caches(x,a)
-  ca = functor_cache(a,x...)
+function _functor_caches(hash,x,a)
+  ca = functor_cache(hash,a,x...)
   (ca,)
 end
 
@@ -79,15 +84,15 @@ end
 
 # Include some well-known types in this interface
 
-@inline functor_cache(f::Function,args...) = nothing
+@inline functor_cache(hash::Dict,f::Function,args...) = nothing
 
 @inline evaluate_functor!(::Nothing,f::Function,args...) = f(args...)
 
-@inline functor_cache(f::Number,args...) = nothing
+@inline functor_cache(hash::Dict,f::Number,args...) = nothing
 
 @inline evaluate_functor!(::Nothing,f::Number,args...) = f
 
-@inline functor_cache(f::AbstractArray,args...) = nothing
+@inline functor_cache(hash::Dict,f::AbstractArray,args...) = nothing
 
 @inline evaluate_functor!(::Nothing,f::AbstractArray,args...) = f
 
@@ -102,7 +107,7 @@ end
 
 bcast(f::Function) = BCasted(f)
 
-function functor_cache(f::BCasted,x...)
+function functor_cache(hash::Dict,f::BCasted,x...)
   broadcast(f.f,x...)
 end
 
@@ -137,10 +142,10 @@ end
 
 apply_functor(g,f) = Composed(g,f)
 
-function functor_cache(f::Composed,x...)
-  cf = functor_cache(f.f,x...)
+function functor_cache(hash::Dict,f::Composed,x...)
+  cf = functor_cache(hash,f.f,x...)
   fx = evaluate_functor!(cf,f.f,x...)
-  cg = functor_cache(f.g,fx)
+  cg = functor_cache(hash,f.g,fx)
   (cg,cf)
 end
 
@@ -161,10 +166,10 @@ end
 
 apply_functor(g,f...) = Applied(g,f...)
 
-function functor_cache(f::Applied,x...)
-  cfs = functor_caches(f.f,x...)
+function functor_cache(hash::Dict,f::Applied,x...)
+  cfs = functor_caches(hash,f.f,x...)
   fxs = evaluate_functors!(cfs,f.f,x...)
-  cg = functor_cache(f.g,fxs...)
+  cg = functor_cache(hash,f.g,fxs...)
   (cg,cfs)
 end
 

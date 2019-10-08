@@ -24,16 +24,21 @@ function testvalue(::Type{T}) where T<:AbstractArray{E,N} where {E,N}
 end
 
 """
-array_cache(a)
+array_cache(hash::Dict,a)
 """
 function array_cache end
+
+function array_cache(a)
+  hash = Dict{UInt,Any}()
+  array_cache(hash,a)
+end
 
 """
 getindex!(cache,a,index...)
 """
 function getindex! end
 
-array_cache(::AbstractArray) = nothing
+array_cache(hash::Dict,::AbstractArray) = nothing
 
 getindex!(cache,a::AbstractArray,i...) = a[i...]
 
@@ -80,7 +85,7 @@ struct ArrayFunctor{A}
   end
 end
 
-functor_cache(f::ArrayFunctor,i...) = array_cache(f.array)
+functor_cache(hash::Dict,f::ArrayFunctor,i...) = array_cache(hash,f.array)
 
 evaluate_functor!(cache,f::ArrayFunctor,i...) = getindex!(cache,f.array,i...)
 
@@ -98,9 +103,9 @@ function getindex!(cache,a::ResultArray,i...)
   evaluate_functor!(cache,a.f,i...)
 end
 
-function array_cache(a::ResultArray)
+function array_cache(hash::Dict,a::ResultArray)
   if length(a)>0
-    functor_cache(a.f,1)
+    functor_cache(hash,a.f,1)
   else
     nothing
   end
