@@ -1,19 +1,14 @@
 module InplaceArrays
 
-using Test
+using Reexport
 
-export new_cache
-export evaluate!
-export evaluate
-export test_functor
-export bcast
-export compose
-export apply
 export InplaceArray
 export getindex!
 
-
 include("Functors.jl")
+@reexport using InplaceArrays.Functors
+
 include("Arrays.jl")
+@reexport using InplaceArrays.Arrays
 
 end # module

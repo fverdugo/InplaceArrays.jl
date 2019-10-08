@@ -1,3 +1,14 @@
+module Functors
+
+using Test
+
+export new_cache
+export evaluate!
+export evaluate
+export test_functor
+export bcast
+export compose
+export apply
 
 # Define Functor interface
 
@@ -203,3 +214,4 @@ mutable struct Evaluation{X,F}
   end
 end
 
+end # module

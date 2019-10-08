@@ -1,10 +1,15 @@
+module Arrays
 
-import InplaceArrays: new_cache
-import InplaceArrays: evaluate!
+using Test
+using InplaceArrays
+
 export test_inplace_array
 export data_array_apply
 export array_cache
 export getindex!
+
+import InplaceArrays: new_cache
+import InplaceArrays: evaluate!
 
 """
 array_cache(a)
@@ -138,83 +143,4 @@ function _prepare_shape(a...)
   (N,s,I)
 end
 
-#using Test
-#using Base: @propagate_inbounds
-#
-#"""
-#new_cache(a::InplaceArray)
-#
-#getindex!(cache,a::InplaceArray,i::Integer)
-#getindex!(cache,a::InplaceArray,I::Integer...)
-#"""
-#abstract type InplaceArray{T,N} <: AbstractArray{T,N} end
-#
-#function getindex! end
-#
-#function test_inplace_array(
-#  a::InplaceArray{T,N}, b::AbstractArray{T,N},cmp=(==)) where {T,N}
-#
-#  @test cmp(a,b)
-#
-#  cache = new_cache(a)
-#
-#  t = true
-#  for i in eachindex(a)
-#    bi = b[i]
-#    ai = getindex!(cache,a,i)
-#    t = t && cmp(bi,ai)
-#  end
-#
-#  @test t
-#
-#  @test IndexStyle(a) == IndexStyle(b)
-#
-#  true
-#end
-#
-#struct InplaceArrayFromArray{T,N,A<:AbstractArray} <: InplaceArray{T,N}
-#  array::A
-#  function InplaceArrayFromArray(array::AbstractArray{T,N}) where {T,N}
-#    A = typeof(array)
-#    new{T,N,A}(array)
-#  end
-#end
-#
-#"""
-#Construct an inplace Array from an AbstractArray
-#"""
-#InplaceArray(a::AbstractArray) = InplaceArrayFromArray(a)
-#
-#new_cache(::InplaceArrayFromArray) = nothing
-#
-#@propagate_inbounds function getindex!(::Nothing,a::InplaceArrayFromArray,I...)
-#  a.array[I...]
-#end
-#
-#Base.size(a::InplaceArrayFromArray) = size(a.array)
-#
-#@propagate_inbounds function Base.getindex(
-#  a::InplaceArrayFromArray,I...)
-#  a.array[I...]
-#end
-#
-#@propagate_inbounds function Base.setindex!(
-#  a::InplaceArrayFromArray,v,I...)
-#  a.array[I...] = v
-#end
-#
-#function Base.IndexStyle(
-#  ::Type{InplaceArrayFromArray{T,N,A}}) where {T,N,A}
-#  IndexStyle(A)
-#end
-#
-## Implement lazy operations
-#
-#new_cache(a::InplaceArray,index...) = new_cache(a)
-#
-#@inline evaluate!(cache,a::InplaceArray,i...) = getindex!(cache,a,i...)
-
-
-
-
-
+end # module
