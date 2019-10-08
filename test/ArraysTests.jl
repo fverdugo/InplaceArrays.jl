@@ -40,7 +40,6 @@ d = evaluate_functor_elemwise(bcast(+),a,c)
 e = evaluate_functor_elemwise(bcast(*),d,c)
 test_inplace_array(e,[((ai.-bi).+ai).*(ai.-bi) for (ai,bi) in zip(a,b)])
 
-
 #import InplaceArrays: evaluate_functor_elemwise
 #import InplaceArrays: getindex!
 #import InplaceArrays: array_cache

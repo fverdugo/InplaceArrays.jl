@@ -154,14 +154,22 @@ function _test_value(a::AbstractArray{T}) where T
   end::T
 end
 
+function index_functor(a::AbstractArray)
+  ArrayFunctor(a)
+end
+
+#function index_functor(a::ResultArray)
+#  a.f
+#end
+
 function _array_functors(a,b...)
-  c = ArrayFunctor(a)
+  c = index_functor(a)
   d = _array_functors(b...)
   (c,d...)
 end
 
 function _array_functors(a)
-  c = ArrayFunctor(a)
+  c = index_functor(a)
   (c,)
 end
 
