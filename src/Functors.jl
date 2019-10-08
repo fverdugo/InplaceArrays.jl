@@ -3,12 +3,14 @@ module Functors
 using Test
 
 export functor_cache
+export functor_caches
 export evaluate_functor!
 export evaluate_functors!
 export evaluate_functor
 export test_functor
 export bcast
 export apply_functor
+export apply_meta_functor
 
 # Define Functor interface
 
@@ -18,6 +20,7 @@ export apply_functor
 function functor_cache end
 
 function functor_cache(f,x...)
+  @assert ! isa(f,Dict)
   hash = Dict{UInt,Any}()
   functor_cache(hash,f,x...)
 end
@@ -48,13 +51,13 @@ function functor_caches(hash::Dict,fs::Tuple,x...)
   _functor_caches(hash,x,fs...)
 end
 
-function _functor_caches(hash,x,a,b...)
+function _functor_caches(hash::Dict,x::Tuple,a,b...)
   ca = functor_cache(hash,a,x...)
-  cb = _functor_caches(hash,x,b...)
+  cb = functor_caches(hash,b,x...)
   (ca,cb...)
 end
 
-function _functor_caches(hash,x,a)
+function _functor_caches(hash::Dict,x::Tuple,a)
   ca = functor_cache(hash,a,x...)
   (ca,)
 end
@@ -178,6 +181,36 @@ end
   fxs = evaluate_functors!(cfs,f.f,x...)
   y = evaluate_functor!(cg,f.g,fxs...)
   y
+end
+
+"""
+a(x) = [m(x)](f(x)...)
+"""
+apply_meta_functor(m,f...) = Meta(m,f...)
+
+struct Meta{M,F<:Tuple}
+  m::M
+  f::F
+  function Meta(m::M,f...) where M
+    new{M,typeof(f)}(m,f)
+  end
+end
+
+function functor_cache(hash::Dict,a::Meta,x...)
+  cm = functor_cache(hash,a.m,x...)
+  g = evaluate_functor!(cm,a.m,x...)
+  cf = functor_caches(hash,a.f,x...)
+  fx = evaluate_functors!(cf,a.f,x...)
+  cg = functor_cache(hash,g,fx...)
+  (cm,cf,cg)
+end
+
+@inline function evaluate_functor!(cache,a::Meta,x...)
+  cm, cf, cg = cache
+  g = evaluate_functor!(cm,a.m,x...)
+  fx = evaluate_functors!(cf,a.f,x...)
+  r = evaluate_functor!(cg,g,fx...)
+  r
 end
 
 end # module

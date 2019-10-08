@@ -78,5 +78,10 @@ a = b .* c
 r = evaluate_functor!(cache,A,x,y)
 @test a == r
 
+a = apply_meta_functor((x...)->(+),-)
+x = 1
+y = 2
+r = +(x-y)
+test_functor(a,(x,y),r)
 
 end # module
