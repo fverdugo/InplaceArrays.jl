@@ -7,6 +7,7 @@ export test_inplace_array
 export evaluate_functor_elemwise
 export array_cache
 export getindex!
+export testvalue
 
 import InplaceArrays: functor_cache
 import InplaceArrays: evaluate_functor!
@@ -116,7 +117,13 @@ function _test_value(a::AbstractArray{T}) where T
   end::T
 end
 
-testvalue(::Type{T}) where T<:Number = zero(T)
+
+"""
+testvalue(::Type)
+"""
+function testvalue end
+
+testvalue(::Type{T}) where T = zero(T)
 
 testvalue(::Type{Array{T,N}}) where {T,N} = zeros(T,fill(0,N)...)
 
