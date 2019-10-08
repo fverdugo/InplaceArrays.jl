@@ -19,7 +19,9 @@ function testvalue end
 
 testvalue(::Type{T}) where T = zero(T)
 
-testvalue(::Type{Array{T,N}}) where {T,N} = zeros(T,fill(0,N)...)
+function testvalue(::Type{T}) where T<:AbstractArray{E,N} where {E,N}
+   similar(T,fill(0,N)...)
+end
 
 """
 array_cache(a)
@@ -137,6 +139,7 @@ function _array_functors(a)
   (c,)
 end
 
+#TODO not sure what to do with shape and index-style
 function _prepare_shape(a...)
   a1, = a
   c = all([length(a1) == length(ai) for ai in a])
