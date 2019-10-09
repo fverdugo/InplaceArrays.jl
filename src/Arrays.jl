@@ -178,12 +178,12 @@ end
 #TODO not sure what to do with shape and index-style
 function _prepare_shape(a...)
   a1, = a
-  c = all([length(a1) == length(ai) for ai in a])
+  c = all([size(a1) == size(ai) for ai in a])
   if !c
-    error("Array lengths are not compatible.")
+    error("Array sizes are not compatible.")
   end
-  N = 1
-  s = (length(a1),)
+  s = size(a1)
+  N = length(s)
   I = IndexLinear()
   (N,s,I)
 end
@@ -278,16 +278,21 @@ function _array_cache(hash,a::EvaluatedArray)
   cf = array_caches(hash,a.f...)
   cgi = functor_cache(gi,fi...)
   ai = evaluate_functor!(cgi,gi,fi...)
-  i = (0,) # TODO we are enforcing the index type here
-  # Choose index via IndexStyle and when getting the item
-  # convert the index to the appropiate type (if the == is not properly
-  # overloaded)
-  e = Evaluation(i,ai)
+  i = -testitem(eachindex(a))
+  e = Evaluation((i,),ai)
   c = (cg, cgi, cf)
   (c,e)
 end
 
-function getindex!(cache,a::EvaluatedArray,i...)
+function getindex!(cache,a::EvaluatedArray,i::Integer...)
+  _cached_getindex!(cache,a,i)
+end
+
+function getindex!(cache,a::EvaluatedArray,i::CartesianIndex)
+  _cached_getindex!(cache,a,Tuple(i))
+end
+
+function _cached_getindex!(cache,a::EvaluatedArray,i::Tuple)
   c, e = cache
   v = e.fx
   if e.x != i
@@ -317,5 +322,8 @@ function Base.IndexStyle(
 end
 
 Base.size(a::EvaluatedArray) = a.size
+
+# TODO Particular implementations for Fill
+# TODO Implement Compressed
 
 end # module

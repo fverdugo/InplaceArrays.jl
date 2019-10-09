@@ -7,8 +7,14 @@ using FillArrays
 a = rand(3,2,4)
 test_inplace_array(a,a)
 
+a = rand(3,2,4)
 a = CartesianIndices(a)
 test_inplace_array(a,a)
+
+a = rand(3,2)
+a = CartesianIndices(a)
+c = evaluate_functor_elemwise(-,a)
+test_inplace_array(c,-a)
 
 a = rand(12)
 c = evaluate_functor_elemwise(-,a)
@@ -138,9 +144,10 @@ for i in 1:length(e)
   ei = getindex!(cache,e,i)
 end
 
+@show a.counter
+@show b.counter
+
 @test all(a.counter .== 2) 
 @test all(b.counter .== 1)
-
-
 
 end # module
