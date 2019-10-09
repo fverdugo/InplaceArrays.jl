@@ -6,6 +6,7 @@ using InplaceArrays
 export test_inplace_array
 export test_inplace_array_of_functors
 export evaluate_functor_elemwise
+export evaluate_array_of_functors
 export apply_functor_elemwise
 export array_cache
 export array_caches
@@ -170,6 +171,10 @@ function evaluate_functor_elemwise(f,a::AbstractArray...)
   EvaluatedArray{T,N,I,F}(size,r)
 end
 
+# TODO if we remove this and implement the operation tree at the array level,
+# we don't need to expose hash in the Functor interface. In fact, we will only
+# cach at the array level since we can efficiently compare indices. In general,
+# one cannot efficienlty compare arbitrary functor arguments.
 struct Indexed{A}
   array::A
   function Indexed(a::AbstractArray)
@@ -309,6 +314,19 @@ Base.size(a::AppliedArray) = a.size
 function Base.IndexStyle(
   ::Type{AppliedArray{T,N,I,G,F}}) where {T,N,I,G,F}
   I
+end
+
+function evaluate_array_of_functors(f::AbstractArray,a::AbstractArray...)
+  ai = testitems(a...)
+  fi = testitem(f)
+  vi = evaluate_functor(fi,ai...)
+  T = typeof(vi)
+  N, size, I = _prepare_shape(f,a...)
+  b = _array_functors(a...)
+  g, = _array_functors(f)
+  r = apply_meta_functor(g,b...)
+  F = typeof(r)
+  EvaluatedArray{T,N,I,F}(size,r)
 end
 
 end # module
