@@ -92,7 +92,7 @@ getindex!(cache,a::AbstractArray,i...) = a[i...]
 # Test the interface
 
 function test_inplace_array(
-  a::AbstractArray{T,N}, b::AbstractArray{T,N},cmp=(==)) where {T,N}
+  a::AbstractArray{T,N}, b::AbstractArray{S,N},cmp=(==)) where {T,S,N}
   @test cmp(a,b)
   cache = array_cache(a)
   t = true

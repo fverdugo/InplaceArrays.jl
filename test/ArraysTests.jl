@@ -105,6 +105,13 @@ v = evaluate_array_of_functors(a,x,y)
 r = [(xi.+yi) for (xi,yi) in zip(x,y)]
 test_inplace_array(v,r)
 
+a = Fill(bcast(+),10)
+x = [rand(mod(i-1,3)+1,3) for i in 1:10]
+y = [rand(1,3) for i in 1:10]
+v = evaluate_array_of_functors(a,x,y)
+r = [(xi.+yi) for (xi,yi) in zip(x,y)]
+test_inplace_array(v,r)
+
 # Test the intermediate results caching mechanism
 
 struct ArrayWithCounter{T,N,A,C} <: AbstractArray{T,N}
@@ -143,9 +150,6 @@ for i in 1:length(e)
   ei = getindex!(cache,e,i)
   ei = getindex!(cache,e,i)
 end
-
-@show a.counter
-@show b.counter
 
 @test all(a.counter .== 2) 
 @test all(b.counter .== 1)

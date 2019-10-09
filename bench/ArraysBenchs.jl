@@ -80,7 +80,7 @@ function bench6b(n)
   a = fill(bcast(+),n)
   b = fill(bcast(-),n)
   c = apply_functor_elemwise(bcast(*),a,b)
-  x = [rand(2,3) for i in 1:n]
+  x = [rand(mod(i-1,3)+1,3) for i in 1:n]
   y = [rand(1,3) for i in 1:n]
   cc, cci, cx = array_of_functors_cache(c,x,y)
   @time loop_and_evaluate(cc,cci,cx,c,x,y)
@@ -106,7 +106,7 @@ end
 
 function bench9(n)
   a = Fill(bcast(+),n)
-  x = [rand(2,3) for i in 1:n]
+  x = [rand(mod(i-1,3)+1,3) for i in 1:n]
   y = [rand(1,3) for i in 1:n]
   v = evaluate_array_of_functors(a,x,y)
   cache = array_cache(v)

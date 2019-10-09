@@ -45,7 +45,7 @@ function setsize!(self::CachedArray{T,N},s::NTuple{N,Int}) where {T,N}
   if s <= size(self.array)
     self.size = s
   else
-    self.array = Array{T,N}(undef,s)
+    self.array = similar(self.array,T,s...)
     self.size = s
   end
 end

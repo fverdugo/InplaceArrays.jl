@@ -2,6 +2,8 @@ module Functors
 
 using Test
 
+using InplaceArrays.CachedArrays
+
 export functor_cache
 export functor_caches
 export evaluate_functor!
@@ -104,7 +106,8 @@ end
 bcast(f::Function) = BCasted(f)
 
 function functor_cache(f::BCasted,x...)
-  broadcast(f.f,x...)
+  r = broadcast(f.f,x...)
+  CachedArray(r)
 end
 
 @inline function evaluate_functor!(cache,f::BCasted,x...)
@@ -113,15 +116,13 @@ end
   r
 end
 
-# TODO use a cached array here
 @inline function _prepare_cache(c,x...)
   s = _sizes(x...)
   bs = Base.Broadcast.broadcast_shape(s...)
-  r = c
   if bs != size(c)
-    error("Size of inputs has changed. Function not prepared yet")
+    setsize!(c,bs)
   end
-  r
+  c
 end
 
 @inline function _sizes(a,x...)
