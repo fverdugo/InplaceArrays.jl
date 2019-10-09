@@ -48,6 +48,22 @@ v = getitems!(c,(a,b),i)
 @test c == (nothing,nothing)
 @test v == (a[i],b[i])
 
+a = fill(rand(Int,2,3),12)
+b = fill(rand(Int,1,3),12)
+ai = testitem(a)
+@test ai == a[1]
+ai, bi = testitems(a,b)
+@test ai == a[1]
+@test bi == b[1]
+
+a = fill(rand(Int,2,3),0)
+b = fill(1,0)
+ai = testitem(a)
+@test ai == Array{Int,2}(undef,0,0)
+ai, bi = testitems(a,b)
+@test ai == Array{Int,2}(undef,0,0)
+@test bi == zero(Int)
+
 #function apply_functor_elemwise(g,f::AbstractArray...)
 #  cf = array_caches(f...)
 #  fis = getitems(cf,f...)

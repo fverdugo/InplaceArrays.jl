@@ -10,6 +10,8 @@ export array_caches
 export getindex!
 export getitems!
 export testvalue
+export testitem
+export testitems
 
 import InplaceArrays: functor_cache
 import InplaceArrays: evaluate_functor!
@@ -24,6 +26,30 @@ testvalue(::Type{T}) where T = zero(T)
 
 function testvalue(::Type{T}) where T<:AbstractArray{E,N} where {E,N}
    similar(T,fill(0,N)...)
+end
+
+"""
+testitem(a::AbstractArray)
+"""
+function testitem end
+
+function testitem(a::AbstractArray{T}) where T
+  if length(a) >0
+    first(a)
+  else
+    testvalue(T)
+  end::T
+end
+
+function testitems(a::AbstractArray,b::AbstractArray...)
+  va = testitem(a)
+  vb = testitems(b...)
+  (va,vb...)
+end
+
+function testitems(a::AbstractArray)
+  va = testitem(a)
+  (va,)
 end
 
 """
@@ -102,38 +128,38 @@ The returned array `r` is such that
 `r[i] == evaluate(f,a1[i],a2[i],...)`
 """
 function evaluate_functor_elemwise(f,a::AbstractArray...)
-  x = _test_values(a...)
+  x = testitems(a...)
   N, size, I = _prepare_shape(a...)
   v = evaluate_functor(f,x...)
   T = typeof(v)
   b = _array_functors(a...)
   r = apply_functor(f,b...)
   F = typeof(r)
-  ResultArray{T,N,I,F}(size,r)
+  EvaluatedArray{T,N,I,F}(size,r)
 end
 
-struct ArrayFunctor{A}
+struct Indexed{A}
   array::A
-  function ArrayFunctor(a::AbstractArray)
+  function Indexed(a::AbstractArray)
     new{typeof(a)}(a)
   end
 end
 
-functor_cache(hash::Dict,f::ArrayFunctor,i...) = array_cache(hash,f.array)
+functor_cache(hash::Dict,f::Indexed,i...) = array_cache(hash,f.array)
 
-evaluate_functor!(cache,f::ArrayFunctor,i...) = getindex!(cache,f.array,i...)
+evaluate_functor!(cache,f::Indexed,i...) = getindex!(cache,f.array,i...)
 
-struct ResultArray{T,N,I,F} <: AbstractArray{T,N}
+struct EvaluatedArray{T,N,I,F} <: AbstractArray{T,N}
   size::NTuple{N,Int}
   f::F
 end
 
-function Base.getindex(a::ResultArray,i...)
+function Base.getindex(a::EvaluatedArray,i...)
   cache = functor_cache(a.f,i...)
   evaluate_functor!(cache,a.f,i...)
 end
 
-function getindex!(cache,a::ResultArray,i...)
+function getindex!(cache,a::EvaluatedArray,i...)
   cf, e = cache
   v = e.fx
   if e.x != i
@@ -144,7 +170,7 @@ function getindex!(cache,a::ResultArray,i...)
    v
 end
 
-function array_cache(hash::Dict,a::ResultArray)
+function array_cache(hash::Dict,a::EvaluatedArray)
   if length(a)>0
     id = objectid(a)
     if haskey(hash,id)
@@ -163,36 +189,17 @@ function array_cache(hash::Dict,a::ResultArray)
   end
 end
 
-function Base.IndexStyle(::Type{ResultArray{T,N,I,F}}) where {T,N,I,F}
+function Base.IndexStyle(::Type{EvaluatedArray{T,N,I,F}}) where {T,N,I,F}
   I
 end
 
-Base.size(a::ResultArray) = a.size
-
-function _test_values(a,b...)
-  va = _test_value(a)
-  vb = _test_values(b...)
-  (va,vb...)
-end
-
-function _test_values(a)
-  va = _test_value(a)
-  (va,)
-end
-
-function _test_value(a::AbstractArray{T}) where T
-  if length(a) >0
-    a[1]
-  else
-    testvalue(T)
-  end::T
-end
+Base.size(a::EvaluatedArray) = a.size
 
 function index_functor(a::AbstractArray)
-  ArrayFunctor(a)
+  Indexed(a)
 end
 
-#function index_functor(a::ResultArray)
+#function index_functor(a::EvaluatedArray)
 #  a.f
 #end
 
