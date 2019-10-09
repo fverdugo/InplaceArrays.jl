@@ -142,27 +142,27 @@ end
   (size(a),)
 end
 
-#Perhaps not needed
-struct Composed{G,F}
-  g::G
-  f::F
-end
-
-apply_functor(g,f) = Composed(g,f)
-
-function functor_cache(hash::Dict,f::Composed,x...)
-  cf = functor_cache(hash,f.f,x...)
-  fx = evaluate_functor!(cf,f.f,x...)
-  cg = functor_cache(hash,f.g,fx)
-  (cg,cf)
-end
-
-@inline function evaluate_functor!(cache,f::Composed,x...)
-  cg, cf = cache
-  fx = evaluate_functor!(cf,f.f,x...)
-  gfx = evaluate_functor!(cg,f.g,fx)
-  gfx
-end
+##Perhaps not needed
+#struct Composed{G,F}
+#  g::G
+#  f::F
+#end
+#
+#apply_functor(g,f) = Composed(g,f)
+#
+#function functor_cache(hash::Dict,f::Composed,x...)
+#  cf = functor_cache(hash,f.f,x...)
+#  fx = evaluate_functor!(cf,f.f,x...)
+#  cg = functor_cache(hash,f.g,fx)
+#  (cg,cf)
+#end
+#
+#@inline function evaluate_functor!(cache,f::Composed,x...)
+#  cg, cf = cache
+#  fx = evaluate_functor!(cf,f.f,x...)
+#  gfx = evaluate_functor!(cg,f.g,fx)
+#  gfx
+#end
 
 struct Applied{G,F<:Tuple}
   g::G
