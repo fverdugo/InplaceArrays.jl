@@ -114,6 +114,7 @@ end
   r
 end
 
+# TODO use a cached array here
 @inline function _prepare_cache(c,x...)
   s = _sizes(x...)
   bs = Base.Broadcast.broadcast_shape(s...)
