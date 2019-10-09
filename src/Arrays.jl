@@ -146,12 +146,17 @@ function _getitems!(c,i,a)
 end
 
 function array_caches(a::AbstractArray,b::AbstractArray...)
-  ca = array_cache(a)
-  cb = array_caches(b...)
+  hash = Dict{UInt,Any}()
+  array_caches(hash,a,b...)
+end
+
+function array_caches(hash::Dict,a::AbstractArray,b::AbstractArray...)
+  ca = array_cache(hash,a)
+  cb = array_caches(hash,b...)
   (ca,cb...)
 end
 
-function array_caches(a::AbstractArray)
+function array_caches(hash::Dict,a::AbstractArray)
   ca = array_cache(a)
   (ca,)
 end
@@ -353,16 +358,45 @@ struct _EvaluatedArray{T,N,I,F,G} <: AbstractArray{T,N}
   end
 end
 
-function array_cache(a::_EvaluatedArray)
-  cg = array_cache(a.g)
+function array_cache(hash::Dict,a::_EvaluatedArray)
+    id = objectid(a)
+    if haskey(hash,id)
+      cache = hash[id]
+    else
+      cache = _array_cache(hash,a)
+      hash[id] = cache
+    end
+    cache
+end
+
+function _array_cache(hash,a::_EvaluatedArray)
+  cg = array_cache(hash,a.g)
   gi = testitem(a.g)
   fi = testitems(a.f...)
-  cf = array_caches(a.f...)
+  cf = array_caches(hash,a.f...)
   cgi = functor_cache(gi,fi...)
-  (cg, cgi, cf)
+  ai = evaluate_functor!(cgi,gi,fi...)
+  i = (0,) # TODO we are enforcing the index type here
+  # Choose index via IndexStyle and when getting the item
+  # convert the index to the appropiate type (if the == is not properly
+  # overloaded)
+  e = Evaluation(i,ai)
+  c = (cg, cgi, cf)
+  (c,e)
 end
 
 function getindex!(cache,a::_EvaluatedArray,i...)
+  c, e = cache
+  v = e.fx
+  if e.x != i
+    v = _getindex!(c,a,i...)
+    e.x = i
+    e.fx = v
+  end
+   v
+end
+
+function _getindex!(cache,a::_EvaluatedArray,i...)
   cg, cgi, cf = cache
   gi = getindex!(cg,a.g,i...)
   fi = getitems!(cf,a.f,i...)
@@ -381,6 +415,5 @@ function Base.IndexStyle(
 end
 
 Base.size(a::_EvaluatedArray) = a.size
-
 
 end # module
