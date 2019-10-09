@@ -157,7 +157,7 @@ function array_caches(hash::Dict,a::AbstractArray,b::AbstractArray...)
 end
 
 function array_caches(hash::Dict,a::AbstractArray)
-  ca = array_cache(a)
+  ca = array_cache(hash,a)
   (ca,)
 end
 

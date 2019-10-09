@@ -99,16 +99,48 @@ v = evaluate_array_of_functors(a,x,y)
 r = [(xi.+yi) for (xi,yi) in zip(x,y)]
 test_inplace_array(v,r)
 
-#import InplaceArrays.Arrays: array_cache
-#import InplaceArrays.Arrays: getindex!
-#using InplaceArrays.Arrays: _prepare_shape
-#
-#a = fill(+,10)
-#x = rand(10)
-#y = rand(10)
-#v = _EvaluatedArray(a,x,y)
-#r = [(xi+yi) for (xi,yi) in zip(x,y)]
-#test_inplace_array(v,r)
+# Test the intermediate results caching mechanism
+
+struct ArrayWithCounter{T,N,A,C} <: AbstractArray{T,N}
+  array::A
+  counter::C
+  function ArrayWithCounter(a::AbstractArray{T,N}) where {T,N}
+    c = zeros(Int,size(a))
+    c[:] .= 0
+    new{T,N,typeof(a),typeof(c)}(a,c)
+  end
+end
+
+Base.size(a::ArrayWithCounter) = size(a.array)
+
+function Base.getindex(a::ArrayWithCounter,i::Integer...)
+  a.counter[i...] += 1
+  a.array[i...]
+end
+
+Base.IndexStyle(::Type{<:ArrayWithCounter{T,N,A}}) where {T,A,N} = IndexStyle(A)
+
+function reset_counter!(a::ArrayWithCounter)
+  a.counter[:] .= 0
+end
+
+a = ArrayWithCounter(fill(rand(2,3),12))
+b = ArrayWithCounter(rand(12))
+c = evaluate_functor_elemwise(bcast(-),a,b)
+d = evaluate_functor_elemwise(bcast(+),a,c)
+e = evaluate_functor_elemwise(bcast(*),d,c)
+cache = array_cache(e)
+reset_counter!(a)
+reset_counter!(b)
+for i in 1:length(e)
+  ei = getindex!(cache,e,i)
+  ei = getindex!(cache,e,i)
+  ei = getindex!(cache,e,i)
+end
+
+@test all(a.counter .== 2) 
+@test all(b.counter .== 1)
+
 
 
 end # module
