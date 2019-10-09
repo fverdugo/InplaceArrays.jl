@@ -14,20 +14,10 @@ export apply_meta_functor
 
 # Define Functor interface
 
-#TODO remove hash from Functor interface
-# we don't need to expose hash in the Functor interface. In fact, we will only
-# cach at the array level since we can efficiently compare indices. In general,
-# one cannot efficienlty compare arbitrary functor arguments.
 """
-`cache = functor_cache(hash::Dict,f,x...)`
+`cache = functor_cache(f,x...)`
 """
 function functor_cache end
-
-function functor_cache(f,x...)
-  @assert ! isa(f,Dict)
-  hash = Dict{UInt,Any}()
-  functor_cache(hash,f,x...)
-end
 
 """
 `y = evaluate_functor!(cache,f,x...)`
@@ -51,18 +41,18 @@ end
 
 # Get the cache of several functors at once
 
-function functor_caches(hash::Dict,fs::Tuple,x...)
-  _functor_caches(hash,x,fs...)
+function functor_caches(fs::Tuple,x...)
+  _functor_caches(x,fs...)
 end
 
-function _functor_caches(hash::Dict,x::Tuple,a,b...)
-  ca = functor_cache(hash,a,x...)
-  cb = functor_caches(hash,b,x...)
+function _functor_caches(x::Tuple,a,b...)
+  ca = functor_cache(a,x...)
+  cb = functor_caches(b,x...)
   (ca,cb...)
 end
 
-function _functor_caches(hash::Dict,x::Tuple,a)
-  ca = functor_cache(hash,a,x...)
+function _functor_caches(x::Tuple,a)
+  ca = functor_cache(a,x...)
   (ca,)
 end
 
@@ -91,15 +81,15 @@ end
 
 # Include some well-known types in this interface
 
-@inline functor_cache(hash::Dict,f::Function,args...) = nothing
+@inline functor_cache(f::Function,args...) = nothing
 
 @inline evaluate_functor!(::Nothing,f::Function,args...) = f(args...)
 
-@inline functor_cache(hash::Dict,f::Number,args...) = nothing
+@inline functor_cache(f::Number,args...) = nothing
 
 @inline evaluate_functor!(::Nothing,f::Number,args...) = f
 
-@inline functor_cache(hash::Dict,f::AbstractArray,args...) = nothing
+@inline functor_cache(f::AbstractArray,args...) = nothing
 
 @inline evaluate_functor!(::Nothing,f::AbstractArray,args...) = f
 
@@ -114,7 +104,7 @@ end
 
 bcast(f::Function) = BCasted(f)
 
-function functor_cache(hash::Dict,f::BCasted,x...)
+function functor_cache(f::BCasted,x...)
   broadcast(f.f,x...)
 end
 
@@ -142,28 +132,6 @@ end
   (size(a),)
 end
 
-##Perhaps not needed
-#struct Composed{G,F}
-#  g::G
-#  f::F
-#end
-#
-#apply_functor(g,f) = Composed(g,f)
-#
-#function functor_cache(hash::Dict,f::Composed,x...)
-#  cf = functor_cache(hash,f.f,x...)
-#  fx = evaluate_functor!(cf,f.f,x...)
-#  cg = functor_cache(hash,f.g,fx)
-#  (cg,cf)
-#end
-#
-#@inline function evaluate_functor!(cache,f::Composed,x...)
-#  cg, cf = cache
-#  fx = evaluate_functor!(cf,f.f,x...)
-#  gfx = evaluate_functor!(cg,f.g,fx)
-#  gfx
-#end
-
 struct Applied{G,F<:Tuple}
   g::G
   f::F
@@ -174,10 +142,10 @@ end
 
 apply_functor(g,f...) = Applied(g,f...)
 
-function functor_cache(hash::Dict,f::Applied,x...)
-  cfs = functor_caches(hash,f.f,x...)
+function functor_cache(f::Applied,x...)
+  cfs = functor_caches(f.f,x...)
   fxs = evaluate_functors!(cfs,f.f,x...)
-  cg = functor_cache(hash,f.g,fxs...)
+  cg = functor_cache(f.g,fxs...)
   (cg,cfs)
 end
 
@@ -186,37 +154,6 @@ end
   fxs = evaluate_functors!(cfs,f.f,x...)
   y = evaluate_functor!(cg,f.g,fxs...)
   y
-end
-
-# Perhaps not needed
-"""
-a(x) = [m(x)](f(x)...)
-"""
-apply_meta_functor(m,f...) = Meta(m,f...)
-
-struct Meta{M,F<:Tuple}
-  m::M
-  f::F
-  function Meta(m::M,f...) where M
-    new{M,typeof(f)}(m,f)
-  end
-end
-
-function functor_cache(hash::Dict,a::Meta,x...)
-  cm = functor_cache(hash,a.m,x...)
-  g = evaluate_functor!(cm,a.m,x...)
-  cf = functor_caches(hash,a.f,x...)
-  fx = evaluate_functors!(cf,a.f,x...)
-  cg = functor_cache(hash,g,fx...)
-  (cm,cf,cg)
-end
-
-@inline function evaluate_functor!(cache,a::Meta,x...)
-  cm, cf, cg = cache
-  g = evaluate_functor!(cm,a.m,x...)
-  fx = evaluate_functors!(cf,a.f,x...)
-  r = evaluate_functor!(cg,g,fx...)
-  r
 end
 
 end # module
