@@ -91,4 +91,11 @@ v = evaluate_array_of_functors(a,x,y)
 r = [(xi+yi) for (xi,yi) in zip(x,y)]
 test_inplace_array(v,r)
 
+a = fill(bcast(+),10)
+x = [rand(2,3) for i in 1:10]
+y = [rand(1,3) for i in 1:10]
+v = evaluate_array_of_functors(a,x,y)
+r = [(xi.+yi) for (xi,yi) in zip(x,y)]
+test_inplace_array(v,r)
+
 end # module

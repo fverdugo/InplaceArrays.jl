@@ -85,6 +85,24 @@ function bench6b(n)
   @time loop_and_evaluate(cc,cci,cx,c,x,y)
 end
 
+function bench7(n)
+  a = fill(+,n)
+  x = rand(n)
+  y = rand(n)
+  v = evaluate_array_of_functors(a,x,y)
+  cache = array_cache(v)
+  @time loop(v,cache)
+end
+
+function bench8(n)
+  a = fill(bcast(+),n)
+  x = [rand(2,3) for i in 1:n]
+  y = [rand(1,3) for i in 1:n]
+  v = evaluate_array_of_functors(a,x,y)
+  cache = array_cache(v)
+  @time loop(v,cache)
+end
+
 for n in (1,1,10,1000,100000)
   @eval begin
     println("+++ runing suite for n = $($n) +++")
@@ -96,6 +114,8 @@ for n in (1,1,10,1000,100000)
     bench5b($n)
     bench6($n)
     bench6b($n)
+    bench7($n)
+    bench8($n)
   end
 end
 
