@@ -9,6 +9,7 @@ export test_inplace_array_of_functors
 export evaluate_functor_elemwise
 export evaluate_array_of_functors
 export apply_functor_elemwise
+export apply_array_of_functors
 export array_cache
 export array_caches
 export array_of_functors_cache
@@ -199,34 +200,48 @@ mutable struct Evaluation{X,F}
 end
 
 function apply_functor_elemwise(g,f::AbstractArray...)
-  fi = testitems(f...)
-  a = apply_functor(g,fi...)
-  T = typeof(a)
-  N, size, I = _prepare_shape(f...)
-  G = typeof(g)
-  F = typeof(f)
-  AppliedArray{T,N,I,G,F}(size,g,f)
+  N, size, I = _prepare_shape(f...) #TODO N, I not needed here
+  apply_array_of_functors(Fill(g,size...),f...)
+end
+
+function apply_array_of_functors(g::AbstractArray,f::AbstractArray...)
+  AppliedArray(g,f...)
 end
 
 struct AppliedArray{T,N,I,G,F<:Tuple} <:AbstractArray{T,N}
   size::NTuple{N,Int}
   g::G
   f::F
+  function AppliedArray(g::AbstractArray,f::AbstractArray...)
+    fi = testitems(f...)
+    gi = testitem(g)
+    a = apply_functor(gi,fi...)
+    T = typeof(a)
+    N, size, I = _prepare_shape(g,f...)
+    G = typeof(g)
+    F = typeof(f)
+    new{T,N,I,G,F}(size,g,f)
+  end
 end
 
 function testitem(a::AppliedArray)
   fi = testitems(a.f...)
-  r = apply_functor(a.g,fi...)
+  gi = testitem(a.g)
+  r = apply_functor(gi,fi...)
   r
 end
 
 function array_cache(hash::Dict,a::AppliedArray)
-  array_caches(hash,a.f...)
+  cf = array_caches(hash,a.f...)
+  cg = array_cache(hash,a.g)
+  (cf,cg)
 end
 
 @inline function getindex!(cache,a::AppliedArray,i...)
-  fi = getitems!(cache,a.f,i...)
-  r = apply_functor(a.g,fi...)
+  cf, cg = cache
+  fi = getitems!(cf,a.f,i...)
+  gi = getindex!(cg,a.g,i...)
+  r = apply_functor(gi,fi...)
   r
 end
 
