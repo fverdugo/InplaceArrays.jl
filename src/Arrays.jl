@@ -4,9 +4,12 @@ using Test
 using InplaceArrays
 
 export test_inplace_array
+export test_inplace_array_of_functors
 export evaluate_functor_elemwise
+export apply_functor_elemwise
 export array_cache
 export array_caches
+export array_of_functors_cache
 export getindex!
 export getitems!
 export testvalue
@@ -62,6 +65,15 @@ function array_cache(a)
   array_cache(hash,a)
 end
 
+function array_of_functors_cache(a::AbstractArray,x...)
+  xi = testitems(x...)
+  cx = array_caches(x...)
+  ai = testitem(a)
+  cai = functor_cache(ai,xi...)
+  ca = array_cache(a)
+  (ca, cai, cx) # TODO think what to do with last argument
+end
+
 """
 getindex!(cache,a,index...)
 """
@@ -84,8 +96,28 @@ function test_inplace_array(
     t = t && cmp(bi,ai)
   end
   @test t
+  t = true
+  for i in eachindex(a)
+    ai = getindex!(cache,a,i)
+    t = t && (typeof(ai) == eltype(a))
+    t = t && (typeof(ai) == T)
+  end
+  @test t
   @test IndexStyle(a) == IndexStyle(b)
   true
+end
+
+function test_inplace_array_of_functors(
+  a::AbstractArray, x::Tuple, r::AbstractArray, cmp=(==) )
+  ca, cai, cx = array_of_functors_cache(a,x...)
+  t = true
+  for i in eachindex(a)
+    ai = getindex!(ca,a,i)
+    xi = getitems!(cx,x,i...)
+    vi = evaluate_functor!(cai,ai,xi...)
+    t = t && cmp(vi,r[i])
+  end
+  @test t
 end
 
 # Work with several arrays at once
@@ -233,6 +265,50 @@ mutable struct Evaluation{X,F}
   function Evaluation(x::X,fx::F) where {X,F}
     new{X,F}(x,fx)
   end
+end
+
+function apply_functor_elemwise(g,f::AbstractArray...)
+  fi = testitems(f...)
+  a = apply_functor(g,fi...)
+  T = typeof(a)
+  N, size, I = _prepare_shape(f...)
+  G = typeof(g)
+  F = typeof(f)
+  AppliedArray{T,N,I,G,F}(size,g,f)
+end
+
+struct AppliedArray{T,N,I,G,F<:Tuple} <:AbstractArray{T,N}
+  size::NTuple{N,Int}
+  g::G
+  f::F
+end
+
+function testitem(a::AppliedArray)
+  fi = testitems(a.f...)
+  r = apply_functor(a.g,fi...)
+  r
+end
+
+function array_cache(a::AppliedArray)
+  array_caches(a.f...)
+end
+
+@inline function getindex!(cache,a::AppliedArray,i...)
+  fi = getitems!(cache,a.f,i...)
+  r = apply_functor(a.g,fi...)
+  r
+end
+
+function Base.getindex(a::AppliedArray,i...)
+  cache = array_cache(a)
+  getindex!(cache,a,i...)
+end
+
+Base.size(a::AppliedArray) = a.size
+
+function Base.IndexStyle(
+  ::Type{AppliedArray{T,N,I,G,F}}) where {T,N,I,G,F}
+  I
 end
 
 end # module

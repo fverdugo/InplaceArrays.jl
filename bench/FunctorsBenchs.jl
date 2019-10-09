@@ -4,10 +4,6 @@ using InplaceArrays
 #using Test
 #include("../src/Functors.jl")
 
-function run(f,n)
-  @time f(n)
-end
-
 @inline function repeat(n,f,args...)
   for i in 1:n
     f(args...)
@@ -19,7 +15,7 @@ function bench1(n)
   a = 1
   b = 2
   cache = functor_cache(+,a,b)
-  repeat(n,evaluate_functor!,cache,+,a,b)
+  @time repeat(n,evaluate_functor!,cache,+,a,b)
 end
 
 function bench2(n)
@@ -27,7 +23,7 @@ function bench2(n)
   a = rand(3,2)
   b = 3
   cache = functor_cache(f,a,b)
-  repeat(n,evaluate_functor!,cache,f,a,b)
+  @time repeat(n,evaluate_functor!,cache,f,a,b)
 end
 
 function bench3(n)
@@ -35,7 +31,7 @@ function bench3(n)
   a = 2
   b = 3
   cache = functor_cache(f,a,b)
-  repeat(n,evaluate_functor!,cache,f,a,b)
+  @time repeat(n,evaluate_functor!,cache,f,a,b)
 end
 
 function bench4(n)
@@ -43,7 +39,7 @@ function bench4(n)
   a = rand(3,2)
   b = 3
   cache = functor_cache(f,a,b)
-  repeat(n,evaluate_functor!,cache,f,a,b)
+  @time repeat(n,evaluate_functor!,cache,f,a,b)
 end
 
 function bench5(n)
@@ -51,7 +47,7 @@ function bench5(n)
   a = rand(3,2)
   b = 3
   cache = functor_cache(f,a,b)
-  repeat(n,evaluate_functor!,cache,f,a,b)
+  @time repeat(n,evaluate_functor!,cache,f,a,b)
 end
 
 function bench6(n)
@@ -60,7 +56,7 @@ function bench6(n)
   b = 3
   c = rand(1,3)
   cache = functor_cache(f,b,c)
-  repeat(n,evaluate_functor!,cache,f,b,c)
+  @time repeat(n,evaluate_functor!,cache,f,b,c)
 end
 
 function bench7(n)
@@ -68,7 +64,7 @@ function bench7(n)
   b = 4
   f = apply_functor(bcast(-),a,b)
   cache = functor_cache(f)
-  repeat(n,evaluate_functor!,cache,f)
+  @time repeat(n,evaluate_functor!,cache,f)
 end
 
 function bench8(n)
@@ -79,20 +75,20 @@ function bench8(n)
   x = rand(2,3)
   y = 3
   cache = functor_cache(A,x,y)
-  repeat(n,evaluate_functor!,cache,A,x,y)
+  @time repeat(n,evaluate_functor!,cache,A,x,y)
 end
 
 for n in (1,1,10,1000,100000)
   @eval begin
     println("+++ runing suite for n = $($n) +++")
-    run(bench1,$n)
-    run(bench2,$n)
-    run(bench3,$n)
-    run(bench4,$n)
-    run(bench5,$n)
-    run(bench6,$n)
-    run(bench7,$n)
-    run(bench8,$n)
+    bench1($n)
+    bench2($n)
+    bench3($n)
+    bench4($n)
+    bench5($n)
+    bench6($n)
+    bench7($n)
+    bench8($n)
   end
 end
 

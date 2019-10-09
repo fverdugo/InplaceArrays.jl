@@ -64,58 +64,24 @@ ai, bi = testitems(a,b)
 @test ai == Array{Int,2}(undef,0,0)
 @test bi == zero(Int)
 
-#function apply_functor_elemwise(g,f::AbstractArray...)
-#  cf = array_caches(f...)
-#  fis = getitems(cf,f...)
-#
-#  apply_functor(g,fis)
-#
-#end
-#
-#struct AppliedArray{T,N,I,A,F} <:AbstractArray{T,N}
-#  size::NTuple{N,Int}
-#  applied::T
-#  f::F
-#end
-#
-#function getitem!(cache,a::AppliedArray,i...)
-#  cf, ca = cache
-#  fis = getitems!(cf,a.f,i...)
-#  _, _, inputs = ca
-#  inputs.f = fis
-#  a.applied
-#end
-#
-#mutable struct AppliedInputs{F<:Tuple}
-#  f::F
-#  function AppliedInputs(f...)
-#    new{typeof(f)}(f)
-#  end
-#end
-#
-#struct Applied{G,F<:Tuple}
-#  g::G
-#  f0::F
-#  function Applied(g,f...)
-#    new{typeof(g),typeof(f)}(g,f)
-#  end
-#end
-#
-#apply_functor(g,f...) = Applied(g,f...)
-#
-#function functor_cache(hash::Dict,f::Applied,x...)
-#  cfs = functor_caches(hash,f.f0,x...)
-#  fxs = evaluate_functors!(cfs,f.f0,x...)
-#  cg = functor_cache(hash,f.g,fxs...)
-#  inputs = AppliedInputs(f.f0...)
-#  (cg,cfs,inputs)
-#end
-#
-#@inline function evaluate_functor!(cache,f::Applied,x...)
-#  cg, cfs, inputs = cache
-#  fxs = evaluate_functors!(cfs,inputs.f,x...)
-#  y = evaluate_functor!(cg,f.g,fxs...)
-#  y
-#end
+a = fill(+,10)
+b = fill(-,10)
+c = apply_functor_elemwise(*,a,b)
+d = fill(apply_functor(*,+,-),10)
+test_inplace_array(c,d)
+x = rand(10)
+y = rand(10)
+r = [(xi+yi)*(xi-yi) for (xi,yi) in zip(x,y)]
+test_inplace_array_of_functors(c,(x,y),r)
+
+a = fill(bcast(+),10)
+b = fill(bcast(-),10)
+c = apply_functor_elemwise(bcast(*),a,b)
+d = fill(apply_functor(bcast(*),bcast(+),bcast(-)),10)
+test_inplace_array(c,d)
+x = [rand(2,3) for i in 1:10]
+y = [rand(1,3) for i in 1:10]
+r = [(xi.+yi).*(xi.-yi) for (xi,yi) in zip(x,y)]
+test_inplace_array_of_functors(c,(x,y),r)
 
 end # module
