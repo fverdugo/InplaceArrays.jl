@@ -261,10 +261,12 @@ function evaluate_array_of_functors(f::AbstractArray,a::AbstractArray...)
   EvaluatedArray(f,a...)
 end
 
-#function evaluate_array_of_functors(f::AppliedArray,a::AbstractArray...)
-#  ffx = [ evaluate_array_of_functors(ffi,a...) for ffi in f.f ]
-#  evaluate_functor_elemwise(f.g,ffx...)
-#end
+# We need an operation tree in terms of evaluated arrays as much
+# as possible in order to allow caching of intermediate results
+function evaluate_array_of_functors(f::AppliedArray,a::AbstractArray...)
+  ffx = [ evaluate_array_of_functors(ffi,a...) for ffi in f.f ]
+  evaluate_array_of_functors(f.g,ffx...)
+end
 
 struct EvaluatedArray{T,N,I,F,G} <: AbstractArray{T,N}
   g::G
