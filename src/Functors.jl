@@ -14,6 +14,10 @@ export apply_meta_functor
 
 # Define Functor interface
 
+#TODO remove hash from Functor interface
+# we don't need to expose hash in the Functor interface. In fact, we will only
+# cach at the array level since we can efficiently compare indices. In general,
+# one cannot efficienlty compare arbitrary functor arguments.
 """
 `cache = functor_cache(hash::Dict,f,x...)`
 """

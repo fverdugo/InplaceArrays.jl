@@ -171,96 +171,8 @@ The returned array `r` is such that
 `r[i] == evaluate(f,a1[i],a2[i],...)`
 """
 function evaluate_functor_elemwise(f,a::AbstractArray...)
-  #x = testitems(a...)
-  #N, size, I = _prepare_shape(a...)
-  #v = evaluate_functor(f,x...)
-  #T = typeof(v)
-  #b = _array_functors(a...)
-  #r = apply_functor(f,b...)
-  #F = typeof(r)
-  #EvaluatedArray{T,N,I,F}(size,r)
   N, size, I = _prepare_shape(a...) #TODO N, I not needed here
-  _EvaluatedArray(Fill(f,size...),a...)
-end
-
-# TODO if we remove this and implement the operation tree at the array level,
-# we don't need to expose hash in the Functor interface. In fact, we will only
-# cach at the array level since we can efficiently compare indices. In general,
-# one cannot efficienlty compare arbitrary functor arguments.
-struct Indexed{A}
-  array::A
-  function Indexed(a::AbstractArray)
-    new{typeof(a)}(a)
-  end
-end
-
-functor_cache(hash::Dict,f::Indexed,i...) = array_cache(hash,f.array)
-
-evaluate_functor!(cache,f::Indexed,i...) = getindex!(cache,f.array,i...)
-
-struct EvaluatedArray{T,N,I,F} <: AbstractArray{T,N}
-  size::NTuple{N,Int}
-  f::F
-end
-
-function Base.getindex(a::EvaluatedArray,i...)
-  cache = functor_cache(a.f,i...)
-  evaluate_functor!(cache,a.f,i...)
-end
-
-function getindex!(cache,a::EvaluatedArray,i...)
-  cf, e = cache
-  v = e.fx
-  if e.x != i
-    v = evaluate_functor!(cf,a.f,i...)
-    e.x = i
-    e.fx = v
-  end
-   v
-end
-
-function array_cache(hash::Dict,a::EvaluatedArray)
-  if length(a)>0
-    id = objectid(a)
-    if haskey(hash,id)
-      cache = hash[id]
-    else
-      i = 1
-      cf = functor_cache(hash,a.f,i)
-      fi = evaluate_functor!(cf,a.f,i)
-      e = Evaluation((i,),fi)
-      cache = (cf,e)
-      hash[id] = cache
-    end
-    return cache
-  else
-    return nothing
-  end
-end
-
-function Base.IndexStyle(::Type{EvaluatedArray{T,N,I,F}}) where {T,N,I,F}
-  I
-end
-
-Base.size(a::EvaluatedArray) = a.size
-
-function index_functor(a::AbstractArray)
-  Indexed(a)
-end
-
-#function index_functor(a::EvaluatedArray)
-#  a.f
-#end
-
-function _array_functors(a,b...)
-  c = index_functor(a)
-  d = _array_functors(b...)
-  (c,d...)
-end
-
-function _array_functors(a)
-  c = index_functor(a)
-  (c,)
+  EvaluatedArray(Fill(f,size...),a...)
 end
 
 #TODO not sure what to do with shape and index-style
@@ -329,24 +241,14 @@ function Base.IndexStyle(
 end
 
 function evaluate_array_of_functors(f::AbstractArray,a::AbstractArray...)
-  #ai = testitems(a...)
-  #fi = testitem(f)
-  #vi = evaluate_functor(fi,ai...)
-  #T = typeof(vi)
-  #N, size, I = _prepare_shape(f,a...)
-  #b = _array_functors(a...)
-  #g, = _array_functors(f)
-  #r = apply_meta_functor(g,b...)
-  #F = typeof(r)
-  #EvaluatedArray{T,N,I,F}(size,r)
-  _EvaluatedArray(f,a...)
+  EvaluatedArray(f,a...)
 end
 
-struct _EvaluatedArray{T,N,I,F,G} <: AbstractArray{T,N}
+struct EvaluatedArray{T,N,I,F,G} <: AbstractArray{T,N}
   g::G
   f::F
   size::NTuple{N,Int}
-  function _EvaluatedArray(g::AbstractArray,f::AbstractArray...)
+  function EvaluatedArray(g::AbstractArray,f::AbstractArray...)
     G = typeof(g)
     F = typeof(f)
     gi = testitem(g)
@@ -358,7 +260,7 @@ struct _EvaluatedArray{T,N,I,F,G} <: AbstractArray{T,N}
   end
 end
 
-function array_cache(hash::Dict,a::_EvaluatedArray)
+function array_cache(hash::Dict,a::EvaluatedArray)
     id = objectid(a)
     if haskey(hash,id)
       cache = hash[id]
@@ -369,7 +271,7 @@ function array_cache(hash::Dict,a::_EvaluatedArray)
     cache
 end
 
-function _array_cache(hash,a::_EvaluatedArray)
+function _array_cache(hash,a::EvaluatedArray)
   cg = array_cache(hash,a.g)
   gi = testitem(a.g)
   fi = testitems(a.f...)
@@ -385,7 +287,7 @@ function _array_cache(hash,a::_EvaluatedArray)
   (c,e)
 end
 
-function getindex!(cache,a::_EvaluatedArray,i...)
+function getindex!(cache,a::EvaluatedArray,i...)
   c, e = cache
   v = e.fx
   if e.x != i
@@ -396,7 +298,7 @@ function getindex!(cache,a::_EvaluatedArray,i...)
    v
 end
 
-function _getindex!(cache,a::_EvaluatedArray,i...)
+function _getindex!(cache,a::EvaluatedArray,i...)
   cg, cgi, cf = cache
   gi = getindex!(cg,a.g,i...)
   fi = getitems!(cf,a.f,i...)
@@ -404,16 +306,16 @@ function _getindex!(cache,a::_EvaluatedArray,i...)
   vi
 end
 
-function Base.getindex(a::_EvaluatedArray,i...)
+function Base.getindex(a::EvaluatedArray,i...)
   ca = array_cache(a)
   getindex!(ca,a,i...)
 end
 
 function Base.IndexStyle(
-  ::Type{_EvaluatedArray{T,N,I,F,G}}) where {T,N,I,F,G}
+  ::Type{EvaluatedArray{T,N,I,F,G}}) where {T,N,I,F,G}
   I
 end
 
-Base.size(a::_EvaluatedArray) = a.size
+Base.size(a::EvaluatedArray) = a.size
 
 end # module
