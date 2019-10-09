@@ -10,7 +10,6 @@ export evaluate_functor
 export test_functor
 export bcast
 export apply_functor
-export apply_meta_functor
 
 # Define Functor interface
 

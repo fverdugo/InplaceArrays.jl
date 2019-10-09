@@ -325,5 +325,6 @@ Base.size(a::EvaluatedArray) = a.size
 
 # TODO Particular implementations for Fill
 # TODO Implement Compressed
+# TODO Think about iteration and sub-iteration
 
 end # module

@@ -2,6 +2,8 @@ module Runtests
 
 using Test
 
+@time @testset "CachedArraysTests" begin include("CachedArraysTests.jl") end
+
 @time @testset "FunctorsTests" begin include("FunctorsTests.jl") end
 
 @time @testset "ArraysTests" begin include("ArraysTests.jl") end
