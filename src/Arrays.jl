@@ -124,6 +124,8 @@ function test_inplace_array_of_functors(
     t = t && cmp(vi,r[i])
   end
   @test t
+  v = evaluate_array_of_functors(a,x...)
+  test_inplace_array(v,r,cmp)
 end
 
 # Work with several arrays at once
@@ -218,8 +220,8 @@ function testitem(a::AppliedArray)
   r
 end
 
-function array_cache(a::AppliedArray)
-  array_caches(a.f...)
+function array_cache(hash::Dict,a::AppliedArray)
+  array_caches(hash,a.f...)
 end
 
 @inline function getindex!(cache,a::AppliedArray,i...)

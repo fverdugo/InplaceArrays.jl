@@ -80,6 +80,8 @@ x = rand(10)
 y = rand(10)
 r = [(xi+yi)*(xi-yi) for (xi,yi) in zip(x,y)]
 test_inplace_array_of_functors(c,(x,y),r)
+v = evaluate_array_of_functors(c,x,y)
+test_inplace_array(v,r)
 
 a = fill(bcast(+),10)
 b = fill(bcast(-),10)
