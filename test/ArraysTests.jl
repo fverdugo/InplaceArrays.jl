@@ -99,4 +99,16 @@ v = evaluate_array_of_functors(a,x,y)
 r = [(xi.+yi) for (xi,yi) in zip(x,y)]
 test_inplace_array(v,r)
 
+#import InplaceArrays.Arrays: array_cache
+#import InplaceArrays.Arrays: getindex!
+#using InplaceArrays.Arrays: _prepare_shape
+#
+#a = fill(+,10)
+#x = rand(10)
+#y = rand(10)
+#v = _EvaluatedArray(a,x,y)
+#r = [(xi+yi) for (xi,yi) in zip(x,y)]
+#test_inplace_array(v,r)
+
+
 end # module

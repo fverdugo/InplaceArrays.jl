@@ -2,6 +2,7 @@ module Arrays
 
 using Test
 using InplaceArrays
+using FillArrays
 
 export test_inplace_array
 export test_inplace_array_of_functors
@@ -43,6 +44,10 @@ function testitem(a::AbstractArray{T}) where T
   else
     testvalue(T)
   end::T
+end
+
+function testitem(a::Fill)
+  a.value
 end
 
 function testitems(a::AbstractArray,b::AbstractArray...)
@@ -161,14 +166,16 @@ The returned array `r` is such that
 `r[i] == evaluate(f,a1[i],a2[i],...)`
 """
 function evaluate_functor_elemwise(f,a::AbstractArray...)
-  x = testitems(a...)
-  N, size, I = _prepare_shape(a...)
-  v = evaluate_functor(f,x...)
-  T = typeof(v)
-  b = _array_functors(a...)
-  r = apply_functor(f,b...)
-  F = typeof(r)
-  EvaluatedArray{T,N,I,F}(size,r)
+  #x = testitems(a...)
+  #N, size, I = _prepare_shape(a...)
+  #v = evaluate_functor(f,x...)
+  #T = typeof(v)
+  #b = _array_functors(a...)
+  #r = apply_functor(f,b...)
+  #F = typeof(r)
+  #EvaluatedArray{T,N,I,F}(size,r)
+  N, size, I = _prepare_shape(a...) #TODO N, I not needed here
+  _EvaluatedArray(Fill(f,size...),a...)
 end
 
 # TODO if we remove this and implement the operation tree at the array level,
@@ -317,16 +324,63 @@ function Base.IndexStyle(
 end
 
 function evaluate_array_of_functors(f::AbstractArray,a::AbstractArray...)
-  ai = testitems(a...)
-  fi = testitem(f)
-  vi = evaluate_functor(fi,ai...)
-  T = typeof(vi)
-  N, size, I = _prepare_shape(f,a...)
-  b = _array_functors(a...)
-  g, = _array_functors(f)
-  r = apply_meta_functor(g,b...)
-  F = typeof(r)
-  EvaluatedArray{T,N,I,F}(size,r)
+  #ai = testitems(a...)
+  #fi = testitem(f)
+  #vi = evaluate_functor(fi,ai...)
+  #T = typeof(vi)
+  #N, size, I = _prepare_shape(f,a...)
+  #b = _array_functors(a...)
+  #g, = _array_functors(f)
+  #r = apply_meta_functor(g,b...)
+  #F = typeof(r)
+  #EvaluatedArray{T,N,I,F}(size,r)
+  _EvaluatedArray(f,a...)
 end
+
+struct _EvaluatedArray{T,N,I,F,G} <: AbstractArray{T,N}
+  g::G
+  f::F
+  size::NTuple{N,Int}
+  function _EvaluatedArray(g::AbstractArray,f::AbstractArray...)
+    G = typeof(g)
+    F = typeof(f)
+    gi = testitem(g)
+    fi = testitems(f...)
+    vi = evaluate_functor(gi,fi...)
+    T = typeof(vi)
+    N, size, I = _prepare_shape(g,f...)
+    new{T,N,I,F,G}(g,f,size)
+  end
+end
+
+function array_cache(a::_EvaluatedArray)
+  cg = array_cache(a.g)
+  gi = testitem(a.g)
+  fi = testitems(a.f...)
+  cf = array_caches(a.f...)
+  cgi = functor_cache(gi,fi...)
+  (cg, cgi, cf)
+end
+
+function getindex!(cache,a::_EvaluatedArray,i...)
+  cg, cgi, cf = cache
+  gi = getindex!(cg,a.g,i...)
+  fi = getitems!(cf,a.f,i...)
+  vi = evaluate_functor!(cgi,gi,fi...)
+  vi
+end
+
+function Base.getindex(a::_EvaluatedArray,i...)
+  ca = array_cache(a)
+  getindex!(ca,a,i...)
+end
+
+function Base.IndexStyle(
+  ::Type{_EvaluatedArray{T,N,I,F,G}}) where {T,N,I,F,G}
+  I
+end
+
+Base.size(a::_EvaluatedArray) = a.size
+
 
 end # module

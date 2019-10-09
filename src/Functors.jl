@@ -138,6 +138,7 @@ end
   (size(a),)
 end
 
+#Perhaps not needed
 struct Composed{G,F}
   g::G
   f::F
@@ -183,6 +184,7 @@ end
   y
 end
 
+# Perhaps not needed
 """
 a(x) = [m(x)](f(x)...)
 """
