@@ -40,36 +40,66 @@ d = evaluate_functor_elemwise(bcast(+),a,c)
 e = evaluate_functor_elemwise(bcast(*),d,c)
 test_inplace_array(e,[((ai.-bi).+ai).*(ai.-bi) for (ai,bi) in zip(a,b)])
 
-#import InplaceArrays: evaluate_functor_elemwise
-#import InplaceArrays: getindex!
-#import InplaceArrays: array_cache
+a = fill(rand(Int,2,3),12)
+b = fill(rand(Int,1,3),12)
+c = array_caches(a,b)
+i = 1
+v = getitems!(c,(a,b),i)
+@test c == (nothing,nothing)
+@test v == (a[i],b[i])
+
+#function apply_functor_elemwise(g,f::AbstractArray...)
+#  cf = array_caches(f...)
+#  fis = getitems(cf,f...)
 #
-#"""
-#All functors in f can share cache
-#"""
-#function evaluate_functor_elemwise(f::AbstractArray,a::AbstractArray)
+#  apply_functor(g,fis)
+#
 #end
 #
-#function array_cache(a::)
-#  if length(a) > 0
-#    cf = array_cache(a.f)
-#    fi = getindex!(cf,a.f,1)
-#    cas = functor_caches(a.array_functors,1)
-#    ais = evaluate_functors!(cas,a.array_functors,i...)
-#    cr = functor_cache(fi,ais...)
-#    (df,cas,cr)
-#  else
-#    nothing
+#struct AppliedArray{T,N,I,A,F} <:AbstractArray{T,N}
+#  size::NTuple{N,Int}
+#  applied::T
+#  f::F
+#end
+#
+#function getitem!(cache,a::AppliedArray,i...)
+#  cf, ca = cache
+#  fis = getitems!(cf,a.f,i...)
+#  _, _, inputs = ca
+#  inputs.f = fis
+#  a.applied
+#end
+#
+#mutable struct AppliedInputs{F<:Tuple}
+#  f::F
+#  function AppliedInputs(f...)
+#    new{typeof(f)}(f)
 #  end
 #end
 #
-#function getindex!(cache,a::,i...)
-#  cf, cas, cr = cache
-#  fi = getindex!(cf,a.f,i...)
-#  ais = evaluate_functors!(cas,a.array_functors,i...)
-#  ri = evaluate_functor!(cr,fi,ais...)
+#struct Applied{G,F<:Tuple}
+#  g::G
+#  f0::F
+#  function Applied(g,f...)
+#    new{typeof(g),typeof(f)}(g,f)
+#  end
 #end
 #
+#apply_functor(g,f...) = Applied(g,f...)
 #
+#function functor_cache(hash::Dict,f::Applied,x...)
+#  cfs = functor_caches(hash,f.f0,x...)
+#  fxs = evaluate_functors!(cfs,f.f0,x...)
+#  cg = functor_cache(hash,f.g,fxs...)
+#  inputs = AppliedInputs(f.f0...)
+#  (cg,cfs,inputs)
+#end
+#
+#@inline function evaluate_functor!(cache,f::Applied,x...)
+#  cg, cfs, inputs = cache
+#  fxs = evaluate_functors!(cfs,inputs.f,x...)
+#  y = evaluate_functor!(cg,f.g,fxs...)
+#  y
+#end
 
 end # module

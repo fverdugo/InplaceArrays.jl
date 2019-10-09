@@ -6,11 +6,14 @@ using InplaceArrays
 export test_inplace_array
 export evaluate_functor_elemwise
 export array_cache
+export array_caches
 export getindex!
+export getitems!
 export testvalue
 
 import InplaceArrays: functor_cache
 import InplaceArrays: evaluate_functor!
+using InplaceArrays.Functors: _split
 
 """
 testvalue(::Type)
@@ -59,13 +62,44 @@ function test_inplace_array(
   true
 end
 
+# Work with several arrays at once
+
+function getitems!(cf::Tuple,a::Tuple{Vararg{<:AbstractArray}},i...)
+  _getitems!(cf,i,a...)
+end
+
+function _getitems!(c,i,a,b...)
+  ca,cb = _split(c...)
+  ai = getindex!(ca,a,i...)
+  bi = getitems!(cb,b,i...)
+  (ai,bi...)
+end
+
+function _getitems!(c,i,a)
+  ca, = c
+  ai = getindex!(ca,a,i...)
+  (ai,)
+end
+
+function array_caches(a::AbstractArray,b::AbstractArray...)
+  ca = array_cache(a)
+  cb = array_caches(b...)
+  (ca,cb...)
+end
+
+function array_caches(a::AbstractArray)
+  ca = array_cache(a)
+  (ca,)
+end
+
+
 """
 evaluate_functor_elemwise(f,a::AbstractArray...)
 
 Returns a (lazy) array representing the evaluation of the
 given functor `f` to the entries of the input arrays `a`.
 The returned array `r` is such that
-`r[i] = evaluate(f,a1[i],a2[i],...)`
+`r[i] == evaluate(f,a1[i],a2[i],...)`
 """
 function evaluate_functor_elemwise(f,a::AbstractArray...)
   x = _test_values(a...)
