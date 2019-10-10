@@ -16,18 +16,34 @@ export apply_functor
 # Define Functor interface
 
 """
-`cache = functor_cache(f,x...)`
+    cache = functor_cache(f,x...)
+
+Returns the `cache` needed to evaluate functor `f` with arguments
+of the same type as the objects in `x...`.
 """
 function functor_cache end
 
 """
-`y = evaluate_functor!(cache,f,x...)`
+    y = evaluate_functor!(cache,f,x...)
+
+Evaluates the functor `f` at the arguments `x...` using
+the scratch data provided in the given `cache` object. The `cache` object
+is built with the [`functor_cache`](@ref) using arguments of the same type as in `x...`
+In general, the returned value `y` can share some part of its state with the `cache` object.
+If the result of two or more invocations of this function need to be accessed simultaneously
+(e.g., in multi-threading), create and use various `cache` objects (e.g., one cache
+per thread).
 """
 function evaluate_functor! end
 
 """
-Like `evaluate_functor!` but without passing the cache.
-A cache will be created internally
+    evaluate_functor(f,x...)
+
+Equivalent to
+```jl
+cache = functor_cache(f,x...)
+evaluate_functor!(cache,f,x...)
+```
 """
 function evaluate_functor(f,x...)
   cache = functor_cache(f,x...)
@@ -96,13 +112,36 @@ end
 
 # Some particular cases
 
-"""
-A functor acting as the broadcast of a given function
-"""
 struct BCasted{F<:Function}
   f::F
 end
 
+"""
+    bcast(f::Function)
+
+Returns a functor object that represents the "boradcasted" version of the given
+function `f`.
+
+# Examples
+
+```jldoctests
+julia> op = bcast(*)
+InplaceArrays.Functors.BCasted{typeof(*)}(*)
+
+julia> x = rand(2,3)
+2×3 Array{Float64,2}:
+ 0.829692     0.300516  0.159187
+ 0.000128039  0.693663  0.854646
+
+julia> y = 2
+2
+
+julia> evaluate_functor(op,x,y)
+2×3 CachedArray{Float64,2,Array{Float64,2}}:
+ 1.65938      0.601031  0.318374
+ 0.000256078  1.38733   1.70929 
+```
+"""
 bcast(f::Function) = BCasted(f)
 
 function functor_cache(f::BCasted,x...)
@@ -141,6 +180,21 @@ struct Applied{G,F<:Tuple}
   end
 end
 
+"""
+    c = apply_functor(g,f...)
+
+Returns an object `c` representing the "composition" of functor `g` with several
+functors `f...`. The resulting object `c` is such that
+```julia
+evaluate_functor(c,x...)
+```
+is equivalent to
+
+```julia
+fx = evaluate_functors(f,x...)
+evaluate_functor(g,fx...)
+```
+"""
 apply_functor(g,f...) = Applied(g,f...)
 
 function functor_cache(f::Applied,x...)

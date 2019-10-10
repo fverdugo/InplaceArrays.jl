@@ -171,11 +171,4 @@ end
 @test all(b.counter .== 1)
 
 
-
-#import InplaceArrays: evaluate_functor_elemwise
-#import InplaceArrays: apply_functor_elemwise
-#import InplaceArrays: evaluate_array_of_functors
-
-
-
 end # module
