@@ -216,7 +216,7 @@ function common_size(a::AbstractArray...)
   a1, = a
   c = all([size(a1) == size(ai) for ai in a])
   if !c
-    error("Array sizes are not compatible.")
+    error("Array sizes $(map(size,a)) are not compatible.")
   end
   s = size(a1)
   s
@@ -302,7 +302,7 @@ function evaluate_array_of_functors(f::AbstractArray,a::AbstractArray...)
 end
 
 # We need an operation tree in terms of evaluated arrays as much
-# as possible in order to allow caching of intermediate results
+# in order to allow caching of intermediate results
 function evaluate_array_of_functors(f::AppliedArray,a::AbstractArray...)
   ffx = [ evaluate_array_of_functors(ffi,a...) for ffi in f.f ]
   evaluate_array_of_functors(f.g,ffx...)

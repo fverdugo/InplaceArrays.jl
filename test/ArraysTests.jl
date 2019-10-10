@@ -156,6 +156,21 @@ end
 @test all(a.counter .== 2) 
 @test all(b.counter .== 1)
 
+a = Fill(+,12)
+b = ArrayWithCounter(fill(2,12))
+c = apply_functor_elemwise(-,a,b)
+d = apply_functor_elemwise(*,c,c)
+x = fill(3,12)
+r = evaluate_array_of_functors(d,x)
+
+cr = array_cache(r)
+reset_counter!(b)
+for i in 1:length(b)
+  ri = getindex!(cr,r,i)
+end
+@test all(b.counter .== 1)
+
+
 
 #import InplaceArrays: evaluate_functor_elemwise
 #import InplaceArrays: apply_functor_elemwise
