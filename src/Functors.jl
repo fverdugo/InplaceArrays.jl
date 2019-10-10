@@ -11,7 +11,7 @@ export evaluate_functors!
 export evaluate_functor
 export test_functor
 export bcast
-export apply_functor
+export compose_functors
 
 # Define Functor interface
 
@@ -186,16 +186,16 @@ end
   (size(a),)
 end
 
-struct Applied{G,F<:Tuple}
+struct Composed{G,F<:Tuple}
   g::G
   f::F
-  function Applied(g,f...)
+  function Composed(g,f...)
     new{typeof(g),typeof(f)}(g,f)
   end
 end
 
 """
-    c = apply_functor(g,fs...)
+    c = compose_functors(g,fs...)
 
 Returns an object `c` representing the "composition" of functor `g` with several
 functors `fs`. The resulting object `c` is such that
@@ -209,17 +209,16 @@ fxs = evaluate_functors(fs,x...)
 evaluate_functor(g,fxs...)
 ```
 """
-apply_functor(g,f...) = Applied(g,f...)
-#TODO change apply by compose and Applied by Composed
+compose_functors(g,f...) = Composed(g,f...)
 
-function functor_cache(f::Applied,x...)
+function functor_cache(f::Composed,x...)
   cfs = functor_caches(f.f,x...)
   fxs = evaluate_functors!(cfs,f.f,x...)
   cg = functor_cache(f.g,fxs...)
   (cg,cfs)
 end
 
-@inline function evaluate_functor!(cache,f::Applied,x...)
+@inline function evaluate_functor!(cache,f::Composed,x...)
   cg, cfs = cache
   fxs = evaluate_functors!(cfs,f.f,x...)
   y = evaluate_functor!(cg,f.g,fxs...)

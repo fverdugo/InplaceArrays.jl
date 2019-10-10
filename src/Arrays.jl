@@ -6,10 +6,10 @@ using FillArrays
 
 export test_inplace_array
 export test_inplace_array_of_functors
-export evaluate_functor_elemwise
+export evaluate_functor_with_array
 export evaluate_array_of_functors
-export apply_functor_elemwise
-export apply_array_of_functors
+export compose_functor_with_array
+export compose_arrays_of_functors
 export array_cache
 export array_caches
 export array_of_functors_cache
@@ -193,14 +193,14 @@ end
 
 
 """
-evaluate_functor_elemwise(f,a::AbstractArray...)
+evaluate_functor_with_array(f,a::AbstractArray...)
 
 Returns a (lazy) array representing the evaluation of the
 given functor `f` to the entries of the input arrays `a`.
 The returned array `r` is such that
 `r[i] == evaluate(f,a1[i],a2[i],...)`
 """
-function evaluate_functor_elemwise(f,a::AbstractArray...)
+function evaluate_functor_with_array(f,a::AbstractArray...)
   s = common_size(a...)
   EvaluatedArray(Fill(f,s...),a...)
 end
@@ -235,23 +235,23 @@ mutable struct Evaluation{X,F}
   end
 end
 
-function apply_functor_elemwise(g,f::AbstractArray...)
+function compose_functor_with_array(g,f::AbstractArray...)
   s = common_size(f...)
-  apply_array_of_functors(Fill(g,s...),f...)
+  compose_arrays_of_functors(Fill(g,s...),f...)
 end
 
-function apply_array_of_functors(g::AbstractArray,f::AbstractArray...)
-  AppliedArray(g,f...)
+function compose_arrays_of_functors(g::AbstractArray,f::AbstractArray...)
+  ComposedArray(g,f...)
 end
 
-struct AppliedArray{T,N,I,G,F<:Tuple} <:AbstractArray{T,N}
+struct ComposedArray{T,N,I,G,F<:Tuple} <:AbstractArray{T,N}
   size::NTuple{N,Int}
   g::G
   f::F
-  function AppliedArray(g::AbstractArray,f::AbstractArray...)
+  function ComposedArray(g::AbstractArray,f::AbstractArray...)
     fi = testitems(f...)
     gi = testitem(g)
-    a = apply_functor(gi,fi...)
+    a = compose_functors(gi,fi...)
     T = typeof(a)
     N, size, I = _prepare_shape(g,f...)
     G = typeof(g)
@@ -260,40 +260,40 @@ struct AppliedArray{T,N,I,G,F<:Tuple} <:AbstractArray{T,N}
   end
 end
 
-function testitem(a::AppliedArray)
+function testitem(a::ComposedArray)
   fi = testitems(a.f...)
   gi = testitem(a.g)
-  r = apply_functor(gi,fi...)
+  r = compose_functors(gi,fi...)
   r
 end
 
-function uses_hash(::Type{<:AppliedArray})
+function uses_hash(::Type{<:ComposedArray})
   Val(true)
 end
 
-function array_cache(hash::Dict,a::AppliedArray)
+function array_cache(hash::Dict,a::ComposedArray)
   cf = array_caches(hash,a.f...)
   cg = array_cache(hash,a.g)
   (cf,cg)
 end
 
-@inline function getindex!(cache,a::AppliedArray,i...)
+@inline function getindex!(cache,a::ComposedArray,i...)
   cf, cg = cache
   fi = getitems!(cf,a.f,i...)
   gi = getindex!(cg,a.g,i...)
-  r = apply_functor(gi,fi...)
+  r = compose_functors(gi,fi...)
   r
 end
 
-function Base.getindex(a::AppliedArray,i...)
+function Base.getindex(a::ComposedArray,i...)
   cache = array_cache(a)
   getindex!(cache,a,i...)
 end
 
-Base.size(a::AppliedArray) = a.size
+Base.size(a::ComposedArray) = a.size
 
 function Base.IndexStyle(
-  ::Type{AppliedArray{T,N,I,G,F}}) where {T,N,I,G,F}
+  ::Type{ComposedArray{T,N,I,G,F}}) where {T,N,I,G,F}
   I
 end
 
@@ -303,7 +303,7 @@ end
 
 # We need an operation tree in terms of evaluated arrays as much
 # in order to allow caching of intermediate results
-function evaluate_array_of_functors(f::AppliedArray,a::AbstractArray...)
+function evaluate_array_of_functors(f::ComposedArray,a::AbstractArray...)
   ffx = [ evaluate_array_of_functors(ffi,a...) for ffi in f.f ]
   evaluate_array_of_functors(f.g,ffx...)
 end

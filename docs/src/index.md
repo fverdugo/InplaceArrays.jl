@@ -10,10 +10,9 @@ Documentation for InplaceArrays.jl
 
 ## The Functor interface
 
-Often, it is needed to implement types that need some scratch data (e.g.,
-pre-allocating the output) to perform
-some operation. The question is, *where to store this data?* There are three
-main answers to this question: 1) store the data in the type as part of its
+Often, it is needed to implement functions that need some scratch data (e.g.,
+pre-allocating the output). The question is, *where to store this data?* There are three
+main answers to this question: 1) store the data in the function object as part of its
 state, 2) allocate the scratch data each time the operation is performed, and 3)
 the user allocates and passes the scratch data when needed. Clearly, 1) it is
 not save if several calls to the operation are using the same scratch data
@@ -21,7 +20,7 @@ not save if several calls to the operation are using the same scratch data
 is performed at low granularity. 3) is both save and efficient, but requires
 some extra work by the user.
 
-In Gridap, we adopt the 3rd option. In order to unify the interfaces of objects
+In Gridap, we adopt the 3rd option. In order to unify the interfaces of functions
 using this approach, we introduce the *Functor interface*. Any type is
 referred to as a *Functor* if it implements the following interface. We rely in
 duck typing here. There is not an abstract representing a functor.
@@ -30,7 +29,6 @@ duck typing here. There is not an abstract representing a functor.
 InplaceArrays.Functors.evaluate_functor!
 InplaceArrays.Functors.functor_cache
 ```
-
 
 ## Default implementations
 
