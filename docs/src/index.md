@@ -24,7 +24,7 @@ some extra work by the user.
 In Gridap, we adopt the 3rd option. In order to unify the interfaces of objects
 using this approach, we introduce the *Functor interface*. Any type is
 referred to as a *Functor* if it implements the following interface. We rely in
-duck typing.
+duck typing here. There is not an abstract representing a functor.
 
 ```@docs
 InplaceArrays.Functors.evaluate_functor!
@@ -34,7 +34,7 @@ InplaceArrays.Functors.functor_cache
 
 ## Default implementations
 
-We provide some default implementations of this interface so that `Function`,
+We provide some default (obvious) implementations of this interface so that `Function`,
 `Number`, and `AbstractArray` objects behave like functors.
 
 ### Examples
@@ -70,9 +70,14 @@ julia> evaluate_functor!(cache,a,3)
 
 ## Evaluating a functor without cache
 
-The [`evaluate_functor`](@ref) function can be used in order to evaluate a functor without explicitly building a cache object.
 ```@docs
 InplaceArrays.Functors.evaluate_functor
+```
+
+## Working with several functors at once
+```@docs
+evaluate_functors!
+functor_caches
 ```
 
 ## Broadcasting

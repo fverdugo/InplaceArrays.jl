@@ -28,7 +28,7 @@ function functor_cache end
 
 Evaluates the functor `f` at the arguments `x...` using
 the scratch data provided in the given `cache` object. The `cache` object
-is built with the [`functor_cache`](@ref) using arguments of the same type as in `x...`
+is built with the [`functor_cache`](@ref) function using arguments of the same type as in `x...`
 In general, the returned value `y` can share some part of its state with the `cache` object.
 If the result of two or more invocations of this function need to be accessed simultaneously
 (e.g., in multi-threading), create and use various `cache` objects (e.g., one cache
@@ -39,7 +39,8 @@ function evaluate_functor! end
 """
     evaluate_functor(f,x...)
 
-Equivalent to
+Evaluate the fuctor `f` at the arguments `x...` by creating a temporary cache
+internally. This functions is equivalent to
 ```jl
 cache = functor_cache(f,x...)
 evaluate_functor!(cache,f,x...)
@@ -58,6 +59,12 @@ end
 
 # Get the cache of several functors at once
 
+"""
+    functor_caches(fs::Tuple,x...) -> Tuple
+
+Returns a tuple with the cache corresponding to each functor in `fs`
+for the arguments `x...`.
+"""
 function functor_caches(fs::Tuple,x...)
   _functor_caches(x,fs...)
 end
@@ -75,6 +82,13 @@ end
 
 # Evaluate several functors at once
 
+"""
+    evaluate_functors!(caches::Tuple,fs::Tuple,x...) -> Tuple
+
+Evaluates the functors in the tuple `fs` at the arguments `x...`
+by using the corresponding cache objects in the tuple `caches`.
+The result is also a tuple containing the result for each functor in `fs`.
+"""
 @inline function evaluate_functors!(cfs,f::Tuple,x...)
   _evaluate_functors!(cfs,x,f...)
 end
@@ -181,21 +195,22 @@ struct Applied{G,F<:Tuple}
 end
 
 """
-    c = apply_functor(g,f...)
+    c = apply_functor(g,fs...)
 
 Returns an object `c` representing the "composition" of functor `g` with several
-functors `f...`. The resulting object `c` is such that
+functors `fs`. The resulting object `c` is such that
 ```julia
 evaluate_functor(c,x...)
 ```
 is equivalent to
 
 ```julia
-fx = evaluate_functors(f,x...)
-evaluate_functor(g,fx...)
+fxs = evaluate_functors(fs,x...)
+evaluate_functor(g,fxs...)
 ```
 """
 apply_functor(g,f...) = Applied(g,f...)
+#TODO change apply by compose and Applied by Composed
 
 function functor_cache(f::Applied,x...)
   cfs = functor_caches(f.f,x...)
