@@ -201,21 +201,30 @@ The returned array `r` is such that
 `r[i] == evaluate(f,a1[i],a2[i],...)`
 """
 function evaluate_functor_elemwise(f,a::AbstractArray...)
-  N, size, I = _prepare_shape(a...) #TODO N, I not needed here
-  EvaluatedArray(Fill(f,size...),a...)
+  s = common_size(a...)
+  EvaluatedArray(Fill(f,s...),a...)
 end
 
-#TODO not sure what to do with shape and index-style
 function _prepare_shape(a...)
+  s = common_size(a...)
+  N = length(s)
+  I = common_index_style(a...)
+  (N,s,I)
+end
+
+function common_size(a::AbstractArray...)
   a1, = a
   c = all([size(a1) == size(ai) for ai in a])
   if !c
     error("Array sizes are not compatible.")
   end
   s = size(a1)
-  N = length(s)
-  I = IndexLinear()
-  (N,s,I)
+  s
+end
+
+#TODO not sure what to do with shape and index-style
+function common_index_style(a::AbstractArray...)
+  IndexLinear()
 end
 
 mutable struct Evaluation{X,F}
@@ -227,8 +236,8 @@ mutable struct Evaluation{X,F}
 end
 
 function apply_functor_elemwise(g,f::AbstractArray...)
-  N, size, I = _prepare_shape(f...) #TODO N, I not needed here
-  apply_array_of_functors(Fill(g,size...),f...)
+  s = common_size(f...)
+  apply_array_of_functors(Fill(g,s...),f...)
 end
 
 function apply_array_of_functors(g::AbstractArray,f::AbstractArray...)
