@@ -18,6 +18,7 @@ export getitems!
 export testvalue
 export testitem
 export testitems
+export uses_hash
 
 import InplaceArrays: functor_cache
 import InplaceArrays: evaluate_functor!
@@ -63,14 +64,42 @@ function testitems(a::AbstractArray)
 end
 
 """
-array_cache(hash::Dict,a)
+array_cache(a::AbstractArray)
+or
+array_cache(hash::Dict,a::AbstractArray)
+if
+uses_hash(typeof(a)) == Val(true)
 """
 function array_cache end
 
-function array_cache(a)
+function array_cache(hash,a::T) where T
+  if uses_hash(T) == Val(true)
+    error("array_cache(::Dict,::$T) not defined")
+  end
+  array_cache(a)
+end
+
+function array_cache(a::T) where T
+  _default_array_cache(a,uses_hash(T))
+end
+
+function _default_array_cache(a,::Val{false})
+  nothing
+end
+
+function _default_array_cache(a,::Val{true})
   hash = Dict{UInt,Any}()
   array_cache(hash,a)
 end
+
+"""
+uses_hash(::Type) -> Val{<:Bool}
+"""
+function uses_hash end
+
+uses_hash(::Type{<:AbstractArray}) = Val(false)
+
+uses_hash(::T) where T = uses_hash(T)
 
 function array_of_functors_cache(a::AbstractArray,x...)
   xi = testitems(x...)
@@ -85,8 +114,6 @@ end
 getindex!(cache,a,index...)
 """
 function getindex! end
-
-array_cache(hash::Dict,::AbstractArray) = nothing
 
 getindex!(cache,a::AbstractArray,i...) = a[i...]
 
@@ -231,6 +258,10 @@ function testitem(a::AppliedArray)
   r
 end
 
+function uses_hash(::Type{<:AppliedArray})
+  Val(true)
+end
+
 function array_cache(hash::Dict,a::AppliedArray)
   cf = array_caches(hash,a.f...)
   cg = array_cache(hash,a.g)
@@ -282,6 +313,10 @@ struct EvaluatedArray{T,N,I,F,G} <: AbstractArray{T,N}
     N, size, I = _prepare_shape(g,f...)
     new{T,N,I,F,G}(g,f,size)
   end
+end
+
+function uses_hash(::Type{<:EvaluatedArray})
+  Val(true)
 end
 
 function array_cache(hash::Dict,a::EvaluatedArray)
