@@ -150,10 +150,10 @@ be called on instances of `T`.
 julia> uses_hash(Matrix{Float64})
 Val{false}()
 
-julia> a = rand(2,3)
+julia> a = ones(2,3)
 2×3 Array{Float64,2}:
- 0.766516   0.441142   0.542535
- 0.0277103  0.0794829  0.118279
+ 1.0  1.0  1.0
+ 1.0  1.0  1.0
 
 julia> uses_hash(a)
 Val{false}()
@@ -189,21 +189,21 @@ The `cache` object is constructed with the [`array_cache`](@ref) function.
 
 # Examples
 
-```juliadocstests
-julia> a = rand(4)
-4-element Array{Float64,1}:
- 0.23706242807578448 
- 0.6763293382702149  
- 0.713523151719051   
- 0.009416379422298782
+```jldocstests
+julia> a = collect(1:4)
+4-element Array{Int64,1}:
+ 1
+ 2
+ 3
+ 4
 
 julia> cache = array_cache(a)
 
 julia> getindex!(cache,a,2)
-0.6763293382702149
+2
 
 julia> getindex!(cache,a,4)
-0.009416379422298782
+4
 ```
 In this example, using the extended interface provides little benefit,
 but for new array types that need scratch data, efficient implementations

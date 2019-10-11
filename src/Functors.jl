@@ -142,18 +142,18 @@ function `f`.
 julia> op = bcast(*)
 InplaceArrays.Functors.BCasted{typeof(*)}(*)
 
-julia> x = rand(2,3)
+julia> x = ones(2,3)
 2×3 Array{Float64,2}:
- 0.829692     0.300516  0.159187
- 0.000128039  0.693663  0.854646
+ 1.0  1.0  1.0
+ 1.0  1.0  1.0
 
 julia> y = 2
 2
 
 julia> evaluate_functor(op,x,y)
 2×3 CachedArray{Float64,2,Array{Float64,2}}:
- 1.65938      0.601031  0.318374
- 0.000256078  1.38733   1.70929 
+ 2.0  2.0  2.0
+ 2.0  2.0  2.0
 ```
 """
 bcast(f::Function) = BCasted(f)

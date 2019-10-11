@@ -1,7 +1,13 @@
 using Documenter
 using InplaceArrays
 
-#DocMeta.setdocmeta!(InplaceArrays,:DocTestSetup,:(using InplaceArrays))
+init = quote
+  using InplaceArrays
+end
+
+DocMeta.setdocmeta!(InplaceArrays,:DocTestSetup,init)
+DocMeta.setdocmeta!(InplaceArrays.Functors,:DocTestSetup,init)
+DocMeta.setdocmeta!(InplaceArrays.Arrays,:DocTestSetup,init)
 
 makedocs(
     sitename = "InplaceArrays",
