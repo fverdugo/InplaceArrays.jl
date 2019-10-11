@@ -25,7 +25,10 @@ import InplaceArrays: evaluate_functor!
 using InplaceArrays.Functors: _split
 
 """
-testvalue(::Type)
+    testvalue(::Type{T}) where T
+
+Returns an arbitrary instance of type `T`. It defaults to `zero(T)` for
+non-array types and to an empty array for array types.
 """
 function testvalue end
 
@@ -36,7 +39,10 @@ function testvalue(::Type{T}) where T<:AbstractArray{E,N} where {E,N}
 end
 
 """
-testitem(a::AbstractArray)
+    testitem(a::AbstractArray)
+
+Returns an arbitrary instance of `eltype(a)`. The default returned value is the first entry
+in the array if `length(a)>0` and `testvalue(eltype(a))` if `length(a)==0`
 """
 function testitem end
 
@@ -52,6 +58,11 @@ function testitem(a::Fill)
   a.value
 end
 
+"""
+    testitems(b::AbstractArray...) -> Tuple
+Returns a tuple with the result of `testitem` applied to each of the
+arrays in `b`.
+"""
 function testitems(a::AbstractArray,b::AbstractArray...)
   va = testitem(a)
   vb = testitems(b...)
@@ -64,11 +75,38 @@ function testitems(a::AbstractArray)
 end
 
 """
-array_cache(a::AbstractArray)
-or
-array_cache(hash::Dict,a::AbstractArray)
-if
-uses_hash(typeof(a)) == Val(true)
+    array_cache(a::AbstractArray)
+
+Returns a cache object to be used in the [`getindex!`](@ref) function.
+It defaults to 
+
+    array_cache(a::T) where T = nothing
+
+for types `T` such that `uses_hash(T) == Val(false)`, and 
+
+    function array_cache(a::T) where T
+      hash = Dict{UInt,Any}()
+      array_cache(hash,a)
+    end
+
+for types `T` such that `uses_hash(T) == Val(true)`. In the later case, the
+type `T` should implement the following signature:
+
+    array_cache(hash::Dict,a::AbstractArray)
+
+where we pass a dictionary (i.e., a hash table) in the first argument. This hash table can be used to test
+if the object `a` has already build a cache and re-use it as follows
+
+    id = objectid(a)
+    if haskey(hash,id)
+      cache = hash[id] # Reuse cache
+    else
+      cache = ... # Build a new cache depending on your needs
+      hash[id] = cache # Register the cache in the hash table
+    end
+
+In multi-threading computations, a different hash table per thread has to be used in order
+to avoid race conditions.
 """
 function array_cache end
 
@@ -93,7 +131,32 @@ function _default_array_cache(a,::Val{true})
 end
 
 """
-uses_hash(::Type) -> Val{<:Bool}
+    uses_hash(::Type{T}) where T <:AbstractArray
+
+This function is used to specify if the type `T` uses the
+hash-based mechanism to reuse caches.  It should return
+either `Val(true)` or `Val(false)`. It defaults to
+
+    uses_hash(::Type{<:AbstractArray}) = Val(false)
+
+Once this function is defined for the type `T` it can also
+be called on instances of `T`.
+
+# Examples
+
+```jldoctests
+julia> uses_hash(Matrix{Float64})
+Val{false}()
+
+julia> a = rand(2,3)
+2×3 Array{Float64,2}:
+ 0.766516   0.441142   0.542535
+ 0.0277103  0.0794829  0.118279
+
+julia> uses_hash(a)
+Val{false}()
+
+```
 """
 function uses_hash end
 
@@ -111,7 +174,15 @@ function array_of_functors_cache(a::AbstractArray,x...)
 end
 
 """
-getindex!(cache,a,index...)
+    getindex!(cache,a::AbstractArray,i...)
+
+Returns the item of the array `a` associated with index `i`
+by (possibly) using the scratch data passed in the `cache` object.
+
+It defaults to
+
+    getindex!(cache,a::AbstractArray,i...) = a[i...]
+
 """
 function getindex! end
 

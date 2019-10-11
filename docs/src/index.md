@@ -87,9 +87,15 @@ bcast
 ## Composition
 
 ```@docs
-apply_functor
+compose_functors
 ```
+## Extended AbstractArray interface
 
+```@docs
+getindex!
+array_cache
+uses_hash
+```
 
 
 
