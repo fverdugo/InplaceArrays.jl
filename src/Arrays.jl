@@ -44,6 +44,22 @@ end
 Returns an arbitrary instance of `eltype(a)`. The default returned value is the first entry
 in the array if `length(a)>0` and `testvalue(eltype(a))` if `length(a)==0`
 See the [`testvalue`](@ref) function.
+
+This function is useful to determine the type resulting from applying a given function
+to the items in the array without calling the `Base._return_type` function.
+
+# Examples
+
+```jldoctests
+julia> a = collect(1:0)
+0-element Array{Int64,1}
+
+julia> ai = testitem(a) # Safely works with empty arrays
+0
+
+julia> typeof(sqrt(ai))
+Float64
+```
 """
 function testitem end
 
