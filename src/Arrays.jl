@@ -43,6 +43,7 @@ end
 
 Returns an arbitrary instance of `eltype(a)`. The default returned value is the first entry
 in the array if `length(a)>0` and `testvalue(eltype(a))` if `length(a)==0`
+See the [`testvalue`](@ref) function.
 """
 function testitem end
 
@@ -60,6 +61,7 @@ end
 
 """
     testitems(b::AbstractArray...) -> Tuple
+
 Returns a tuple with the result of `testitem` applied to each of the
 arrays in `b`.
 """
@@ -89,7 +91,7 @@ for types `T` such that `uses_hash(T) == Val(false)`, and
       array_cache(hash,a)
     end
 
-for types `T` such that `uses_hash(T) == Val(true)`. In the later case, the
+for types `T` such that `uses_hash(T) == Val(true)`, see the [`uses_hash`](@ref) function. In the later case, the
 type `T` should implement the following signature:
 
     array_cache(hash::Dict,a::AbstractArray)
@@ -183,6 +185,30 @@ It defaults to
 
     getindex!(cache,a::AbstractArray,i...) = a[i...]
 
+The `cache` object is constructed with the [`array_cache`](@ref) function.
+
+# Examples
+
+```juliadocstests
+julia> a = rand(4)
+4-element Array{Float64,1}:
+ 0.23706242807578448 
+ 0.6763293382702149  
+ 0.713523151719051   
+ 0.009416379422298782
+
+julia> cache = array_cache(a)
+
+julia> getindex!(cache,a,2)
+0.6763293382702149
+
+julia> getindex!(cache,a,4)
+0.009416379422298782
+```
+In this example, using the extended interface provides little benefit,
+but for new array types that need scratch data, efficient implementations
+of `getindex!` can make a performance difference by avoiding 
+low granularity allocations.
 """
 function getindex! end
 
