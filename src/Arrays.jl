@@ -29,6 +29,21 @@ using InplaceArrays.Functors: _split
 
 Returns an arbitrary instance of type `T`. It defaults to `zero(T)` for
 non-array types and to an empty array for array types.
+ This function is useful to determine the type returned by a
+function without calling `Base._return_type`.
+
+# Examples
+
+```jldoctests
+julia> a = testvalue(Int)
+0
+
+julia> b = testvalue(Float64)
+0.0
+
+julia> typeof(a + b)
+Float64
+```
 """
 function testvalue end
 
