@@ -6,9 +6,9 @@ using FillArrays
 
 export test_inplace_array
 export test_inplace_array_of_functors
-export evaluate_functor_with_array
+export evaluate_functor_with_arrays
 export evaluate_array_of_functors
-export compose_functor_with_array
+export compose_functor_with_arrays
 export compose_arrays_of_functors
 export array_cache
 export array_caches
@@ -138,6 +138,7 @@ if the object `a` has already build a cache and re-use it as follows
       hash[id] = cache # Register the cache in the hash table
     end
 
+This mechanism is needed, e.g., to re-use intermediate results in complex lazy operation trees.
 In multi-threading computations, a different hash table per thread has to be used in order
 to avoid race conditions.
 """
@@ -321,14 +322,54 @@ end
 
 
 """
-evaluate_functor_with_array(f,a::AbstractArray...)
+    evaluate_functor_with_arrays(f,a::AbstractArray...)
 
 Returns a (lazy) array representing the evaluation of the
 given functor `f` to the entries of the input arrays `a`.
-The returned array `r` is such that
-`r[i] == evaluate(f,a1[i],a2[i],...)`
+The returned array `r` is such that `r[i] == evaluate_functor(f,a[1][i],a[2][i],...)`
+Items in the resulting array `r` can be memory-efficiently recovered by using the [`getindex!`](@ref)
+function. Note that this function returns a lazy object. The operations are not performed until
+an entry of the array is retrieved. By applying this function to the result `r` again
+(possibly with another functor) we create a lazy operation tree. The underlying implementation
+is able to reuse intermediate results in this operation tree.
+
+# Examples
+
+```jldoctests
+julia> a = collect(1:5)
+5-element Array{Int64,1}:
+ 1
+ 2
+ 3
+ 4
+ 5
+
+julia> b = collect(6:10)
+5-element Array{Int64,1}:
+  6
+  7
+  8
+  9
+ 10
+
+julia> c = evaluate_functor_with_arrays(+,a,b)
+5-element InplaceArrays.Arrays.EvaluatedArray{Int64,1,IndexLinear(),Tuple{Array{Int64,1},Array{Int64,1}},FillArrays.Fill{typeof(+),1,Tuple{Base.OneTo{Int64}}}}:
+  7
+  9
+ 11
+ 13
+ 15
+
+julia> d = evaluate_functor_with_arrays(*,c,c)
+5-element InplaceArrays.Arrays.EvaluatedArray{Int64,1,IndexLinear(),Tuple{InplaceArrays.Arrays.EvaluatedArray{Int64,1,IndexLinear(),Tuple{Array{Int64,1},Array{Int64,1}},FillArrays.Fill{typeof(+),1,Tuple{Base.OneTo{Int64}}}},InplaceArrays.Arrays.EvaluatedArray{Int64,1,IndexLinear(),Tuple{Array{Int64,1},Array{Int64,1}},FillArrays.Fill{typeof(+),1,Tuple{Base.OneTo{Int64}}}}},FillArrays.Fill{typeof(*),1,Tuple{Base.OneTo{Int64}}}}:
+  49
+  81
+ 121
+ 169
+ 225
+```
 """
-function evaluate_functor_with_array(f,a::AbstractArray...)
+function evaluate_functor_with_arrays(f,a::AbstractArray...)
   s = common_size(a...)
   EvaluatedArray(Fill(f,s...),a...)
 end
@@ -363,11 +404,17 @@ mutable struct Evaluation{X,F}
   end
 end
 
-function compose_functor_with_array(g,f::AbstractArray...)
+"""
+    compose_functor_with_arrays(g,f::AbstractArray...)
+"""
+function compose_functor_with_arrays(g,f::AbstractArray...)
   s = common_size(f...)
   compose_arrays_of_functors(Fill(g,s...),f...)
 end
 
+"""
+    compose_arrays_of_functors(g::AbstractArray,f::AbstractArray...)
+"""
 function compose_arrays_of_functors(g::AbstractArray,f::AbstractArray...)
   ComposedArray(g,f...)
 end
@@ -425,6 +472,45 @@ function Base.IndexStyle(
   I
 end
 
+"""
+    evaluate_array_of_functors(f::AbstractArray,a::AbstractArray...)
+
+# Examples
+
+```jldoctests
+julia> g = [+,-,*,mod,max]
+5-element Array{Function,1}:
+ +  
+ -  
+ *  
+ mod
+ max
+
+julia> x = collect(1:5)
+5-element Array{Int64,1}:
+ 1
+ 2
+ 3
+ 4
+ 5
+
+julia> y = collect(6:10)
+5-element Array{Int64,1}:
+  6
+  7
+  8
+  9
+ 10
+
+julia> evaluate_array_of_functors(g,x,y)
+5-element InplaceArrays.Arrays.EvaluatedArray{Int64,1,IndexLinear(),Tuple{Array{Int64,1},Array{Int64,1}},Array{Function,1}}:
+  7
+ -5
+ 24
+  4
+ 10
+```
+"""
 function evaluate_array_of_functors(f::AbstractArray,a::AbstractArray...)
   EvaluatedArray(f,a...)
 end
@@ -481,7 +567,12 @@ function _array_cache(hash,a::EvaluatedArray)
 end
 
 function getindex!(cache,a::EvaluatedArray,i::Integer...)
-  _cached_getindex!(cache,a,i)
+  li = LinearIndices(a)
+  getindex!(cache,a,li[i...])
+end
+
+function getindex!(cache,a::EvaluatedArray,i::Integer)
+  _cached_getindex!(cache,a,(i,))
 end
 
 function getindex!(cache,a::EvaluatedArray,i::CartesianIndex)
