@@ -1,5 +1,7 @@
 module CachedArrays
 
+#TODO document CachedArrays after `bcast` in Functors
+
 using Base: @propagate_inbounds
 
 import Base: size

@@ -14,4 +14,7 @@ include("Functors.jl")
 include("Arrays.jl")
 @reexport using InplaceArrays.Arrays
 
+include("CellValues.jl")
+@reexport using InplaceArrays.CellValues
+
 end # module

@@ -12,7 +12,8 @@ DocMeta.setdocmeta!(InplaceArrays.Arrays,:DocTestSetup,init)
 pages = [
   "Home" => "index.md",
   "The functor interface" => "Functors.md",
-  "Extended AbstractArray interface" => "Arrays.md"]
+  "Extended AbstractArray interface" => "Arrays.md",
+  "The CellValue interface" => "CellValues.md"]
 
 makedocs(
     sitename = "InplaceArrays",
