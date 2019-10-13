@@ -419,6 +419,7 @@ function compose_arrays_of_functors(g::AbstractArray,f::AbstractArray...)
   ComposedArray(g,f...)
 end
 
+# TODO remove I from type params
 struct ComposedArray{T,N,I,G,F<:Tuple} <:AbstractArray{T,N}
   size::NTuple{N,Int}
   g::G
@@ -522,6 +523,7 @@ function evaluate_array_of_functors(f::ComposedArray,a::AbstractArray...)
   evaluate_array_of_functors(f.g,ffx...)
 end
 
+# TODO remove I from type params
 struct EvaluatedArray{T,N,I,F,G} <: AbstractArray{T,N}
   g::G
   f::F

@@ -16,6 +16,12 @@ testitem
 testvalue
 ```
 
+## Working with several arrays
+
+```@docs
+testitems
+```
+
 ## Creating lazy operation trees
 
 ```@docs
