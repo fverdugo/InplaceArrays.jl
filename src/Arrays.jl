@@ -16,6 +16,7 @@ export array_of_functors_cache
 export getindex!
 export getitems!
 export testvalue
+export testvalues
 export testitem
 export testitems
 export uses_hash
@@ -51,6 +52,17 @@ testvalue(::Type{T}) where T = zero(T)
 
 function testvalue(::Type{T}) where T<:AbstractArray{E,N} where {E,N}
    similar(T,fill(0,N)...)
+end
+
+function testvalues(a,b...)
+  ta = testvalue(a)
+  tb = testvalues(b...)
+  (ta,tb...)
+end
+
+function testvalues(a)
+  ta = testvalue(a)
+  (ta,)
 end
 
 """

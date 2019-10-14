@@ -1,6 +1,7 @@
 module FieldTests
 
 using InplaceArrays.CachedArrays
+using InplaceArrays
 
 include("../src/Fields.jl")
 
@@ -51,5 +52,16 @@ test_field(∇f,x,∇fx)
 
 @test gradtype(f) == typeof(∇f.v)
 @test gradtype(∇f) == MultiValue{Tuple{2,2},Float64,2,4}
+
+np = 4
+p = Point(1,2)
+x = fill(p,np)
+
+v = 3.0
+d = 2
+f = MockField(d,v)
+g = compose(-,f)
+gx = fill(-v,np)
+test_field(g,x,gx)
 
 end # module
