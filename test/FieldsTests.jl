@@ -1,9 +1,13 @@
 module FieldTests
 
+using Test
+using TensorValues
 using InplaceArrays.CachedArrays
 using InplaceArrays
-
-include("../src/Fields.jl")
+import InplaceArrays: ∇
+import InplaceArrays: new_cache
+import InplaceArrays: evaluate!
+import InplaceArrays: gradient
 
 struct MockField{D,T} <: Field{D,T}
   v::T
@@ -56,12 +60,28 @@ test_field(∇f,x,∇fx)
 np = 4
 p = Point(1,2)
 x = fill(p,np)
-
 v = 3.0
 d = 2
 f = MockField(d,v)
-g = compose(-,f)
+g = apply(-,f)
 gx = fill(-v,np)
-test_field(g,x,gx)
+∇gx = fill(-VectorValue(v,0.0),np)
+test_field_with_gradient(g,x,gx,∇gx)
+
+fun(x) = 4*x
+∇fun(x) = VectorValue(4.0,4.0)
+∇(::typeof(fun)) = ∇fun
+
+np = 4
+p = Point(1,2)
+x = fill(p,np)
+v = 3.0
+d = 2
+f = MockField(d,v)
+g = apply(fun,f)
+gx = fill(fun(v),np)
+∇gx = fill(∇fun(v),np)
+test_field_with_gradient(g,x,gx,∇gx)
+
 
 end # module

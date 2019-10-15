@@ -1,4 +1,4 @@
-#module Fields
+module Fields
 
 # TODO move to TensorValues
 using StaticArrays
@@ -8,8 +8,30 @@ mutable(::Type{MultiValue{S,T,N,L}}) where {S,T,N,L} = MArray{S,T,N,L}
 
 using Test
 using TensorValues
+using InplaceArrays
+using InplaceArrays.Functors: BCasted
 import InplaceArrays.Functors: functor_cache
 import InplaceArrays.Functors: evaluate_functor!
+import Base: +, -, *
+
+export Point
+export gradient
+export evaluate
+export evaluate!
+export new_cache
+export gradient!
+export ∇
+export FieldLike
+export Field
+export Basis
+export test_fieldlike
+export test_field
+export test_field_with_gradient
+export test_basis
+export valuetype
+export pointdim
+export gradtype
+import InplaceArrays: apply
 
 """
     const Point{D,T} = VectorValue{D,T}
@@ -44,6 +66,8 @@ function new_cache end
 """
 function gradient end
 
+const ∇ = gradient
+
 # Testers
 
 function test_fieldlike(
@@ -54,14 +78,21 @@ function test_fieldlike(
   @test cmp(w,v)
   @test D == pointdim(f)
   @test T == valuetype(f)
+  test_functor(f,(x,),v,cmp)
 end
 
-function test_field(f::Field,x,v)
-  test_fieldlike(f,x,v)
+function test_field(f::Field,x,v,cmp::Function=(==))
+  test_fieldlike(f,x,v,cmp)
 end
 
-function test_basis(f::Basis,x,v)
-  test_fieldlike(f,x,v)
+function test_field_with_gradient(f::Field,x,v,g,cmp::Function=(==))
+  test_field(f,x,v,cmp)
+  ∇f = gradient(f)
+  test_field(∇f,x,g,cmp)
+end
+
+function test_basis(f::Basis,x,v,cmp::Function=(==))
+  test_fieldlike(f,x,v,cmp)
 end
 
 # info getters
@@ -154,15 +185,20 @@ end
 
 using InplaceArrays.Functors: Composed
 
-struct ComposedField{D,T,C<:Composed} <: Field{D,T}
+abstract type GradStyle end
+struct ApplyToGradStyle <: GradStyle end
+struct ApplyGradStyle <: GradStyle end
+
+struct ComposedField{D,T,C<:Composed,G} <: Field{D,T}
   c::C
-  function ComposedField(g,f::Field{D}...) where D
+  function ComposedField(g,f::Field{D}...;gradstyle::GradStyle=ApplyGradStyle()) where D
     vs = testvectors(valuetypes(f...)...)
     r = evaluate_functor(g,vs...)
     T = eltype(r)
     c = compose_functors(g,f...)
     C = typeof(c)
-    new{D,T,C}(c)
+    G = typeof(gradstyle)
+    new{D,T,C,G}(c)
   end
 end
 
@@ -177,15 +213,47 @@ function evaluate!(cache,f::ComposedField,x::AbstractVector{<:Point})
   evaluate_functor!(cache,f.c,x)
 end
 
+GradStyle(f::ComposedField{D,T,C,G}) where {D,T,C,G} = G()
+
 #TODO this is not really the gradient, but we have followed this criterion
-function gradient(f::ComposedField)
+gradient(f::ComposedField) = _gradient(f,GradStyle(f))
+
+function _gradient(f::ComposedField,s::ApplyGradStyle)
   g = gradient(f.c.g)
-  ComposedField(g,f.c.f...)
+  ComposedField(g,f.c.f...;gradstyle=s)
 end
 
-function compose(g::Function,f::Field...)
+function _gradient(f::ComposedField,s::ApplyToGradStyle)
+  gs = gradients(f.c.f...)
+  ComposedField(f.c.g,gs...;gradstyle=s)
+end
+
+gradient(f::BCasted) = bcast(gradient(f.f))
+
+function gradients(a,b...)
+  ga = gradient(a)
+  gb = gradients(b...)
+  (ga,gb...)
+end
+
+function gradients(a)
+  ga = gradient(a)
+  (ga,)
+end
+
+function apply(g::Function,f::Field...)
   b = bcast(g)
   ComposedField(b,f...)
 end
 
-#end # module
+for op in (:+,:-)
+  @eval begin
+    #TODO Do not overload apply overload the function application instead
+    function apply(::typeof($op),f::Field...)
+      b = bcast($op)
+      ComposedField(b,f...;gradstyle=ApplyToGradStyle())
+    end
+  end
+end
+
+end # module
