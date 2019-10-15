@@ -8,7 +8,7 @@ using ..MockFields
 import InplaceArrays: ∇
 
 np = 4
-v = Int16(3.0)
+v = 3.0
 d = 2
 f = MockField(d,v)
 fx = fill(v,np)
