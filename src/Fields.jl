@@ -17,11 +17,10 @@ import InplaceArrays.Functors: evaluate_functor!
 import Base: +, -, *
 
 export Point
-export gradient
 export evaluate
 export evaluate!
 export new_cache
-export gradient!
+export gradient
 export ∇
 export FieldLike
 export Field

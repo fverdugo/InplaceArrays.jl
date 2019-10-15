@@ -163,25 +163,6 @@ function _show_short(io,a)
   end
 end
 
-# Lazy operation trees
-
-"""
-    apply(f,cvs::CellValue...)
-
-Returns a new `CellValue` object obtained by applying
-the functor `f` to the entries of the given `CellValue` objects `cvs`.
-"""
-function apply(f,cvs::CellValue...)
-  arrs = getarrays(cvs...)
-  r = evaluate_functor_with_arrays(f,arrs...)
-  CellValue(r)
-end
-
-function apply(f,cv::CellValue)
-  arr = cv.array
-  r = evaluate_functor_with_arrays(f,arr)
-  CellValue(cv,r)
-end
 
 # CellValue types holding numeric data
 
@@ -205,6 +186,26 @@ const CellArray = CellValue{T} where T<:AbstractArray{S,N} where {S,N}
 Any `CellValue{T}` type holding numbers or arrays of type `T`.
 """
 const CellData = CellValue{T} where T<:Union{Number,AbstractArray}
+
+# Lazy operation trees
+
+"""
+    apply(f,cvs::CellValue...)
+
+Returns a new `CellValue` object obtained by applying
+the functor `f` to the entries of the given `CellValue` objects `cvs`.
+"""
+function apply(f,cvs::CellData...)
+  arrs = getarrays(cvs...)
+  r = evaluate_functor_with_arrays(f,arrs...)
+  CellValue(r)
+end
+
+function apply(f,cv::CellData)
+  arr = cv.array
+  r = evaluate_functor_with_arrays(f,arr)
+  CellValue(cv,r)
+end
 
 for op in (:+,:-,:*)
   @eval begin
