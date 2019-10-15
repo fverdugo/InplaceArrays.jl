@@ -10,7 +10,9 @@ using Test
 using TensorValues
 using InplaceArrays
 using InplaceArrays.Functors: BCasted
+using InplaceArrays.Functors: Composed
 import InplaceArrays.Functors: functor_cache
+import InplaceArrays.Functors: compose_functors
 import InplaceArrays.Functors: evaluate_functor!
 import Base: +, -, *
 
@@ -195,7 +197,7 @@ struct ComposedField{D,T,C<:Composed,G} <: Field{D,T}
     vs = testvectors(valuetypes(f...)...)
     r = evaluate_functor(g,vs...)
     T = eltype(r)
-    c = compose_functors(g,f...)
+    c = Composed(g,f...)
     C = typeof(c)
     G = typeof(gradstyle)
     new{D,T,C,G}(c)
@@ -246,6 +248,10 @@ function apply(g::Function,f::Field...)
   ComposedField(b,f...)
 end
 
+function compose_functors(g,f::Field...)
+    ComposedField(g,f...)
+end
+
 for op in (:+,:-)
   @eval begin
     #TODO Do not overload apply overload the function application instead
@@ -255,5 +261,7 @@ for op in (:+,:-)
     end
   end
 end
+
+# TODO DOF basis
 
 end # module

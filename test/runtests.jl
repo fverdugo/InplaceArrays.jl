@@ -10,6 +10,10 @@ using Test
 
 @time @testset "CellValuesTests" begin include("CellValuesTests.jl") end
 
+include("MockFields.jl")
+
+@time @testset "FieldsTests" begin include("FieldsTests.jl") end
+
 @testset "Benchmarks" begin include("../bench/runbenchs.jl") end
 
 end # module

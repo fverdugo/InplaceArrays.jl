@@ -56,7 +56,7 @@ constructor in order to generate a new `CellValue` object from the
 given `array` and the metadata in `cv`.
 """
 function CellValue(cv::CellValue,array::AbstractArray)
-  PlainCellValue(array)
+  CellValue(array)
 end
 
 """
@@ -76,7 +76,7 @@ and length `len`.
 """
 function CellValue(value,len::Integer)
   array = Fill(value,(len,))
-  PlainCellValue(array)
+  CellValue(array)
 end
 
 """
