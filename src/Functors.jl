@@ -4,6 +4,7 @@ using Test
 
 using InplaceArrays.CachedArrays
 
+export functor_testargs
 export functor_cache
 export functor_caches
 export evaluate_functor!
@@ -14,6 +15,13 @@ export bcast
 export compose_functors
 
 # Define Functor interface
+
+"""
+    args = functor_testargs(f,x...)
+
+Returns a tuple of the same type as x, but with values in the domain of the functor.
+"""
+function functor_testargs end
 
 """
     cache = functor_cache(f,x...)
@@ -55,6 +63,9 @@ end
 function test_functor(f,x,y,cmp=(==))
   z = evaluate_functor(f,x...)
   @test cmp(z,y)
+  args = functor_testargs(f,map(typeof,x)...)
+  r = evaluate_functor(f,args...)
+  @test typeof(r) == typeof(z)
 end
 
 # Get the cache of several functors at once
@@ -112,13 +123,19 @@ end
 
 # Include some well-known types in this interface
 
+functor_testargs(f::Function,Ts...) = testargs(f,Ts)
+
 @inline functor_cache(f::Function,args...) = nothing
 
 @inline evaluate_functor!(::Nothing,f::Function,args...) = f(args...)
 
+functor_testargs(::Number,Ts...) = testvalues(Ts...)
+
 @inline functor_cache(f::Number,args...) = nothing
 
 @inline evaluate_functor!(::Nothing,f::Number,args...) = f
+
+functor_testargs(::AbstractArray,Ts...) = testvalues(Ts...)
 
 @inline functor_cache(f::AbstractArray,args...) = nothing
 
@@ -158,8 +175,28 @@ julia> evaluate_functor(op,x,y)
 """
 bcast(f::Function) = BCasted(f)
 
+function functor_testargs(f::BCasted,Ts...)
+  v = testvalues(Ts...)
+  Ys = map(eltype,Ts)
+  y = testargs(f.f,Ys...)
+  map(_new_arg, v, y)
+end
+
+function _new_arg(vi::AbstractArray,yi)
+  dest = similar(vi)
+  for i in eachindex(dest)
+    dest[i] = yi
+  end
+  dest
+end
+
+function _new_arg(Ty,yi)
+  yi
+end
+
 function functor_cache(f::BCasted,x...)
-  r = broadcast(f.f,x...)
+  args = functor_testargs(f,x...)
+  r = broadcast(f.f,args...)
   CachedArray(r)
 end
 

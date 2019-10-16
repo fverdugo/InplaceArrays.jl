@@ -15,10 +15,6 @@ export array_caches
 export array_of_functors_cache
 export getindex!
 export getitems!
-export testvalue
-export testvalues
-export testargs
-export return_type
 export testitem
 export testitems
 export uses_hash
@@ -26,46 +22,6 @@ export uses_hash
 import InplaceArrays: functor_cache
 import InplaceArrays: evaluate_functor!
 using InplaceArrays.Functors: _split
-
-"""
-    testvalue(::Type{T}) where T
-
-Returns an arbitrary instance of type `T`. It defaults to `zero(T)` for
-non-array types and to an empty array for array types.
- This function is useful to determine the type returned by a
-function without calling `Base._return_type`.
-
-# Examples
-
-```jldoctests
-julia> a = testvalue(Int)
-0
-
-julia> b = testvalue(Float64)
-0.0
-
-julia> typeof(a + b)
-Float64
-```
-"""
-function testvalue end
-
-testvalue(::Type{T}) where T = zero(T)
-
-function testvalue(::Type{T}) where T<:AbstractArray{E,N} where {E,N}
-   similar(T,fill(0,N)...)
-end
-
-function testvalues(a,b...)
-  ta = testvalue(a)
-  tb = testvalues(b...)
-  (ta,tb...)
-end
-
-function testvalues(a)
-  ta = testvalue(a)
-  (ta,)
-end
 
 """
     testitem(a::AbstractArray)
@@ -119,25 +75,6 @@ end
 function testitems(a::AbstractArray)
   va = testitem(a)
   (va,)
-end
-
-testargs(f::Function,Ts::Tuple) = map(testvalue,Ts)
-
-function return_type(f::Function,Ts::Tuple)
-  args = testargs(f,Ts)
-  try
-    typeof(f(args...))
-  catch e
-    if isa(e,DomainError)
-      s = "Function $(nameof(f)) cannot be evaluated at $args, its not in the domain.\n"
-      s *= " Define function `testargs(::typeof{$(nameof(foo))},Ts::Tuple)`\n"
-      s *= " which sould return an argument tuple in the function domain."
-      error(s)
-    else
-      throw(e)
-    end
-  end
-
 end
 
 """
@@ -566,6 +503,7 @@ struct EvaluatedArray{T,N,I,F,G} <: AbstractArray{T,N}
     F = typeof(f)
     gi = testitem(g)
     fi = testitems(f...)
+    #fi = functor_testvals(gi,map(eltype,f)...)
     vi = evaluate_functor(gi,fi...)
     T = typeof(vi)
     N, size, I = _prepare_shape(g,f...)
