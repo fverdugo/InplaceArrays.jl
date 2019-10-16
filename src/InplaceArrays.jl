@@ -17,13 +17,13 @@ include("Functors.jl")
 include("Arrays.jl")
 @reexport using InplaceArrays.Arrays
 
-#include("CellValues.jl")
-#@reexport using InplaceArrays.CellValues
-#
-#include("Fields.jl")
-#@reexport using InplaceArrays.Fields
-#
-#include("CellFields.jl")
-#@reexport using InplaceArrays.CellFields
+include("CellValues.jl")
+@reexport using InplaceArrays.CellValues
+
+include("Fields.jl")
+@reexport using InplaceArrays.Fields
+
+include("CellFields.jl")
+@reexport using InplaceArrays.CellFields
 
 end # module

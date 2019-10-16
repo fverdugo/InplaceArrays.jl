@@ -8,6 +8,7 @@ import InplaceArrays: ∇
 import InplaceArrays: new_cache
 import InplaceArrays: evaluate!
 import InplaceArrays: gradient
+import InplaceArrays: return_type
 
 export MockField
 
@@ -16,6 +17,11 @@ struct MockField{D,T} <: Field{D,T}
   function MockField(d::Int,v::T) where T
     new{d,T}(v)
   end
+end
+
+function return_type(f::MockField)
+  v = new_cache(f)
+  typeof(v)
 end
 
 function new_cache(f::MockField)

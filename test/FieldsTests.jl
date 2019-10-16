@@ -35,7 +35,7 @@ v = 3.0
 d = 2
 f = MockField(d,v)
 g = apply(-,f)
-@test isa(compose_functors(-,f),Field)
+@test isa(functor_apply(-,f),Field)
 gx = fill(-v,np)
 ∇gx = fill(-VectorValue(v,0.0),np)
 test_field_with_gradient(g,x,gx,∇gx)

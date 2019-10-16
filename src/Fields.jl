@@ -10,10 +10,12 @@ using Test
 using TensorValues
 using InplaceArrays
 using InplaceArrays.Functors: BCasted
-using InplaceArrays.Functors: Composed
+using InplaceArrays.Functors: Applied
 import InplaceArrays.Functors: functor_cache
-import InplaceArrays.Functors: compose_functors
+import InplaceArrays.Functors: functor_apply
 import InplaceArrays.Functors: evaluate_functor!
+import InplaceArrays.Functors: functor_return_type
+import InplaceArrays: return_type
 import Base: +, -, *
 
 export Point
@@ -80,6 +82,10 @@ function test_fieldlike(
   @test D == pointdim(f)
   @test T == valuetype(f)
   test_functor(f,(x,),v,cmp)
+end
+
+function functor_return_type(f::Field,Ts...)
+  return_type(f)
 end
 
 function test_field(f::Field,x,v,cmp::Function=(==))
@@ -184,23 +190,29 @@ function new_caches(a)
   (ca,)
 end
 
-using InplaceArrays.Functors: Composed
+using InplaceArrays.Functors: Applied
 
 abstract type GradStyle end
 struct ApplyToGradStyle <: GradStyle end
 struct ApplyGradStyle <: GradStyle end
 
-struct ComposedField{D,T,C<:Composed,G} <: Field{D,T}
+struct ComposedField{D,T,C<:Applied,G} <: Field{D,T}
   c::C
   function ComposedField(g,f::Field{D}...;gradstyle::GradStyle=ApplyGradStyle()) where D
     vs = testvectors(valuetypes(f...)...)
-    r = evaluate_functor(g,vs...)
-    T = eltype(r)
-    c = Composed(g,f...)
+    Ts = map(typeof,vs)
+    V = functor_return_type(g,Ts...)
+    T = eltype(V)
+    c = Applied(g,f...)
     C = typeof(c)
     G = typeof(gradstyle)
     new{D,T,C,G}(c)
   end
+end
+
+function return_type(f::ComposedField)
+  Ts = map(return_type,f.c.f)
+  functor_return_type(f.c.g,Ts...)
 end
 
 function new_cache(f::ComposedField)
@@ -247,7 +259,7 @@ function apply(g::Function,f::Field...)
   ComposedField(b,f...)
 end
 
-function compose_functors(g,f::Field...)
+function functor_apply(g,f::Field...)
     ComposedField(g,f...)
 end
 
