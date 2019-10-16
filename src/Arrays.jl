@@ -3,6 +3,7 @@ module Arrays
 using Test
 using InplaceArrays
 using FillArrays
+using InplaceArrays.Functors: Applied
 
 export test_inplace_array
 export test_inplace_array_of_functors
@@ -395,10 +396,7 @@ struct ComposedArray{T,N,I,G,F<:Tuple} <:AbstractArray{T,N}
   g::G
   f::F
   function ComposedArray(g::AbstractArray,f::AbstractArray...)
-    fi = testitems(f...)
-    gi = testitem(g)
-    a = functor_apply(gi,fi...)
-    T = typeof(a)
+    T = Applied{eltype(g),Tuple{map(eltype,f)...}}
     N, size, I = _prepare_shape(g,f...)
     G = typeof(g)
     F = typeof(f)
@@ -501,11 +499,9 @@ struct EvaluatedArray{T,N,I,F,G} <: AbstractArray{T,N}
   function EvaluatedArray(g::AbstractArray,f::AbstractArray...)
     G = typeof(g)
     F = typeof(f)
-    gi = testitem(g)
-    fi = testitems(f...)
-    #fi = functor_testvals(gi,map(eltype,f)...)
-    vi = evaluate_functor(gi,fi...)
-    T = typeof(vi)
+    gi = testitem(g) #Assumes that all functors return the same type
+    Ts = map(eltype,f)
+    T = functor_return_type(gi,Ts...)
     N, size, I = _prepare_shape(g,f...)
     new{T,N,I,F,G}(g,f,size)
   end

@@ -14,9 +14,9 @@ include("Inference.jl")
 include("Functors.jl")
 @reexport using InplaceArrays.Functors
 
-#include("Arrays.jl")
-#@reexport using InplaceArrays.Arrays
-#
+include("Arrays.jl")
+@reexport using InplaceArrays.Arrays
+
 #include("CellValues.jl")
 #@reexport using InplaceArrays.CellValues
 #
