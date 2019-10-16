@@ -7,9 +7,7 @@ import InplaceArrays: testargs
 bar(x,y) = x*y
 foo(x) = sqrt(x-1)
 
-function testargs(::typeof(foo),T::DataType)
-  (zero(T)+one(T),)
-end
+testargs(::typeof(foo),T::DataType) = (zero(T)+one(T),)
 
 @test 0 == testvalue(Int)
 @test (0,0.0) == testvalues(Int,Float64)

@@ -1,12 +1,11 @@
-include("../src/Functors.jl")
-
 module FunctorsTests
 
 using Test
 using InplaceArrays
-using ..Functors
 
 test_functor(+,(3,2),5)
+
+@test functor_return_types((+,/),Int,Int) == (Int,Float64)
 
 f = bcast(+)
 a = rand(3,2)

@@ -2,9 +2,9 @@ module Functors
 
 using Test
 
+using InplaceArrays
 using InplaceArrays.CachedArrays
 
-export functor_testargs
 export functor_cache
 export functor_caches
 export evaluate_functor!
@@ -13,15 +13,30 @@ export evaluate_functor
 export test_functor
 export bcast
 export compose_functors
+export functor_return_type
+export functor_return_types
 
 # Define Functor interface
 
 """
-    args = functor_testargs(f,x...)
-
-Returns a tuple of the same type as x, but with values in the domain of the functor.
+    functor_return_type(f,Ts...)
 """
-function functor_testargs end
+function functor_return_type end
+
+function functor_return_types(f::Tuple,Ts...)
+  _functor_return_types(Ts,f...)
+end
+
+function _functor_return_types(Ts,a,b...)
+  Ta = functor_return_type(a,Ts...)
+  Tb = functor_return_types(b,Ts...)
+  (Ta,Tb...)
+end
+
+function _functor_return_types(Ts,a)
+  Ta = functor_return_type(a,Ts...)
+  (Ta,)
+end
 
 """
     cache = functor_cache(f,x...)
@@ -63,9 +78,8 @@ end
 function test_functor(f,x,y,cmp=(==))
   z = evaluate_functor(f,x...)
   @test cmp(z,y)
-  args = functor_testargs(f,map(typeof,x)...)
-  r = evaluate_functor(f,args...)
-  @test typeof(r) == typeof(z)
+  Ts = map(typeof,x)
+  @test typeof(z) == functor_return_type(f,Ts...)
 end
 
 # Get the cache of several functors at once
@@ -100,7 +114,7 @@ Evaluates the functors in the tuple `fs` at the arguments `x...`
 by using the corresponding cache objects in the tuple `caches`.
 The result is also a tuple containing the result for each functor in `fs`.
 """
-@inline function evaluate_functors!(cfs,f::Tuple,x...)
+@inline function evaluate_functors!(cfs::Tuple,f::Tuple,x...)
   _evaluate_functors!(cfs,x,f...)
 end
 
@@ -123,19 +137,19 @@ end
 
 # Include some well-known types in this interface
 
-functor_testargs(f::Function,Ts...) = testargs(f,Ts)
+functor_return_type(f::Function,Ts...) = return_type(f,Ts...)
 
 @inline functor_cache(f::Function,args...) = nothing
 
 @inline evaluate_functor!(::Nothing,f::Function,args...) = f(args...)
 
-functor_testargs(::Number,Ts...) = testvalues(Ts...)
+functor_return_type(a::Number,Ts...) = typeof(a)
 
 @inline functor_cache(f::Number,args...) = nothing
 
 @inline evaluate_functor!(::Nothing,f::Number,args...) = f
 
-functor_testargs(::AbstractArray,Ts...) = testvalues(Ts...)
+functor_return_type(a::AbstractArray,Ts...) = typeof(a)
 
 @inline functor_cache(f::AbstractArray,args...) = nothing
 
@@ -175,27 +189,15 @@ julia> evaluate_functor(op,x,y)
 """
 bcast(f::Function) = BCasted(f)
 
-function functor_testargs(f::BCasted,Ts...)
-  v = testvalues(Ts...)
-  Ys = map(eltype,Ts)
-  y = testargs(f.f,Ys...)
-  map(_new_arg, v, y)
-end
-
-function _new_arg(vi::AbstractArray,yi)
-  dest = similar(vi)
-  for i in eachindex(dest)
-    dest[i] = yi
-  end
-  dest
-end
-
-function _new_arg(Ty,yi)
-  yi
+function functor_return_type(f::BCasted,Ts...)
+  T = return_type_broadcast(f.f,Ts...)
+  c = CachedArray(testvalue(T))
+  typeof(c)
 end
 
 function functor_cache(f::BCasted,x...)
-  args = functor_testargs(f,x...)
+  Ts = map(typeof,x)
+  args = testargs_broadcast(f.f,Ts...)
   r = broadcast(f.f,args...)
   CachedArray(r)
 end
@@ -215,6 +217,7 @@ end
   c
 end
 
+# TODO use map
 @inline function _sizes(a,x...)
   (size(a), _sizes(x...)...)
 end
@@ -248,9 +251,16 @@ evaluate_functor(g,fxs...)
 """
 compose_functors(g,f...) = Composed(g,f...)
 
+function functor_return_type(f::Composed,Ts...)
+  Ys = functor_return_types(f.f,Ts...)
+  functor_return_type(f.g,Ys...)
+end
+
 function functor_cache(f::Composed,x...)
   cfs = functor_caches(f.f,x...)
-  fxs = evaluate_functors!(cfs,f.f,x...)
+  Ts = map(typeof,x)
+  Ys = functor_return_types(f.f,Ts...)
+  fxs = testvalues(Ys...)
   cg = functor_cache(f.g,fxs...)
   (cg,cfs)
 end

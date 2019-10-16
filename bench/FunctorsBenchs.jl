@@ -1,8 +1,6 @@
 module FunctorsBenchs
 
 using InplaceArrays
-#using Test
-#include("../src/Functors.jl")
 
 @inline function repeat(n,f,args...)
   for i in 1:n

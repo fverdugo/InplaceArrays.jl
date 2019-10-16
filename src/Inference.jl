@@ -3,6 +3,7 @@ module Inference
 export testvalue
 export testvalues
 export testargs
+export testargs_broadcast
 export return_type
 export return_type_broadcast
 
@@ -24,12 +25,17 @@ function return_type(f::Function,Ts...)
 end
 
 function return_type_broadcast(f::Function,Ts...)
+  args = testargs_broadcast(f,Ts...)
+  r = broadcast(f,args...)
+  typeof(r)
+end
+
+function testargs_broadcast(f::Function,Ts...)
   v = testvalues(Ts...)
   Ys = map(eltype,Ts)
   y = testargs(f,Ys...)
   args = (_new_arg(vi,yi) for (vi,yi) in zip(v,y))
-  r = broadcast(f,args...)
-  typeof(r)
+  tuple(args...)
 end
 
 function _new_arg(vi::AbstractArray,yi)
