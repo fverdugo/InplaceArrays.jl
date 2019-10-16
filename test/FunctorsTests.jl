@@ -78,4 +78,16 @@ a = b .* c
 r = evaluate_functor!(cache,A,x,y)
 @test a == r
 
+foo(x) = sqrt(x-1)
+
+import InplaceArrays: testargs
+
+function testargs(::typeof(foo),Ts::Tuple{DataType})
+  T, = Ts
+  (zero(T)+one(T),)
+end
+
+@test return_type(sqrt,(Int,)) == Float64
+@test return_type(foo,(Int,)) == Float64
+
 end # module

@@ -17,6 +17,8 @@ export getindex!
 export getitems!
 export testvalue
 export testvalues
+export testargs
+export return_type
 export testitem
 export testitems
 export uses_hash
@@ -117,6 +119,25 @@ end
 function testitems(a::AbstractArray)
   va = testitem(a)
   (va,)
+end
+
+testargs(f::Function,Ts::Tuple) = map(testvalue,Ts)
+
+function return_type(f::Function,Ts::Tuple)
+  args = testargs(f,Ts)
+  try
+    typeof(f(args...))
+  catch e
+    if isa(e,DomainError)
+      s = "Function $(nameof(f)) cannot be evaluated at $args, its not in the domain.\n"
+      s *= " Define function `testargs(::typeof{$(nameof(foo))},Ts::Tuple)`\n"
+      s *= " which sould return an argument tuple in the function domain."
+      error(s)
+    else
+      throw(e)
+    end
+  end
+
 end
 
 """
