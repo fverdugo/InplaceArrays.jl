@@ -24,5 +24,7 @@ end
 @test return_type_broadcast(foo, Matrix{Float64}) == Matrix{Float64}
 @test return_type_broadcast(bar, Float64, Int) == Float64
 @test return_type_broadcast(foo, Float64) == Float64
+@test return_type_broadcast(bar, Int, Int) == Int
+@test return_type_broadcast(bar, Int, Vector{Int}) == Vector{Int}
 
 end # module
