@@ -397,7 +397,7 @@ struct ComposedArray{T,N,I,G,F<:Tuple} <:AbstractArray{T,N}
   function ComposedArray(g::AbstractArray,f::AbstractArray...)
     fi = testitems(f...)
     gi = testitem(g)
-    a = compose_functors(gi,fi...)
+    a = functor_apply(gi,fi...)
     T = typeof(a)
     N, size, I = _prepare_shape(g,f...)
     G = typeof(g)
@@ -409,7 +409,7 @@ end
 function testitem(a::ComposedArray)
   fi = testitems(a.f...)
   gi = testitem(a.g)
-  r = compose_functors(gi,fi...)
+  r = functor_apply(gi,fi...)
   r
 end
 
@@ -427,7 +427,7 @@ end
   cf, cg = cache
   fi = getitems!(cf,a.f,i...)
   gi = getindex!(cg,a.g,i...)
-  r = compose_functors(gi,fi...)
+  r = functor_apply(gi,fi...)
   r
 end
 

@@ -7,12 +7,12 @@ using InplaceArrays.CachedArrays
 
 export functor_cache
 export functor_caches
-export evaluate_functor!
 export evaluate_functors!
+export evaluate_functor!
 export evaluate_functor
 export test_functor
 export bcast
-export compose_functors
+export functor_apply
 export functor_return_type
 export functor_return_types
 
@@ -226,16 +226,16 @@ end
   (size(a),)
 end
 
-struct Composed{G,F<:Tuple}
+struct Applied{G,F<:Tuple}
   g::G
   f::F
-  function Composed(g,f...)
+  function Applied(g,f...)
     new{typeof(g),typeof(f)}(g,f)
   end
 end
 
 """
-    c = compose_functors(g,fs...)
+    c = functor_apply(g,fs...)
 
 Returns an object `c` representing the "composition" of functor `g` with several
 functors `fs`. The resulting object `c` is such that
@@ -249,14 +249,14 @@ fxs = evaluate_functors(fs,x...)
 evaluate_functor(g,fxs...)
 ```
 """
-compose_functors(g,f...) = Composed(g,f...)
+functor_apply(g,f...) = Applied(g,f...)
 
-function functor_return_type(f::Composed,Ts...)
+function functor_return_type(f::Applied,Ts...)
   Ys = functor_return_types(f.f,Ts...)
   functor_return_type(f.g,Ys...)
 end
 
-function functor_cache(f::Composed,x...)
+function functor_cache(f::Applied,x...)
   cfs = functor_caches(f.f,x...)
   Ts = map(typeof,x)
   Ys = functor_return_types(f.f,Ts...)
@@ -265,7 +265,7 @@ function functor_cache(f::Composed,x...)
   (cg,cfs)
 end
 
-@inline function evaluate_functor!(cache,f::Composed,x...)
+@inline function evaluate_functor!(cache,f::Applied,x...)
   cg, cfs = cache
   fxs = evaluate_functors!(cfs,f.f,x...)
   y = evaluate_functor!(cg,f.g,fxs...)

@@ -13,25 +13,25 @@ b = 3
 c = a .+ b
 test_functor(f,(a,b),c)
 
-f = compose_functors(-,+)
+f = functor_apply(-,+)
 a = 2
 b = 3
 c = -5
 test_functor(f,(a,b),c)
 
-f = compose_functors(bcast(-),bcast(+))
+f = functor_apply(bcast(-),bcast(+))
 a = rand(3,2)
 b = 3
 c = .-( a .+ b)
 test_functor(f,(a,b),c)
 
-f = compose_functors(*,-,+)
+f = functor_apply(*,-,+)
 a = 2
 b = 3
 c = (a-b) * (a+b)
 test_functor(f,(a,b),c)
 
-f = compose_functors(bcast(-),bcast(*),bcast(+))
+f = functor_apply(bcast(-),bcast(*),bcast(+))
 a = rand(3,2)
 b = 3
 c = rand(1,2)
@@ -39,14 +39,14 @@ d = .-( (a.*b.*c) , (a.+b.+c))
 test_functor(f,(a,b,c),d)
 
 a = 2
-f = compose_functors(+,-,a)
+f = functor_apply(+,-,a)
 b = 3
 c = 5
 d = (b-c) + a
 test_functor(f,(b,c),d)
 
 a = rand(2,3)
-f = compose_functors(bcast(+),bcast(-),a)
+f = functor_apply(bcast(+),bcast(-),a)
 b = 3
 c = rand(1,3)
 d = (b.-c) .+ a
@@ -54,14 +54,14 @@ test_functor(f,(b,c),d)
 
 a = rand(2,3)
 b = 4
-f = compose_functors(bcast(-),a,b)
+f = functor_apply(bcast(-),a,b)
 d = a .- b
 test_functor(f,(),d)
 
 C = bcast(+)
 D = rand(2,3)
-B = compose_functors(bcast(-),C,D)
-A = compose_functors(bcast(*),B,C)
+B = functor_apply(bcast(-),C,D)
+A = functor_apply(bcast(*),B,C)
 x = rand(2,3)
 y = 3
 c = (x .+ y)
