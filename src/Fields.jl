@@ -4,12 +4,10 @@ using Test
 using TensorValues
 using InplaceArrays
 using InplaceArrays.Functors: BCasted
-using InplaceArrays.Functors: Applied
 import InplaceArrays.Functors: functor_cache
-import InplaceArrays.Functors: apply_functor
 import InplaceArrays.Functors: evaluate_functor!
 import InplaceArrays.Functors: functor_return_type
-import InplaceArrays: return_type
+import InplaceArrays: return_type # Needed?
 import Base: +, -, *
 
 export Point
@@ -28,9 +26,8 @@ export test_basis
 export valuetype
 export pointdim
 export gradtype
-export ApplyToGradStyle
-export ApplyGradStyle
-import InplaceArrays: apply
+#export ApplyToGradStyle
+#export ApplyGradStyle
 
 #TODO list of methods to overwrite
 
@@ -160,21 +157,6 @@ end
   evaluate!(cache,f,x)
 end
 
-function testvector(::Type{T}) where T
-  Vector{T}(undef,0)
-end
-
-function testvectors(Ta,Tb...)
-  va = Vector{Ta}(undef,0)
-  vb = testvectors(Tb...)
-  (va,vb...)
-end
-
-function testvectors(Ta)
-  va = Vector{Ta}(undef,0)
-  (va,)
-end
-
 function new_caches(a,b...)
   ca = new_cache(a)
   cb = new_caches(b...)
@@ -184,104 +166,6 @@ end
 function new_caches(a)
   ca = new_cache(a)
   (ca,)
-end
-
-using InplaceArrays.Functors: Applied
-
-abstract type GradStyle end
-struct ApplyToGradStyle <: GradStyle end
-struct ApplyGradStyle <: GradStyle end
-
-const FieldLikeOrData = Union{FieldLike,Number,AbstractArray}
-
-struct AppliedFieldLike{D,T,N,C<:Applied,G} <: FieldLike{D,T,N}
-  c::C
-  #function AppliedFieldLike(
-  #  g,f::FieldLike{D}...;gradstyle::GradStyle=ApplyGradStyle()) where D
-  #  Ts = map(return_type,f)
-  #  V = functor_return_type(g,Ts...)
-  #  N = ndims(V)
-  #  @assert N in (1,2) "N=$N but should be 1 or 2"
-  #  T = eltype(V)
-  #  c = Applied(g,f...)
-  #  C = typeof(c)
-  #  G = typeof(gradstyle)
-  #  new{D,T,N,C,G}(c)
-  #end
-  function AppliedFieldLike(
-    D::Int, ::Type{T}, N::Int, g::GradStyle, c::Applied) where T
-    new{D,T,N,typeof(c),typeof(g)}(c)
-  end
-end
-
-function return_type(f::AppliedFieldLike)
-  Ts = map(return_type,f.c.f)
-  functor_return_type(f.c.g,Ts...)
-end
-
-function new_cache(f::AppliedFieldLike)
-   Ts = map(return_type,f.c.f)
-   vs = testvalues(Ts...)
-   cg = functor_cache(f.c.g,vs...)
-   cf = new_caches(f.c.f...)
-   (cg,cf)
-end
-
-function evaluate!(cache,f::AppliedFieldLike,x::AbstractVector{<:Point})
-  evaluate_functor!(cache,f.c,x)
-end
-
-GradStyle(f::AppliedFieldLike{D,T,N,C,G}) where {D,T,N,C,G} = G()
-
-#TODO this is not really the gradient, but we have followed this criterion
-gradient(f::AppliedFieldLike) = _gradient(f,GradStyle(f))
-
-function _gradient(f::AppliedFieldLike{D,T,N},s::ApplyGradStyle) where {D,T,N}
-  g = gradient(f.c.g)
-  G = gradtype(f)
-  c = apply_functor(g,f.c.f...)
-  AppliedFieldLike(D,G,N,s,c)
-end
-
-function _gradient(f::AppliedFieldLike{D,T,N},s::ApplyToGradStyle) where {D,T,N}
-  gs = gradients(f.c.f...)
-  c = apply_functor(f.c.g,gs...)
-  G = gradtype(f)
-  AppliedFieldLike(D,G,N,s,c)
-end
-
-gradient(f::BCasted) = bcast(gradient(f.f))
-
-function gradients(a,b...)
-  ga = gradient(a)
-  gb = gradients(b...)
-  (ga,gb...)
-end
-
-function gradients(a)
-  ga = gradient(a)
-  (ga,)
-end
-
-function apply(
-  ::Type{T}, s::GradStyle, g::Function, f::FieldLike{D,S,N}...) where {T,D,S,N}
-
-  b = bcast(g)
-  c = apply_functor(b,f...)
-  AppliedFieldLike(D,T,N,s,c)
-end
-
-#function apply_functor(g,f::Field...)
-#    AppliedFieldLike(g,f...)
-#end
-
-for op in (:+,:-)
-  @eval begin
-    function ($op)(f::FieldLike{D,T,N}) where {D,T,N}
-      s = ApplyToGradStyle()
-      apply(T,s,$op,f)
-    end
-  end
 end
 
 # TODO DOF basis

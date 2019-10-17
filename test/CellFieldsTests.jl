@@ -35,10 +35,11 @@ fun(x) = 4*x
 ∇fun(x) = VectorValue(4.0,4.0)
 ∇(::typeof(fun)) = ∇fun
 
-cg = apply(bcast(fun),cf)
-agx = fill(fill(fun(v),np),l)
-a∇gx = fill(fill(∇fun(v),np),l)
-test_cell_field_with_gradient(cg,cx,agx,a∇gx)
+#TODO
+#cg = apply(bcast(fun),cf)
+#agx = fill(fill(fun(v),np),l)
+#a∇gx = fill(fill(∇fun(v),np),l)
+#test_cell_field_with_gradient(cg,cx,agx,a∇gx)
 
 
 end # module

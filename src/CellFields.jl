@@ -7,7 +7,6 @@ using TensorValues
 using InplaceArrays
 
 using FillArrays
-using InplaceArrays.Arrays: AppliedArray
 import InplaceArrays: gradient
 
 export CellFieldLike
@@ -98,23 +97,19 @@ function gradient(cf::CellFieldLikeWithCachedGrad)
   cf.gradient
 end
 
-const CellFieldLikeOrData = CellValue{T} where T<:Union{Number,AbstractArray,FieldLike}
+const FieldLikeOrData = Union{FieldLike,Number,AbstractArray}
+const CellFieldLikeOrData = CellValue{T} where T<: FieldLikeOrData
 
 function apply(f,cvs::CellFieldLikeOrData...)
-  arrs = getarrays(cvs...)
-  r = apply_array_of_functors(f,arrs...)
-  CellValue(r)
+  #TODO
 end
 
 function apply(f,cv::CellFieldLike)
-  arr = cv.array
-  r = apply_array_of_functors(f,arr)
-  CellValue(cv,r)
+  #TODO
 end
 
-function gradient(a::AppliedArray)
-  ∇g = gradient(a.g)
-  AppliedArray(∇g,a.f...)
-end
+abstract type GradStyle end
+struct ApplyToGradStyle <: GradStyle end
+struct ApplyGradStyle <: GradStyle end
 
 end # module

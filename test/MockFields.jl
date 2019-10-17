@@ -1,4 +1,3 @@
-include("../src/Fields.jl")
 module MockFields
 
 using Test
@@ -7,18 +6,12 @@ using InplaceArrays.CachedArrays
 using InplaceArrays
 
 
-#import InplaceArrays: ∇
-#import InplaceArrays: new_cache
-#import InplaceArrays: evaluate!
-#import InplaceArrays: gradient
-#import InplaceArrays: return_type
+import InplaceArrays: ∇
+import InplaceArrays: new_cache
+import InplaceArrays: evaluate!
+import InplaceArrays: gradient
+import InplaceArrays: return_type
 
-using ..Fields
-import ..Fields: ∇
-import ..Fields: new_cache
-import ..Fields: evaluate!
-import ..Fields: gradient
-import ..Fields: return_type
 
 export MockField
 

@@ -32,6 +32,12 @@ cv2 = apply(-,cv)
 test_cell_value(cv2,-a)
 
 a = collect(1:20)
+cv = CellValue(a)
+cv2 = -cv
+@test isa(cv2,CellValue)
+test_cell_value(cv2,-a)
+
+a = collect(1:20)
 b = collect(21:40)
 cva = CellValue(a)
 cvb = CellValue(b)
