@@ -28,7 +28,11 @@ export test_basis
 export valuetype
 export pointdim
 export gradtype
+export ApplyToGradStyle
+export ApplyGradStyle
 import InplaceArrays: apply
+
+#TODO list of methods to overwrite
 
 """
     const Point{D,T} = VectorValue{D,T}
@@ -124,14 +128,6 @@ pointdim(f::T) where T<:FieldLike = pointdim(T)
 """
 function num_dofs end #TODO use in tester
 
-#function gradtype(::Type{T},::Val{D}) where {T,D}
-#  P = Point{D,Int16}
-#  p = zero(P)
-#  v = zero(T)
-#  g = outer(p,v)
-#  typeof(g)
-#end
-
 """
     gradtype(::Type) -> DataType
 """
@@ -164,6 +160,10 @@ end
   evaluate!(cache,f,x)
 end
 
+function testvector(::Type{T}) where T
+  Vector{T}(undef,0)
+end
+
 function testvectors(Ta,Tb...)
   va = Vector{Ta}(undef,0)
   vb = testvectors(Tb...)
@@ -192,25 +192,34 @@ abstract type GradStyle end
 struct ApplyToGradStyle <: GradStyle end
 struct ApplyGradStyle <: GradStyle end
 
-struct ComposedField{D,T,C<:Applied,G} <: Field{D,T}
+const FieldLikeOrData = Union{FieldLike,Number,AbstractArray}
+
+struct AppliedFieldLike{D,T,N,C<:Applied,G} <: FieldLike{D,T,N}
   c::C
-  function ComposedField(g,f::Field{D}...;gradstyle::GradStyle=ApplyGradStyle()) where D
-    Ts = map(return_type,f)
-    V = functor_return_type(g,Ts...)
-    T = eltype(V)
-    c = Applied(g,f...)
-    C = typeof(c)
-    G = typeof(gradstyle)
-    new{D,T,C,G}(c)
+  #function AppliedFieldLike(
+  #  g,f::FieldLike{D}...;gradstyle::GradStyle=ApplyGradStyle()) where D
+  #  Ts = map(return_type,f)
+  #  V = functor_return_type(g,Ts...)
+  #  N = ndims(V)
+  #  @assert N in (1,2) "N=$N but should be 1 or 2"
+  #  T = eltype(V)
+  #  c = Applied(g,f...)
+  #  C = typeof(c)
+  #  G = typeof(gradstyle)
+  #  new{D,T,N,C,G}(c)
+  #end
+  function AppliedFieldLike(
+    D::Int, ::Type{T}, N::Int, g::GradStyle, c::Applied) where T
+    new{D,T,N,typeof(c),typeof(g)}(c)
   end
 end
 
-function return_type(f::ComposedField)
+function return_type(f::AppliedFieldLike)
   Ts = map(return_type,f.c.f)
   functor_return_type(f.c.g,Ts...)
 end
 
-function new_cache(f::ComposedField)
+function new_cache(f::AppliedFieldLike)
    Ts = map(return_type,f.c.f)
    vs = testvalues(Ts...)
    cg = functor_cache(f.c.g,vs...)
@@ -218,23 +227,27 @@ function new_cache(f::ComposedField)
    (cg,cf)
 end
 
-function evaluate!(cache,f::ComposedField,x::AbstractVector{<:Point})
+function evaluate!(cache,f::AppliedFieldLike,x::AbstractVector{<:Point})
   evaluate_functor!(cache,f.c,x)
 end
 
-GradStyle(f::ComposedField{D,T,C,G}) where {D,T,C,G} = G()
+GradStyle(f::AppliedFieldLike{D,T,N,C,G}) where {D,T,N,C,G} = G()
 
 #TODO this is not really the gradient, but we have followed this criterion
-gradient(f::ComposedField) = _gradient(f,GradStyle(f))
+gradient(f::AppliedFieldLike) = _gradient(f,GradStyle(f))
 
-function _gradient(f::ComposedField,s::ApplyGradStyle)
+function _gradient(f::AppliedFieldLike{D,T,N},s::ApplyGradStyle) where {D,T,N}
   g = gradient(f.c.g)
-  ComposedField(g,f.c.f...;gradstyle=s)
+  G = gradtype(f)
+  c = apply_functor(g,f.c.f...)
+  AppliedFieldLike(D,G,N,s,c)
 end
 
-function _gradient(f::ComposedField,s::ApplyToGradStyle)
+function _gradient(f::AppliedFieldLike{D,T,N},s::ApplyToGradStyle) where {D,T,N}
   gs = gradients(f.c.f...)
-  ComposedField(f.c.g,gs...;gradstyle=s)
+  c = apply_functor(f.c.g,gs...)
+  G = gradtype(f)
+  AppliedFieldLike(D,G,N,s,c)
 end
 
 gradient(f::BCasted) = bcast(gradient(f.f))
@@ -250,21 +263,23 @@ function gradients(a)
   (ga,)
 end
 
-function apply(g::Function,f::Field...)
+function apply(
+  ::Type{T}, s::GradStyle, g::Function, f::FieldLike{D,S,N}...) where {T,D,S,N}
+
   b = bcast(g)
-  ComposedField(b,f...)
+  c = apply_functor(b,f...)
+  AppliedFieldLike(D,T,N,s,c)
 end
 
-function apply_functor(g,f::Field...)
-    ComposedField(g,f...)
-end
+#function apply_functor(g,f::Field...)
+#    AppliedFieldLike(g,f...)
+#end
 
 for op in (:+,:-)
   @eval begin
-    #TODO Do not overload apply overload the function application instead
-    function apply(::typeof($op),f::Field...)
-      b = bcast($op)
-      ComposedField(b,f...;gradstyle=ApplyToGradStyle())
+    function ($op)(f::FieldLike{D,T,N}) where {D,T,N}
+      s = ApplyToGradStyle()
+      apply(T,s,$op,f)
     end
   end
 end

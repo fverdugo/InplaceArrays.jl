@@ -4,11 +4,14 @@ using Test
 using TensorValues
 using InplaceArrays.CachedArrays
 using InplaceArrays
-import InplaceArrays: ∇
-import InplaceArrays: new_cache
-import InplaceArrays: evaluate!
-import InplaceArrays: gradient
+#import InplaceArrays: ∇
+#import InplaceArrays: new_cache
+#import InplaceArrays: evaluate!
+#import InplaceArrays: gradient
 
+import ..Fields: ∇
+
+using ..Fields
 using ..MockFields
 
 np = 4
@@ -34,8 +37,8 @@ x = fill(p,np)
 v = 3.0
 d = 2
 f = MockField(d,v)
-g = apply(-,f)
-@test isa(apply_functor(-,f),Field)
+g = -f
+#@test isa(apply_functor(-,f),Field)
 gx = fill(-v,np)
 ∇gx = fill(-VectorValue(v,0.0),np)
 test_field_with_gradient(g,x,gx,∇gx)
@@ -50,7 +53,7 @@ x = fill(p,np)
 v = 3.0
 d = 2
 f = MockField(d,v)
-g = apply(fun,f)
+g = apply(typeof(v),ApplyGradStyle(),fun,f)
 gx = fill(fun(v),np)
 ∇gx = fill(∇fun(v),np)
 test_field_with_gradient(g,x,gx,∇gx)

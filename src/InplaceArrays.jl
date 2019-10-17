@@ -20,10 +20,10 @@ include("Arrays.jl")
 include("CellValues.jl")
 @reexport using InplaceArrays.CellValues
 
-include("Fields.jl")
-@reexport using InplaceArrays.Fields
-
-include("CellFields.jl")
-@reexport using InplaceArrays.CellFields
+#include("Fields.jl")
+#@reexport using InplaceArrays.Fields
+#
+#include("CellFields.jl")
+#@reexport using InplaceArrays.CellFields
 
 end # module

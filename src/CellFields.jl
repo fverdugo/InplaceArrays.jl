@@ -25,7 +25,6 @@ import InplaceArrays: apply
 
 import InplaceArrays: evaluate
 
-
 const CellFieldLike = CellValue{V} where V<:FieldLike{D,T,N} where {D,T,N}
 const CellField = CellFieldLike{D,T,1} where {D,T}
 const CellBasis = CellFieldLike{D,T,2} where {D,T}
