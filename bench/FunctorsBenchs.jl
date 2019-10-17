@@ -25,7 +25,7 @@ function bench2(n)
 end
 
 function bench3(n)
-  f = functor_apply(-,+)
+  f = apply_functor(-,+)
   a = 2
   b = 3
   cache = functor_cache(f,a,b)
@@ -33,7 +33,7 @@ function bench3(n)
 end
 
 function bench4(n)
-  f = functor_apply(bcast(-),bcast(+))
+  f = apply_functor(bcast(-),bcast(+))
   a = rand(3,2)
   b = 3
   cache = functor_cache(f,a,b)
@@ -41,7 +41,7 @@ function bench4(n)
 end
 
 function bench5(n)
-  f = functor_apply(bcast(-),bcast(*),bcast(+))
+  f = apply_functor(bcast(-),bcast(*),bcast(+))
   a = rand(3,2)
   b = 3
   cache = functor_cache(f,a,b)
@@ -50,7 +50,7 @@ end
 
 function bench6(n)
   a = rand(2,3)
-  f = functor_apply(bcast(+),bcast(-),a)
+  f = apply_functor(bcast(+),bcast(-),a)
   b = 3
   c = rand(1,3)
   cache = functor_cache(f,b,c)
@@ -60,7 +60,7 @@ end
 function bench7(n)
   a = rand(2,3)
   b = 4
-  f = functor_apply(bcast(-),a,b)
+  f = apply_functor(bcast(-),a,b)
   cache = functor_cache(f)
   @time repeat(n,evaluate_functor!,cache,f)
 end
@@ -68,8 +68,8 @@ end
 function bench8(n)
   C = bcast(+)
   D = rand(2,3)
-  B = functor_apply(bcast(-),C,D)
-  A = functor_apply(bcast(*),B,C)
+  B = apply_functor(bcast(-),C,D)
+  A = apply_functor(bcast(*),B,C)
   x = rand(2,3)
   y = 3
   cache = functor_cache(A,x,y)

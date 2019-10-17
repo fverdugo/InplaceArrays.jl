@@ -40,7 +40,7 @@ abstract type CellValue{T} end
 
 function test_cell_value(cv::CellValue,b::AbstractArray,cmp=(==))
   a = cv.array
-  test_inplace_array(a,b,cmp)
+  test_array(a,b,cmp)
 end
 
 # Constructors
@@ -197,13 +197,13 @@ the functor `f` to the entries of the given `CellValue` objects `cvs`.
 """
 function apply(f,cvs::CellData...)
   arrs = getarrays(cvs...)
-  r = evaluate_functor_with_arrays(f,arrs...)
+  r = evaluate_array_of_functors(f,arrs...)
   CellValue(r)
 end
 
 function apply(f,cv::CellData)
   arr = cv.array
-  r = evaluate_functor_with_arrays(f,arr)
+  r = evaluate_array_of_functors(f,arr)
   CellValue(cv,r)
 end
 

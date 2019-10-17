@@ -49,7 +49,7 @@ end
 function test_cell_field_like(cf::CellFieldLike,cx::CellPoints,v::AbstractArray,cmp=(==))
   cfx = evaluate(cf,cx)
   test_cell_value(cfx,v,cmp)
-  test_inplace_array_of_functors(cf.array,(cx.array,),v,cmp)
+  test_array_of_functors(cf.array,(cx.array,),v,cmp)
 end
 
 function test_cell_field_like_with_gradient(
@@ -103,13 +103,13 @@ const CellFieldLikeOrData = CellValue{T} where T<:Union{Number,AbstractArray,Fie
 
 function apply(f,cvs::CellFieldLikeOrData...)
   arrs = getarrays(cvs...)
-  r = compose_functor_with_arrays(f,arrs...)
+  r = apply_array_of_functors(f,arrs...)
   CellValue(r)
 end
 
 function apply(f,cv::CellFieldLike)
   arr = cv.array
-  r = compose_functor_with_arrays(f,arr)
+  r = apply_array_of_functors(f,arr)
   CellValue(cv,r)
 end
 
