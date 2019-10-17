@@ -5,6 +5,7 @@ using Test
 using InplaceArrays
 using InplaceArrays.CachedArrays
 
+export typedfun
 export functor_cache
 export functor_caches
 export evaluate_functors!
@@ -199,7 +200,8 @@ function functor_cache(f::BCasted,x...)
   Ts = map(typeof,x)
   args = testargs_broadcast(f.f,Ts...)
   r = broadcast(f.f,args...)
-  CachedArray(r)
+  cache = CachedArray(r)
+   _prepare_cache(cache,x...)
 end
 
 @inline function evaluate_functor!(cache,f::BCasted,x...)
@@ -270,6 +272,46 @@ end
   fxs = evaluate_functors!(cfs,f.f,x...)
   y = evaluate_functor!(cg,f.g,fxs...)
   y
+end
+
+typedfun(::Type{T},f::Function) where T = TypedFunction(T,f)
+
+struct TypedFunction{T,F}
+  f::F
+  function TypedFunction(::Type{T},f::Function) where T
+    new{T,typeof(f)}(f)
+  end
+end
+
+functor_return_type(f::TypedFunction{T},Ts...) where T = T
+
+functor_cache(f::TypedFunction,x...) = nothing
+
+function evaluate_functor!(::Nothing,f::TypedFunction{T},x...) where T
+  r::T = f.f(x...)
+  r
+end
+
+bcast(::Type{T},N::Int,f::Function) where T = TypedBCasted(T,N,f)
+
+struct TypedBCasted{T,N,F}
+  b::BCasted{F}
+  function TypedBCasted(::Type{T},N::Int,f::Function) where T
+    new{T,N,typeof(f)}(bcast(f))
+  end
+end
+
+function functor_return_type(f::TypedBCasted{T,N},Ts...) where {T,N}
+  CachedArray{T,N,Array{T,N}}
+end
+
+function functor_cache(f::TypedBCasted{T,N},x...) where {T,N}
+  cache = CachedArray(T,N)
+   _prepare_cache(cache,x...)
+end
+
+@inline function evaluate_functor!(cache,f::TypedBCasted,x...)
+  evaluate_functor!(cache,f.b,x...)
 end
 
 end # module

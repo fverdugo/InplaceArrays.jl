@@ -135,6 +135,14 @@ function bench9(n)
   @time loop(v,cache)
 end
 
+function bench10(n)
+  a = fill(rand(2,3),n)
+  b = rand(n)
+  c = evaluate_functor_with_arrays(bcast(Float64,2,-),a,b)
+  cache = array_cache(c)
+  @time loop(c,cache)
+end
+
 for n in (1,1,10,1000,100000)
   @eval begin
     println("+++ runing suite for n = $($n) +++")

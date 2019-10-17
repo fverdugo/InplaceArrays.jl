@@ -76,6 +76,21 @@ function bench8(n)
   @time repeat(n,evaluate_functor!,cache,A,x,y)
 end
 
+function bench9(n)
+  a = 1
+  b = 2
+  cache = functor_cache(typedfun(Int,+),a,b)
+  @time repeat(n,evaluate_functor!,cache,+,a,b)
+end
+
+function bench10(n)
+  f = bcast(Float64,2,+)
+  a = rand(3,2)
+  b = 3
+  cache = functor_cache(f,a,b)
+  @time repeat(n,evaluate_functor!,cache,f,a,b)
+end
+
 for n in (1,1,10,1000,100000)
   @eval begin
     println("+++ runing suite for n = $($n) +++")
@@ -87,6 +102,8 @@ for n in (1,1,10,1000,100000)
     bench6($n)
     bench7($n)
     bench8($n)
+    bench9($n)
+    bench10($n)
   end
 end
 
