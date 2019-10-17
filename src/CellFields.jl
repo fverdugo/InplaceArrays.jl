@@ -13,12 +13,16 @@ export CellFieldLike
 export CellField
 export CellBasis
 export CellPoints
+export CellFieldLikeOrData
 export test_cell_field_like
 export test_cell_field
 export test_cell_basis
 export test_cell_field_like_with_gradient
 export test_cell_field_with_gradient
 export test_cell_basis_with_gradient
+export GradStyle
+export ApplyToGradStyle
+export ApplyGradStyle
 
 import InplaceArrays: apply
 

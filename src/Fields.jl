@@ -110,14 +110,14 @@ end
 """
 valuetype(::Type{<:FieldLike{D,T}}) where {D,T} = T
 
-valuetype(f::T) where T<:FieldLike = valuetype(T)
+valuetype(f::T) where T = valuetype(T)
 
 """
     pointdim(::Type) -> Int
 """
 pointdim(::Type{<:FieldLike{D}}) where D = D
 
-pointdim(f::T) where T<:FieldLike = pointdim(T)
+pointdim(f::T) where T = pointdim(T)
 
 
 """
@@ -136,7 +136,7 @@ function gradtype(::Type{F}) where F<:FieldLike{D,T} where {D,T}
   typeof(g)
 end
 
-gradtype(f::T) where T<:FieldLike = gradtype(T)
+gradtype(f::T) where T = gradtype(T)
 
 function valuetypes(a,b...)
   Ta = valuetype(a)
