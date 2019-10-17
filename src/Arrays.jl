@@ -8,8 +8,6 @@ export test_array
 export test_array_of_functors
 export evaluate_array_of_functors
 export evaluate_array_of_functors
-export apply_array_of_functors
-export apply_arrays_of_functors
 export array_cache
 export array_caches
 export array_of_functors_cache
@@ -372,74 +370,6 @@ mutable struct Evaluation{X,F}
 end
 
 """
-    apply_array_of_functors(g,f::AbstractArray...)
-"""
-function apply_array_of_functors(g,f::AbstractArray...)
-  s = common_size(f...)
-  apply_arrays_of_functors(Fill(g,s...),f...)
-end
-
-"""
-    apply_arrays_of_functors(g::AbstractArray,f::AbstractArray...)
-"""
-function apply_arrays_of_functors(g::AbstractArray,f::AbstractArray...)
-  AppliedArray(g,f...)
-end
-
-struct AppliedArray{T,N,G,F<:Tuple} <:AbstractArray{T,N}
-  size::NTuple{N,Int}
-  g::G
-  f::F
-  function AppliedArray(g::AbstractArray,f::AbstractArray...)
-    gi = testitem(g)
-    fi = testitems(f...)
-    vi = apply_functor(gi,fi...)
-    T = typeof(vi) # TODO this assumes concrete types in g and f
-    N, s = _prepare_shape(g,f...)
-    G = typeof(g)
-    F = typeof(f)
-    new{T,N,G,F}(s,g,f)
-  end
-end
-
-function testitem(a::AppliedArray)
-  fi = testitems(a.f...)
-  gi = testitem(a.g)
-  r = apply_functor(gi,fi...)
-  r
-end
-
-function uses_hash(::Type{<:AppliedArray})
-  Val(true)
-end
-
-function array_cache(hash::Dict,a::AppliedArray)
-  cf = array_caches(hash,a.f...)
-  cg = array_cache(hash,a.g)
-  (cf,cg)
-end
-
-@inline function getindex!(cache,a::AppliedArray,i...)
-  cf, cg = cache
-  fi = getitems!(cf,a.f,i...)
-  gi = getindex!(cg,a.g,i...)
-  r = apply_functor(gi,fi...)
-  r
-end
-
-function Base.getindex(a::AppliedArray,i...)
-  cache = array_cache(a)
-  getindex!(cache,a,i...)
-end
-
-Base.size(a::AppliedArray) = a.size
-
-function Base.IndexStyle(
-  ::Type{AppliedArray{T,N,G,F}}) where {T,N,G,F}
-  common_index_style(F)
-end
-
-"""
     evaluate_array_of_functors(f::AbstractArray,a::AbstractArray...)
 
 # Examples
@@ -480,13 +410,6 @@ julia> evaluate_array_of_functors(g,x,y)
 """
 function evaluate_array_of_functors(f::AbstractArray,a::AbstractArray...)
   EvaluatedArray(f,a...)
-end
-
-# We need an operation tree in terms of evaluated arrays as much
-# in order to allow caching of intermediate results
-function evaluate_array_of_functors(f::AppliedArray,a::AbstractArray...)
-  ffx = [ evaluate_array_of_functors(ffi,a...) for ffi in f.f ]
-  evaluate_array_of_functors(f.g,ffx...)
 end
 
 struct EvaluatedArray{T,N,F,G} <: AbstractArray{T,N}

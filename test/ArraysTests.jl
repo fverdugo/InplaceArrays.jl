@@ -72,28 +72,6 @@ ai, bi = testitems(a,b)
 @test bi == zero(Int)
 
 a = fill(+,10)
-b = fill(-,10)
-c = apply_array_of_functors(*,a,b)
-d = fill(apply_functor(*,+,-),10)
-test_array(c,d)
-x = rand(10)
-y = rand(10)
-r = [(xi+yi)*(xi-yi) for (xi,yi) in zip(x,y)]
-test_array_of_functors(c,(x,y),r)
-v = evaluate_array_of_functors(c,x,y)
-test_array(v,r)
-
-a = fill(bcast(+),10)
-b = fill(bcast(-),10)
-c = apply_array_of_functors(bcast(*),a,b)
-d = fill(apply_functor(bcast(*),bcast(+),bcast(-)),10)
-test_array(c,d)
-x = [rand(2,3) for i in 1:10]
-y = [rand(1,3) for i in 1:10]
-r = [(xi.+yi).*(xi.-yi) for (xi,yi) in zip(x,y)]
-test_array_of_functors(c,(x,y),r)
-
-a = fill(+,10)
 x = rand(10)
 y = rand(10)
 v = evaluate_array_of_functors(a,x,y)
@@ -144,6 +122,7 @@ b = ArrayWithCounter(rand(12))
 c = evaluate_array_of_functors(bcast(-),a,b)
 d = evaluate_array_of_functors(bcast(+),a,c)
 e = evaluate_array_of_functors(bcast(*),d,c)
+r = [ (ai.-bi).*(ai.+(ai.-bi)) for (ai,bi) in zip(a,b)]
 cache = array_cache(e)
 reset_counter!(a)
 reset_counter!(b)
@@ -155,20 +134,5 @@ end
 
 @test all(a.counter .== 2) 
 @test all(b.counter .== 1)
-
-a = Fill(+,12)
-b = ArrayWithCounter(fill(2,12))
-c = apply_array_of_functors(-,a,b)
-d = apply_array_of_functors(*,c,c)
-x = fill(3,12)
-r = evaluate_array_of_functors(d,x)
-
-cr = array_cache(r)
-reset_counter!(b)
-for i in 1:length(b)
-  ri = getindex!(cr,r,i)
-end
-@test all(b.counter .== 1)
-
 
 end # module
