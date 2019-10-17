@@ -13,7 +13,7 @@ export evaluate_functor!
 export evaluate_functor
 export test_functor
 export bcast
-export functor_apply
+export apply_functor
 export functor_return_type
 export functor_return_types
 
@@ -237,7 +237,7 @@ struct Applied{G,F<:Tuple}
 end
 
 """
-    c = functor_apply(g,fs...)
+    c = apply_functor(g,fs...)
 
 Returns an object `c` representing the "composition" of functor `g` with several
 functors `fs`. The resulting object `c` is such that
@@ -251,7 +251,7 @@ fxs = evaluate_functors(fs,x...)
 evaluate_functor(g,fxs...)
 ```
 """
-functor_apply(g,f...) = Applied(g,f...)
+apply_functor(g,f...) = Applied(g,f...)
 
 function functor_return_type(f::Applied,Ts...)
   Ys = functor_return_types(f.f,Ts...)

@@ -7,7 +7,7 @@ using TensorValues
 using InplaceArrays
 
 using FillArrays
-using InplaceArrays.Arrays: ComposedArray
+using InplaceArrays.Arrays: AppliedArray
 import InplaceArrays: gradient
 
 export CellFieldLike
@@ -113,9 +113,9 @@ function apply(f,cv::CellFieldLike)
   CellValue(cv,r)
 end
 
-function gradient(a::ComposedArray)
+function gradient(a::AppliedArray)
   ∇g = gradient(a.g)
-  ComposedArray(∇g,a.f...)
+  AppliedArray(∇g,a.f...)
 end
 
 end # module

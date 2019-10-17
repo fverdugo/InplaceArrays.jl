@@ -12,7 +12,7 @@ using InplaceArrays
 using InplaceArrays.Functors: BCasted
 using InplaceArrays.Functors: Applied
 import InplaceArrays.Functors: functor_cache
-import InplaceArrays.Functors: functor_apply
+import InplaceArrays.Functors: apply_functor
 import InplaceArrays.Functors: evaluate_functor!
 import InplaceArrays.Functors: functor_return_type
 import InplaceArrays: return_type
@@ -259,7 +259,7 @@ function apply(g::Function,f::Field...)
   ComposedField(b,f...)
 end
 
-function functor_apply(g,f::Field...)
+function apply_functor(g,f::Field...)
     ComposedField(g,f...)
 end
 

@@ -19,7 +19,7 @@ end
 
 function bench1(n)
   a = rand(n)
-  c = evaluate_functor_with_arrays(-,a)
+  c = evaluate_array_of_functors(-,a)
   cache = array_cache(c)
   @time loop(c,cache)
 end
@@ -27,7 +27,7 @@ end
 function bench2(n)
   a = rand(n)
   b = rand(n)
-  c = evaluate_functor_with_arrays(-,a,b)
+  c = evaluate_array_of_functors(-,a,b)
   cache = array_cache(c)
   @time loop(c,cache)
 end
@@ -35,7 +35,7 @@ end
 function bench3(n)
   a = fill(rand(2,3),n)
   b = rand(n)
-  c = evaluate_functor_with_arrays(bcast(-),a,b)
+  c = evaluate_array_of_functors(bcast(-),a,b)
   cache = array_cache(c)
   @time loop(c,cache)
 end
@@ -43,9 +43,9 @@ end
 function bench4(n)
   a = fill(rand(2,3),n)
   b = rand(n)
-  c = evaluate_functor_with_arrays(bcast(-),a,b)
-  d = evaluate_functor_with_arrays(bcast(+),a,c)
-  e = evaluate_functor_with_arrays(bcast(*),d,c)
+  c = evaluate_array_of_functors(bcast(-),a,b)
+  d = evaluate_array_of_functors(bcast(+),a,c)
+  e = evaluate_array_of_functors(bcast(*),d,c)
   cache = array_cache(e)
   @time loop(e,cache)
 end
@@ -53,7 +53,7 @@ end
 function bench5(n)
   a = fill(+,n)
   b = fill(-,n)
-  c = compose_functor_with_arrays(*,a,b)
+  c = apply_array_of_functors(*,a,b)
   cache = array_cache(c)
   @time loop(c,cache)
 end
@@ -61,7 +61,7 @@ end
 function bench5b(n)
   a = fill(+,n)
   b = fill(-,n)
-  c = compose_functor_with_arrays(*,a,b)
+  c = apply_array_of_functors(*,a,b)
   x = rand(n)
   y = rand(n)
   cc, cci, cx = array_of_functors_cache(c,x,y)
@@ -71,7 +71,7 @@ end
 function bench5c(n)
   a = fill(+,n)
   b = fill(-,n)
-  c = compose_functor_with_arrays(*,a,b)
+  c = apply_array_of_functors(*,a,b)
   x = rand(n)
   y = rand(n)
   v = evaluate_array_of_functors(c,x,y)
@@ -82,7 +82,7 @@ end
 function bench6(n)
   a = fill(bcast(+),n)
   b = fill(bcast(-),n)
-  c = compose_functor_with_arrays(bcast(*),a,b)
+  c = apply_array_of_functors(bcast(*),a,b)
   cache = array_cache(c)
   @time loop(c,cache)
 end
@@ -90,7 +90,7 @@ end
 function bench6b(n)
   a = fill(bcast(+),n)
   b = fill(bcast(-),n)
-  c = compose_functor_with_arrays(bcast(*),a,b)
+  c = apply_array_of_functors(bcast(*),a,b)
   x = [rand(mod(i-1,3)+1,3) for i in 1:n]
   y = [rand(1,3) for i in 1:n]
   cc, cci, cx = array_of_functors_cache(c,x,y)
@@ -100,7 +100,7 @@ end
 function bench6c(n)
   a = fill(bcast(+),n)
   b = fill(bcast(-),n)
-  c = compose_functor_with_arrays(bcast(*),a,b)
+  c = apply_array_of_functors(bcast(*),a,b)
   x = [rand(mod(i-1,3)+1,3) for i in 1:n]
   y = [rand(1,3) for i in 1:n]
   v = evaluate_array_of_functors(c,x,y)
@@ -138,7 +138,7 @@ end
 function bench10(n)
   a = fill(rand(2,3),n)
   b = rand(n)
-  c = evaluate_functor_with_arrays(bcast(Float64,2,-),a,b)
+  c = evaluate_array_of_functors(bcast(Float64,2,-),a,b)
   cache = array_cache(c)
   @time loop(c,cache)
 end
