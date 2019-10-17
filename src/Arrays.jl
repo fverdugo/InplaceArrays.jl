@@ -396,7 +396,11 @@ struct ComposedArray{T,N,I,G,F<:Tuple} <:AbstractArray{T,N}
   g::G
   f::F
   function ComposedArray(g::AbstractArray,f::AbstractArray...)
-    T = Applied{eltype(g),Tuple{map(eltype,f)...}}
+    gi = testitem(g)
+    fi = testitems(f...)
+    vi = functor_apply(gi,fi...)
+    #T = Applied{eltype(g),Tuple{map(eltype,f)...}}
+    T = typeof(vi) # TODO this assumes concrete types in g and f
     N, size, I = _prepare_shape(g,f...)
     G = typeof(g)
     F = typeof(f)

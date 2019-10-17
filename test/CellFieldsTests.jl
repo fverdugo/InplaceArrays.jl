@@ -1,4 +1,3 @@
-include("MockFields.jl")
 module CellFieldsTests
 
 using Test

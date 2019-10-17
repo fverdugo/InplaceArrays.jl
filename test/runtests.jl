@@ -14,6 +14,8 @@ include("MockFields.jl")
 
 @time @testset "FieldsTests" begin include("FieldsTests.jl") end
 
+@time @testset "CellFieldsTests" begin include("CellFieldsTests.jl") end
+
 @testset "Benchmarks" begin include("../bench/runbenchs.jl") end
 
 end # module
