@@ -13,7 +13,6 @@ export evaluate_functor!
 export evaluate_functor
 export test_functor
 export bcast
-export apply_functor
 export functor_return_type
 export functor_return_types
 
@@ -226,52 +225,6 @@ end
 
 @inline function _sizes(a)
   (size(a),)
-end
-
-struct Applied{G,F<:Tuple}
-  g::G
-  f::F
-  function Applied(g,f...)
-    new{typeof(g),typeof(f)}(g,f)
-  end
-end
-
-"""
-    c = apply_functor(g,fs...)
-
-Returns an object `c` representing the "composition" of functor `g` with several
-functors `fs`. The resulting object `c` is such that
-```julia
-evaluate_functor(c,x...)
-```
-is equivalent to
-
-```julia
-fxs = evaluate_functors(fs,x...)
-evaluate_functor(g,fxs...)
-```
-"""
-apply_functor(g,f...) = Applied(g,f...)
-
-function functor_return_type(f::Applied,Ts...)
-  Ys = functor_return_types(f.f,Ts...)
-  functor_return_type(f.g,Ys...)
-end
-
-function functor_cache(f::Applied,x...)
-  cfs = functor_caches(f.f,x...)
-  Ts = map(typeof,x)
-  Ys = functor_return_types(f.f,Ts...)
-  fxs = testvalues(Ys...)
-  cg = functor_cache(f.g,fxs...)
-  (cg,cfs)
-end
-
-@inline function evaluate_functor!(cache,f::Applied,x...)
-  cg, cfs = cache
-  fxs = evaluate_functors!(cfs,f.f,x...)
-  y = evaluate_functor!(cg,f.g,fxs...)
-  y
 end
 
 typedfun(::Type{T},f::Function) where T = TypedFunction(T,f)
