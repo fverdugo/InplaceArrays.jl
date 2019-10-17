@@ -1,11 +1,5 @@
 module Fields
 
-# TODO move to TensorValues
-using StaticArrays
-using TensorValues
-export mutable
-mutable(::Type{MultiValue{S,T,N,L}}) where {S,T,N,L} = MArray{S,T,N,L}
-
 using Test
 using TensorValues
 using InplaceArrays
@@ -128,23 +122,25 @@ pointdim(f::T) where T<:FieldLike = pointdim(T)
 """
     num_dofs(b::Basis) -> Int
 """
-function num_dofs end
+function num_dofs end #TODO use in tester
+
+#function gradtype(::Type{T},::Val{D}) where {T,D}
+#  P = Point{D,Int16}
+#  p = zero(P)
+#  v = zero(T)
+#  g = outer(p,v)
+#  typeof(g)
+#end
 
 """
     gradtype(::Type) -> DataType
 """
-function gradtype(::Type{T},::Val{D}) where {T,D}
+function gradtype(::Type{F}) where F<:FieldLike{D,T} where {D,T}
   P = Point{D,Int16}
   p = zero(P)
   v = zero(T)
   g = outer(p,v)
   typeof(g)
-end
-
-function gradtype(::Type{F}) where F<:FieldLike
-  T = valuetype(F)
-  D = pointdim(F)
-  gradtype(T,Val(D))
 end
 
 gradtype(f::T) where T<:FieldLike = gradtype(T)
@@ -199,8 +195,7 @@ struct ApplyGradStyle <: GradStyle end
 struct ComposedField{D,T,C<:Applied,G} <: Field{D,T}
   c::C
   function ComposedField(g,f::Field{D}...;gradstyle::GradStyle=ApplyGradStyle()) where D
-    vs = testvectors(valuetypes(f...)...)
-    Ts = map(typeof,vs)
+    Ts = map(return_type,f)
     V = functor_return_type(g,Ts...)
     T = eltype(V)
     c = Applied(g,f...)
@@ -216,7 +211,8 @@ function return_type(f::ComposedField)
 end
 
 function new_cache(f::ComposedField)
-   vs = testvectors(valuetypes(f.c.f...)...)
+   Ts = map(return_type,f.c.f)
+   vs = testvalues(Ts...)
    cg = functor_cache(f.c.g,vs...)
    cf = new_caches(f.c.f...)
    (cg,cf)
