@@ -21,9 +21,18 @@ using this approach, we introduce the *Functor interface*. Any type is
 referred to as a *Functor* if it implements the following interface. We rely in
 duck typing here. There is not an abstract type representing a functor.
 
+The functions to be overloaded for a new functor are
+- [`evaluate_functor!`](@ref)
+- [`functor_cache`](@ref)
+- [`functor_return_type`](@ref)
+
+The functor interface can be tested with the [`test_functor`](@ref) function.
+
 ```@docs
-InplaceArrays.Functors.evaluate_functor!
-InplaceArrays.Functors.functor_cache
+evaluate_functor!
+functor_cache
+functor_return_type
+test_functor
 ```
 
 ## Default implementations
@@ -78,11 +87,5 @@ functor_caches
 
 ```@docs
 bcast
-```
-
-## Composition
-
-```@docs
-compose_functors
 ```
 

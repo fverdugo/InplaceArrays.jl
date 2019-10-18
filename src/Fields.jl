@@ -1,19 +1,13 @@
 module Fields
 
-# TODO move to TensorValues
-using StaticArrays
-using TensorValues
-export mutable
-mutable(::Type{MultiValue{S,T,N,L}}) where {S,T,N,L} = MArray{S,T,N,L}
-
 using Test
 using TensorValues
 using InplaceArrays
 using InplaceArrays.Functors: BCasted
-using InplaceArrays.Functors: Composed
 import InplaceArrays.Functors: functor_cache
-import InplaceArrays.Functors: compose_functors
 import InplaceArrays.Functors: evaluate_functor!
+import InplaceArrays.Functors: functor_return_type
+import InplaceArrays: return_type # Needed?
 import Base: +, -, *
 
 export Point
@@ -22,6 +16,7 @@ export evaluate!
 export new_cache
 export gradient
 export ∇
+export num_dofs
 export FieldLike
 export Field
 export Basis
@@ -32,7 +27,8 @@ export test_basis
 export valuetype
 export pointdim
 export gradtype
-import InplaceArrays: apply
+#export ApplyToGradStyle
+#export ApplyGradStyle
 
 """
     const Point{D,T} = VectorValue{D,T}
@@ -43,10 +39,40 @@ const Point{D,T} = VectorValue{D,T}
 
 # Definition of the interface
 
+"""
+    abstract type FieldLike{D,T,N}
+
+Abstract type representing either a field ( for `N==1`) or a basis of fields
+(for `N==2`) of value `T`, evaluable at points with `D` components.
+
+The following functions need to be overloaded for derived types:
+
+- [`evaluate!`](@ref)
+- [`new_cache`](@ref)
+- [`return_type(::FieldLike)`](@ref)
+- [`num_dofs`](@ref) (Only for `CellBasis`, i.e. `N==2`.)
+
+The following functions can optionally be also provided
+
+- [`gradient(f::FieldLike)`](@ref)
+
+The interface can be tested with these functions
+
+- [`test_fieldlike`](@ref)
+- [`test_field`](@ref)
+- [`test_field_with_gradient`](@ref)
+
+"""
 abstract type FieldLike{D,T,N} end
 
+"""
+    const Field = FieldLike{D,T,1} where {D,T}
+"""
 const Field = FieldLike{D,T,1} where {D,T}
 
+"""
+    const Basis = FieldLike{D,T,2} where {D,T}
+"""
 const Basis = FieldLike{D,T,2} where {D,T}
 
 """
@@ -62,15 +88,28 @@ function evaluate! end
 """
 function new_cache end
 
+function gradient end
+const ∇ = gradient
+
 """
     gradient(f::FieldLike) -> FieldLike
 """
-function gradient end
+function gradient(f::FieldLike) end
 
-const ∇ = gradient
+"""
+    return_type(::FieldLike) -> DataType
+"""
+function return_type(::FieldLike) end
+# TODO really needed? I think it is only needed if we want to implement
+# the functor interface. But, I think it is not needed to implement this
+# interface anymore. EDIT: YES! it is needed for evaluating cell fields
+
+#TODO use @abstract method, also in new array interface
 
 # Testers
 
+"""
+"""
 function test_fieldlike(
   f::FieldLike{D,T,N},x::AbstractVector{<:Point},v::AbstractVector,cmp=(==)) where {D,T,N}
   w = evaluate(f,x)
@@ -82,22 +121,35 @@ function test_fieldlike(
   test_functor(f,(x,),v,cmp)
 end
 
+function functor_return_type(f::Field,Ts...)
+  return_type(f)
+end
+
+"""
+"""
 function test_field(f::Field,x,v,cmp::Function=(==))
   test_fieldlike(f,x,v,cmp)
 end
 
+"""
+"""
 function test_field_with_gradient(f::Field,x,v,g,cmp::Function=(==))
   test_field(f,x,v,cmp)
   ∇f = gradient(f)
   test_field(∇f,x,g,cmp)
 end
 
+"""
+"""
 function test_basis(f::Basis,x,v,cmp::Function=(==))
   test_fieldlike(f,x,v,cmp)
 end
 
 # info getters
 
+"""
+    evaluate(f::FieldLike,x::AbstractVector{<:Point})
+"""
 function evaluate(f::FieldLike,x::AbstractVector{<:Point})
   cache = new_cache(f)
   v = evaluate!(cache,f,x)
@@ -109,25 +161,25 @@ end
 """
 valuetype(::Type{<:FieldLike{D,T}}) where {D,T} = T
 
-valuetype(f::T) where T<:FieldLike = valuetype(T)
+valuetype(f::T) where T = valuetype(T)
 
 """
     pointdim(::Type) -> Int
 """
 pointdim(::Type{<:FieldLike{D}}) where D = D
 
-pointdim(f::T) where T<:FieldLike = pointdim(T)
+pointdim(f::T) where T = pointdim(T)
 
 
 """
     num_dofs(b::Basis) -> Int
 """
-function num_dofs end
+function num_dofs end #TODO use in tester
 
 """
     gradtype(::Type) -> DataType
 """
-function gradtype(::Type{T},::Val{D}) where {T,D}
+function gradtype(::Type{F}) where F<:FieldLike{D,T} where {D,T}
   P = Point{D,Int16}
   p = zero(P)
   v = zero(T)
@@ -135,19 +187,15 @@ function gradtype(::Type{T},::Val{D}) where {T,D}
   typeof(g)
 end
 
-function gradtype(::Type{F}) where F<:FieldLike
-  T = valuetype(F)
-  D = pointdim(F)
-  gradtype(T,Val(D))
-end
-
-gradtype(f::T) where T<:FieldLike = gradtype(T)
+gradtype(f::T) where T = gradtype(T)
 
 function valuetypes(a,b...)
   Ta = valuetype(a)
   Tb = valuetypes(b...)
   (Ta,Tb...)
 end
+
+# TODO needed if we have map?
 
 function valuetypes(a)
   Ta = valuetype(a)
@@ -162,17 +210,7 @@ end
   evaluate!(cache,f,x)
 end
 
-function testvectors(Ta,Tb...)
-  va = Vector{Ta}(undef,0)
-  vb = testvectors(Tb...)
-  (va,vb...)
-end
-
-function testvectors(Ta)
-  va = Vector{Ta}(undef,0)
-  (va,)
-end
-
+# TODO needed if we have map?
 function new_caches(a,b...)
   ca = new_cache(a)
   cb = new_caches(b...)
@@ -182,83 +220,6 @@ end
 function new_caches(a)
   ca = new_cache(a)
   (ca,)
-end
-
-using InplaceArrays.Functors: Composed
-
-abstract type GradStyle end
-struct ApplyToGradStyle <: GradStyle end
-struct ApplyGradStyle <: GradStyle end
-
-struct ComposedField{D,T,C<:Composed,G} <: Field{D,T}
-  c::C
-  function ComposedField(g,f::Field{D}...;gradstyle::GradStyle=ApplyGradStyle()) where D
-    vs = testvectors(valuetypes(f...)...)
-    r = evaluate_functor(g,vs...)
-    T = eltype(r)
-    c = Composed(g,f...)
-    C = typeof(c)
-    G = typeof(gradstyle)
-    new{D,T,C,G}(c)
-  end
-end
-
-function new_cache(f::ComposedField)
-   vs = testvectors(valuetypes(f.c.f...)...)
-   cg = functor_cache(f.c.g,vs...)
-   cf = new_caches(f.c.f...)
-   (cg,cf)
-end
-
-function evaluate!(cache,f::ComposedField,x::AbstractVector{<:Point})
-  evaluate_functor!(cache,f.c,x)
-end
-
-GradStyle(f::ComposedField{D,T,C,G}) where {D,T,C,G} = G()
-
-#TODO this is not really the gradient, but we have followed this criterion
-gradient(f::ComposedField) = _gradient(f,GradStyle(f))
-
-function _gradient(f::ComposedField,s::ApplyGradStyle)
-  g = gradient(f.c.g)
-  ComposedField(g,f.c.f...;gradstyle=s)
-end
-
-function _gradient(f::ComposedField,s::ApplyToGradStyle)
-  gs = gradients(f.c.f...)
-  ComposedField(f.c.g,gs...;gradstyle=s)
-end
-
-gradient(f::BCasted) = bcast(gradient(f.f))
-
-function gradients(a,b...)
-  ga = gradient(a)
-  gb = gradients(b...)
-  (ga,gb...)
-end
-
-function gradients(a)
-  ga = gradient(a)
-  (ga,)
-end
-
-function apply(g::Function,f::Field...)
-  b = bcast(g)
-  ComposedField(b,f...)
-end
-
-function compose_functors(g,f::Field...)
-    ComposedField(g,f...)
-end
-
-for op in (:+,:-)
-  @eval begin
-    #TODO Do not overload apply overload the function application instead
-    function apply(::typeof($op),f::Field...)
-      b = bcast($op)
-      ComposedField(b,f...;gradstyle=ApplyToGradStyle())
-    end
-  end
 end
 
 # TODO DOF basis

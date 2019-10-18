@@ -6,6 +6,7 @@ using Base: @propagate_inbounds
 
 import Base: size
 import Base: getindex, setindex!
+import Base: similar
 
 export CachedArray
 export CachedMatrix
@@ -59,6 +60,11 @@ end
 @propagate_inbounds function setindex!(B::CachedArray{T,N}, v, kj::Vararg{Integer,N}) where {T,N}
     B.array[kj...] = v
     v
+end
+
+function similar(::Type{CachedArray{T,N,A}},s::Tuple{Vararg{Int}}) where {T,N,A}
+  a = similar(A,s)
+  CachedArray(a)
 end
 
 end # module CachedArrays

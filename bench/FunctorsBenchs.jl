@@ -1,8 +1,6 @@
 module FunctorsBenchs
 
 using InplaceArrays
-#using Test
-#include("../src/Functors.jl")
 
 @inline function repeat(n,f,args...)
   for i in 1:n
@@ -26,56 +24,19 @@ function bench2(n)
   @time repeat(n,evaluate_functor!,cache,f,a,b)
 end
 
-function bench3(n)
-  f = compose_functors(-,+)
-  a = 2
-  b = 3
-  cache = functor_cache(f,a,b)
-  @time repeat(n,evaluate_functor!,cache,f,a,b)
+function bench9(n)
+  a = 1
+  b = 2
+  cache = functor_cache(typedfun(Int,+),a,b)
+  @time repeat(n,evaluate_functor!,cache,+,a,b)
 end
 
-function bench4(n)
-  f = compose_functors(bcast(-),bcast(+))
+function bench10(n)
+  f = bcast(Float64,2,+)
   a = rand(3,2)
   b = 3
   cache = functor_cache(f,a,b)
   @time repeat(n,evaluate_functor!,cache,f,a,b)
-end
-
-function bench5(n)
-  f = compose_functors(bcast(-),bcast(*),bcast(+))
-  a = rand(3,2)
-  b = 3
-  cache = functor_cache(f,a,b)
-  @time repeat(n,evaluate_functor!,cache,f,a,b)
-end
-
-function bench6(n)
-  a = rand(2,3)
-  f = compose_functors(bcast(+),bcast(-),a)
-  b = 3
-  c = rand(1,3)
-  cache = functor_cache(f,b,c)
-  @time repeat(n,evaluate_functor!,cache,f,b,c)
-end
-
-function bench7(n)
-  a = rand(2,3)
-  b = 4
-  f = compose_functors(bcast(-),a,b)
-  cache = functor_cache(f)
-  @time repeat(n,evaluate_functor!,cache,f)
-end
-
-function bench8(n)
-  C = bcast(+)
-  D = rand(2,3)
-  B = compose_functors(bcast(-),C,D)
-  A = compose_functors(bcast(*),B,C)
-  x = rand(2,3)
-  y = 3
-  cache = functor_cache(A,x,y)
-  @time repeat(n,evaluate_functor!,cache,A,x,y)
 end
 
 for n in (1,1,10,1000,100000)
@@ -83,12 +44,8 @@ for n in (1,1,10,1000,100000)
     println("+++ runing suite for n = $($n) +++")
     bench1($n)
     bench2($n)
-    bench3($n)
-    bench4($n)
-    bench5($n)
-    bench6($n)
-    bench7($n)
-    bench8($n)
+    bench9($n)
+    bench10($n)
   end
 end
 

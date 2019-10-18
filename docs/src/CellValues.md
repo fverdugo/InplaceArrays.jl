@@ -3,6 +3,7 @@
 
 ```@docs
 CellValue
+test_cell_value
 ```
 
 ## Constructors
@@ -31,13 +32,6 @@ PlainCellValue
 ```@docs
 getarrays
 ```
-
-## Creating lazy operation trees
-
-```@docs
-apply
-```
-
 ## CellValue objects holding numeric data
 
 ```@docs
@@ -45,7 +39,14 @@ CellNumber
 CellArray
 CellData
 ```
+## Creating lazy operation trees
 
-The arithmetic operations `+`, `-`, `*` are overloaded for
-`CellNumber`, `CellArray`, and `CellData` objects.
+```@docs
+apply(f,cvs::CellData...)
+```
+The following (lazy) arithmetic operations are defined for `CellData` objects. When `CellArrays` are involved, the operations are done in broadcast form in the inner arrays.
+
+- `+`
+- `-`
+- `*`
 

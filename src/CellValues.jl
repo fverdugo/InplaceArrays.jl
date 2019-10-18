@@ -1,7 +1,9 @@
 module CellValues
 
 using FillArrays
+using TensorValues
 using InplaceArrays
+using Printf
 
 export CellValue
 export PlainCellValue
@@ -35,12 +37,17 @@ Concrete implementations of `CellValue` do not need to be type stable. In partic
 type. This allows to pass `CellValue` objects around without polluting the stack trace if an error occurs.
 However, the object stored in the `array` field has to be type stable. This allows to access
 items in `CellValue` objects efficiently via the `array` field (within a function barrier).
+
+The `CellValue` interface can be tested with the [`test_cell_value`](@ref) function.
 """
 abstract type CellValue{T} end
 
+"""
+    test_cell_value(cv::CellValue,b::AbstractArray,cmp=(==))
+"""
 function test_cell_value(cv::CellValue,b::AbstractArray,cmp=(==))
   a = cv.array
-  test_inplace_array(a,b,cmp)
+  test_array(a,b,cmp)
 end
 
 # Constructors
@@ -140,8 +147,10 @@ function Base.show(io::IO,self::CellValue)
 end
 
 function _show(io,a)
-  for (i, a) in enumerate(a)
-    println(io,"$i -> $a")
+  for (i, ai) in enumerate(a)
+    @printf(io,"%3d -> ",i)
+    _printval(io,ai)
+    println(io,"")
   end
 end
 
@@ -159,10 +168,24 @@ function _show_short(io,a)
       print(io,"... (total length $(length(a)))")
       break
     end
-    println(io,"$i -> $ai")
+    @printf(io,"%3d -> ",i)
+    _printval(io,ai)
+    println(io,"")
   end
 end
 
+function _printval(io,x)
+  print(io,"$x")
+end
+
+function _printval(io,v::AbstractVector)
+  print(io, "[")
+  for (i, vi) in enumerate(v)
+    i > 1 && print(io, ", ")
+    print(io, vi)
+  end
+  print(io, "]")
+end
 
 # CellValue types holding numeric data
 
@@ -176,7 +199,7 @@ const CellNumber = CellValue{T} where T<:Number
 """
     const CellArray = CellValue{T} where T<:AbstractArray{S,N} where {S,N}
 
-Any `CellValue{T}` type holding arrays of type `T` in each entry.
+Any `CellValue{T}` type holding arrays of type `T`.
 """
 const CellArray = CellValue{T} where T<:AbstractArray{S,N} where {S,N}
 
@@ -190,24 +213,24 @@ const CellData = CellValue{T} where T<:Union{Number,AbstractArray}
 # Lazy operation trees
 
 """
-    apply(f,cvs::CellValue...)
+    apply(f,cvs::CellData...)
 
 Returns a new `CellValue` object obtained by applying
-the functor `f` to the entries of the given `CellValue` objects `cvs`.
+the functor `f` to the entries of the given `CellData` objects `cvs`.
 """
 function apply(f,cvs::CellData...)
   arrs = getarrays(cvs...)
-  r = evaluate_functor_with_arrays(f,arrs...)
+  r = evaluate_array_of_functors(f,arrs...)
   CellValue(r)
 end
 
 function apply(f,cv::CellData)
   arr = cv.array
-  r = evaluate_functor_with_arrays(f,arr)
+  r = evaluate_array_of_functors(f,arr)
   CellValue(cv,r)
 end
 
-for op in (:+,:-,:*)
+for op in (:+,:-)
   @eval begin
 
     function ($op)(a::CellNumber)
@@ -217,6 +240,12 @@ for op in (:+,:-,:*)
     function ($op)(a::CellArray)
       apply(bcast($op),a)
     end
+
+  end
+end
+
+for op in (:+,:-,:*)
+  @eval begin
 
     function ($op)(a::CellNumber,b::CellNumber)
       apply($op,a,b)

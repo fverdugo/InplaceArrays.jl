@@ -8,6 +8,9 @@ export getindex!
 include("CachedArrays.jl")
 @reexport using InplaceArrays.CachedArrays
 
+include("Inference.jl")
+@reexport using InplaceArrays.Inference
+
 include("Functors.jl")
 @reexport using InplaceArrays.Functors
 

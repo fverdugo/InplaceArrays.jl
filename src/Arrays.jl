@@ -4,66 +4,19 @@ using Test
 using InplaceArrays
 using FillArrays
 
-export test_inplace_array
-export test_inplace_array_of_functors
-export evaluate_functor_with_arrays
+export test_array
+export test_array_of_functors
 export evaluate_array_of_functors
-export compose_functor_with_arrays
-export compose_arrays_of_functors
-export array_cache
+export array_cache #TODO replace by new_cache
 export array_caches
 export array_of_functors_cache
 export getindex!
 export getitems!
-export testvalue
-export testvalues
 export testitem
 export testitems
 export uses_hash
 
-import InplaceArrays: functor_cache
-import InplaceArrays: evaluate_functor!
 using InplaceArrays.Functors: _split
-
-"""
-    testvalue(::Type{T}) where T
-
-Returns an arbitrary instance of type `T`. It defaults to `zero(T)` for
-non-array types and to an empty array for array types.
- This function is useful to determine the type returned by a
-function without calling `Base._return_type`.
-
-# Examples
-
-```jldoctests
-julia> a = testvalue(Int)
-0
-
-julia> b = testvalue(Float64)
-0.0
-
-julia> typeof(a + b)
-Float64
-```
-"""
-function testvalue end
-
-testvalue(::Type{T}) where T = zero(T)
-
-function testvalue(::Type{T}) where T<:AbstractArray{E,N} where {E,N}
-   similar(T,fill(0,N)...)
-end
-
-function testvalues(a,b...)
-  ta = testvalue(a)
-  tb = testvalues(b...)
-  (ta,tb...)
-end
-
-function testvalues(a)
-  ta = testvalue(a)
-  (ta,)
-end
 
 """
     testitem(a::AbstractArray)
@@ -216,7 +169,7 @@ function array_of_functors_cache(a::AbstractArray,x...)
   ai = testitem(a)
   cai = functor_cache(ai,xi...)
   ca = array_cache(a)
-  (ca, cai, cx) # TODO think what to do with last argument
+  (ca, cai, cx)
 end
 
 """
@@ -260,7 +213,11 @@ getindex!(cache,a::AbstractArray,i...) = a[i...]
 
 # Test the interface
 
-function test_inplace_array(
+"""
+    test_array(
+      a::AbstractArray{T,N}, b::AbstractArray{S,N},cmp=(==)) where {T,S,N}
+"""
+function test_array(
   a::AbstractArray{T,N}, b::AbstractArray{S,N},cmp=(==)) where {T,S,N}
   @test cmp(a,b)
   cache = array_cache(a)
@@ -282,7 +239,11 @@ function test_inplace_array(
   true
 end
 
-function test_inplace_array_of_functors(
+"""
+    test_array_of_functors(
+      a::AbstractArray, x::Tuple, r::AbstractArray, cmp=(==) )
+"""
+function test_array_of_functors(
   a::AbstractArray, x::Tuple, r::AbstractArray, cmp=(==) )
   ca, cai, cx = array_of_functors_cache(a,x...)
   t = true
@@ -294,23 +255,23 @@ function test_inplace_array_of_functors(
   end
   @test t
   v = evaluate_array_of_functors(a,x...)
-  test_inplace_array(v,r,cmp)
+  test_array(v,r,cmp)
 end
 
 # Work with several arrays at once
 
-function getitems!(cf::Tuple,a::Tuple{Vararg{<:AbstractArray}},i...)
+@inline function getitems!(cf::Tuple,a::Tuple{Vararg{<:AbstractArray}},i...)
   _getitems!(cf,i,a...)
 end
 
-function _getitems!(c,i,a,b...)
+@inline function _getitems!(c,i,a,b...)
   ca,cb = _split(c...)
   ai = getindex!(ca,a,i...)
   bi = getitems!(cb,b,i...)
   (ai,bi...)
 end
 
-function _getitems!(c,i,a)
+@inline function _getitems!(c,i,a)
   ca, = c
   ai = getindex!(ca,a,i...)
   (ai,)
@@ -334,7 +295,7 @@ end
 
 
 """
-    evaluate_functor_with_arrays(f,a::AbstractArray...)
+    evaluate_array_of_functors(f,a::AbstractArray...)
 
 Returns a (lazy) array representing the evaluation of the
 given functor `f` to the entries of the input arrays `a`.
@@ -364,16 +325,16 @@ julia> b = collect(6:10)
   9
  10
 
-julia> c = evaluate_functor_with_arrays(+,a,b)
-5-element InplaceArrays.Arrays.EvaluatedArray{Int64,1,IndexLinear(),Tuple{Array{Int64,1},Array{Int64,1}},FillArrays.Fill{typeof(+),1,Tuple{Base.OneTo{Int64}}}}:
+julia> c = evaluate_array_of_functors(+,a,b)
+5-element InplaceArrays.Arrays.EvaluatedArray{Int64,1,Tuple{Array{Int64,1},Array{Int64,1}},FillArrays.Fill{typeof(+),1,Tuple{Base.OneTo{Int64}}}}:
   7
   9
  11
  13
  15
 
-julia> d = evaluate_functor_with_arrays(*,c,c)
-5-element InplaceArrays.Arrays.EvaluatedArray{Int64,1,IndexLinear(),Tuple{InplaceArrays.Arrays.EvaluatedArray{Int64,1,IndexLinear(),Tuple{Array{Int64,1},Array{Int64,1}},FillArrays.Fill{typeof(+),1,Tuple{Base.OneTo{Int64}}}},InplaceArrays.Arrays.EvaluatedArray{Int64,1,IndexLinear(),Tuple{Array{Int64,1},Array{Int64,1}},FillArrays.Fill{typeof(+),1,Tuple{Base.OneTo{Int64}}}}},FillArrays.Fill{typeof(*),1,Tuple{Base.OneTo{Int64}}}}:
+julia> d = evaluate_array_of_functors(*,c,c)
+5-element InplaceArrays.Arrays.EvaluatedArray{Int64,1,Tuple{InplaceArrays.Arrays.EvaluatedArray{Int64,1,Tuple{Array{Int64,1},Array{Int64,1}},FillArrays.Fill{typeof(+),1,Tuple{Base.OneTo{Int64}}}},InplaceArrays.Arrays.EvaluatedArray{Int64,1,Tuple{Array{Int64,1},Array{Int64,1}},FillArrays.Fill{typeof(+),1,Tuple{Base.OneTo{Int64}}}}},FillArrays.Fill{typeof(*),1,Tuple{Base.OneTo{Int64}}}}:
   49
   81
  121
@@ -381,7 +342,7 @@ julia> d = evaluate_functor_with_arrays(*,c,c)
  225
 ```
 """
-function evaluate_functor_with_arrays(f,a::AbstractArray...)
+function evaluate_array_of_functors(f,a::AbstractArray...)
   s = common_size(a...)
   EvaluatedArray(Fill(f,s...),a...)
 end
@@ -389,8 +350,7 @@ end
 function _prepare_shape(a...)
   s = common_size(a...)
   N = length(s)
-  I = common_index_style(a...)
-  (N,s,I)
+  (N,s)
 end
 
 function common_size(a::AbstractArray...)
@@ -404,7 +364,7 @@ function common_size(a::AbstractArray...)
 end
 
 #TODO not sure what to do with shape and index-style
-function common_index_style(a::AbstractArray...)
+function common_index_style(::Type{<:Tuple})
   IndexLinear()
 end
 
@@ -414,75 +374,6 @@ mutable struct Evaluation{X,F}
   function Evaluation(x::X,fx::F) where {X,F}
     new{X,F}(x,fx)
   end
-end
-
-"""
-    compose_functor_with_arrays(g,f::AbstractArray...)
-"""
-function compose_functor_with_arrays(g,f::AbstractArray...)
-  s = common_size(f...)
-  compose_arrays_of_functors(Fill(g,s...),f...)
-end
-
-"""
-    compose_arrays_of_functors(g::AbstractArray,f::AbstractArray...)
-"""
-function compose_arrays_of_functors(g::AbstractArray,f::AbstractArray...)
-  ComposedArray(g,f...)
-end
-
-# TODO remove I from type params
-struct ComposedArray{T,N,I,G,F<:Tuple} <:AbstractArray{T,N}
-  size::NTuple{N,Int}
-  g::G
-  f::F
-  function ComposedArray(g::AbstractArray,f::AbstractArray...)
-    fi = testitems(f...)
-    gi = testitem(g)
-    a = compose_functors(gi,fi...)
-    T = typeof(a)
-    N, size, I = _prepare_shape(g,f...)
-    G = typeof(g)
-    F = typeof(f)
-    new{T,N,I,G,F}(size,g,f)
-  end
-end
-
-function testitem(a::ComposedArray)
-  fi = testitems(a.f...)
-  gi = testitem(a.g)
-  r = compose_functors(gi,fi...)
-  r
-end
-
-function uses_hash(::Type{<:ComposedArray})
-  Val(true)
-end
-
-function array_cache(hash::Dict,a::ComposedArray)
-  cf = array_caches(hash,a.f...)
-  cg = array_cache(hash,a.g)
-  (cf,cg)
-end
-
-@inline function getindex!(cache,a::ComposedArray,i...)
-  cf, cg = cache
-  fi = getitems!(cf,a.f,i...)
-  gi = getindex!(cg,a.g,i...)
-  r = compose_functors(gi,fi...)
-  r
-end
-
-function Base.getindex(a::ComposedArray,i...)
-  cache = array_cache(a)
-  getindex!(cache,a,i...)
-end
-
-Base.size(a::ComposedArray) = a.size
-
-function Base.IndexStyle(
-  ::Type{ComposedArray{T,N,I,G,F}}) where {T,N,I,G,F}
-  I
 end
 
 """
@@ -516,7 +407,7 @@ julia> y = collect(6:10)
  10
 
 julia> evaluate_array_of_functors(g,x,y)
-5-element InplaceArrays.Arrays.EvaluatedArray{Int64,1,IndexLinear(),Tuple{Array{Int64,1},Array{Int64,1}},Array{Function,1}}:
+5-element InplaceArrays.Arrays.EvaluatedArray{Int64,1,Tuple{Array{Int64,1},Array{Int64,1}},Array{Function,1}}:
   7
  -5
  24
@@ -528,27 +419,18 @@ function evaluate_array_of_functors(f::AbstractArray,a::AbstractArray...)
   EvaluatedArray(f,a...)
 end
 
-# We need an operation tree in terms of evaluated arrays as much
-# in order to allow caching of intermediate results
-function evaluate_array_of_functors(f::ComposedArray,a::AbstractArray...)
-  ffx = [ evaluate_array_of_functors(ffi,a...) for ffi in f.f ]
-  evaluate_array_of_functors(f.g,ffx...)
-end
-
-# TODO remove I from type params
-struct EvaluatedArray{T,N,I,F,G} <: AbstractArray{T,N}
+struct EvaluatedArray{T,N,F,G} <: AbstractArray{T,N}
   g::G
   f::F
   size::NTuple{N,Int}
   function EvaluatedArray(g::AbstractArray,f::AbstractArray...)
     G = typeof(g)
     F = typeof(f)
-    gi = testitem(g)
-    fi = testitems(f...)
-    vi = evaluate_functor(gi,fi...)
-    T = typeof(vi)
-    N, size, I = _prepare_shape(g,f...)
-    new{T,N,I,F,G}(g,f,size)
+    gi = testitem(g) #Assumes that all functors return the same type
+    Ts = map(eltype,f)
+    T = functor_return_type(gi,Ts...)
+    N, s = _prepare_shape(g,f...)
+    new{T,N,F,G}(g,f,s)
   end
 end
 
@@ -618,8 +500,8 @@ function Base.getindex(a::EvaluatedArray,i...)
 end
 
 function Base.IndexStyle(
-  ::Type{EvaluatedArray{T,N,I,F,G}}) where {T,N,I,F,G}
-  I
+  ::Type{EvaluatedArray{T,N,F,G}}) where {T,N,F,G}
+  common_index_style(F)
 end
 
 Base.size(a::EvaluatedArray) = a.size
