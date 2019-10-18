@@ -83,6 +83,8 @@ function CellValue(a::AbstractArray{<:FieldLike})
   CellFieldLikeWithCachedGrad(a)
 end
 
+# TODO wrap a cell field instead of an array
+# use getarray instea of array in the CellValue interace
 mutable struct CellFieldLikeWithCachedGrad{V} <: CellValue{V}
   array::AbstractArray{V}
   gradient
@@ -104,13 +106,13 @@ end
 const FieldLikeOrData = Union{FieldLike,Number,AbstractArray}
 const CellFieldLikeOrData = CellValue{T} where T<: FieldLikeOrData
 
-function apply(f,cvs::CellFieldLikeOrData...)
-  #TODO
-end
-
-function apply(f,cv::CellFieldLike)
-  #TODO
-end
+#function apply(f,cvs::CellFieldLikeOrData...)
+#  #TODO
+#end
+#
+#function apply(f,cv::CellFieldLike)
+#  #TODO
+#end
 
 abstract type GradStyle end
 struct ApplyToGradStyle <: GradStyle end

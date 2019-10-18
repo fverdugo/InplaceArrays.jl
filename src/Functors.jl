@@ -227,6 +227,7 @@ end
   (size(a),)
 end
 
+# TODO typed versions perhaps not needed
 typedfun(::Type{T},f::Function) where T = TypedFunction(T,f)
 
 struct TypedFunction{T,F}

@@ -1,7 +1,9 @@
 module CellValues
 
 using FillArrays
+using TensorValues
 using InplaceArrays
+using Printf
 
 export CellValue
 export PlainCellValue
@@ -140,8 +142,10 @@ function Base.show(io::IO,self::CellValue)
 end
 
 function _show(io,a)
-  for (i, a) in enumerate(a)
-    println(io,"$i -> $a")
+  for (i, ai) in enumerate(a)
+    @printf(io,"%3d -> ",i)
+    _printval(io,ai)
+    println(io,"")
   end
 end
 
@@ -159,10 +163,24 @@ function _show_short(io,a)
       print(io,"... (total length $(length(a)))")
       break
     end
-    println(io,"$i -> $ai")
+    @printf(io,"%3d -> ",i)
+    _printval(io,ai)
+    println(io,"")
   end
 end
 
+function _printval(io,x)
+  print(io,"$x")
+end
+
+function _printval(io,v::AbstractVector)
+  print(io, "[")
+  for (i, vi) in enumerate(v)
+    i > 1 && print(io, ", ")
+    print(io, vi)
+  end
+  print(io, "]")
+end
 
 # CellValue types holding numeric data
 

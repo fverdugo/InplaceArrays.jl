@@ -31,17 +31,20 @@ cx = CellValue(x,l)
 
 test_cell_field_with_gradient(cf,cx,afx,a∇fx)
 
-fun(x) = 4*x
-∇fun(x) = VectorValue(4.0,4.0)
-∇(::typeof(fun)) = ∇fun
+using InplaceArrays.Functors: BCasted
+using InplaceArrays.Functors: TypedBCasted
+using InplaceArrays.Functors: TypedFunction
 
 import Base: getproperty
 import Base: ndims
+import Base: +, -
 import InplaceArrays: valuetype
 import InplaceArrays: pointdim
 import InplaceArrays: gradtype
 import InplaceArrays: GradStyle
 import InplaceArrays: evaluate
+import InplaceArrays: gradient
+import InplaceArrays: apply
 
 valuetype(::Type{<:CellNumber{T}}) where {T} = T
 
@@ -77,19 +80,19 @@ end
 
 evaltype(cd::T) where T <:CellFieldLike = evaltype(T)
 
-@show pointdim(cf)
-@show valuetype(cf)
-@show ndims(cf)
+struct AppliedFieldLike{D,T,N} <: FieldLike{D,T,N} end
 
-struct AppliedCellFieldLike{D,T,N} <: CellValue{FieldLike{D,T,N}}
+#TODO mutable
+mutable struct AppliedCellFieldLike{D,T,N} <: CellValue{AppliedFieldLike{D,T,N}}
   g
   f
   gradstyle
+  grad
   function AppliedCellFieldLike(s::GradStyle,g,f::CellFieldLikeOrData...)
     T = _find_T(g,f...)
     N = _find_N(f...)
     D = _find_D(f...)
-    new{D,T,N}(g,f,s)
+    new{D,T,N}(g,f,s,nothing)
   end
 end
 
@@ -142,6 +145,64 @@ function evaluate(cf::AppliedCellFieldLike,x::CellPoints)
   apply(cf.g,fx...)
 end
 
+function gradient(cf::AppliedCellFieldLike)
+  if cf.grad === nothing
+    cf.grad = _gradient(cf,cf.gradstyle)
+  end
+  cf.grad
+end
+
+function _gradient(cf,::ApplyGradStyle)
+  g = gradient(cf.g)
+  AppliedCellFieldLike(cf.gradstyle,g,cf.f...)
+end
+
+function _gradient(cf,::ApplyToGradStyle)
+  f = map(gradient,cf.f)
+  g = cf.g
+  AppliedCellFieldLike(cf.gradstyle,g,f...)
+end
+
+function apply(g,f::CellFieldLikeOrData...)
+  s = ApplyGradStyle()
+  apply(s,g,f...)
+end
+
+function apply(s::GradStyle,g,f::CellFieldLikeOrData...)
+  @assert any( isa(fi,CellFieldLike) for fi in f ) "At leas one `CellField` has to be provieded"
+  AppliedCellFieldLike(s,g,f...)
+end
+
+for op in (:+,:-)
+  @eval begin
+    function ($op)(a::CellFieldLike)
+      s = ApplyToGradStyle()
+      apply(s,bcast($op),a)
+    end
+    function ($op)(a::CellFieldLike,b::CellFieldLike)
+      s = ApplyToGradStyle()
+      apply(s,bcast($op),a,b)
+    end
+  end
+end
+
+function test_cell_field_like_no_array(
+  cf::CellFieldLike{D},cx::CellPoints{D},v::AbstractArray,cmp=(==)) where D
+  cfx = evaluate(cf,cx)
+  test_cell_value(cfx,v,cmp)
+end
+
+function test_cell_field_like_with_gradient_no_array(
+  cf::CellFieldLike{D},cx::CellPoints{D},
+  v::AbstractArray,g::AbstractArray,cmp=(==)) where D
+
+  test_cell_field_like_no_array(cf,cx,v,cmp)
+  cg = gradient(cf)
+  test_cell_field_like_no_array(cg,cx,g,cmp)
+end
+
+gradient(f::BCasted) = bcast(gradient(f.f))
+
 np = 4
 v = 3.0
 d = 2
@@ -154,22 +215,40 @@ cf = CellValue(f,l)
 afx = fill(fx,l)
 a∇fx = fill(∇fx,l)
 
-cf2 = AppliedCellFieldLike(ApplyGradStyle(),bcast(-),cf)
-@show typeof(cf2)
-@show cf2.g
-@show cf2.f
+cf2 = apply(bcast(-),cf)
 
 np = 4
 p = Point(1,2)
 x = fill(p,np)
 cx = CellValue(x,l)
 
-@show evaluate(cf2,cx)
+fun(x) = 4*x
+∇fun(x) = VectorValue(4.0,4.0)
+∇(::typeof(fun)) = ∇fun
 
-#TODO
-#cg = apply(bcast(fun),cf)
-#agx = fill(fill(fun(v),np),l)
-#a∇gx = fill(fill(∇fun(v),np),l)
+cg = apply(bcast(fun),cf)
+agx = fill(fill(fun(v),np),l)
+a∇gx = fill(fill(∇fun(v),np),l)
+cgx = evaluate(cg,cx)
+test_cell_value(cgx,agx)
+c∇g = gradient(cg)
+@test c∇g === gradient(cg)
+@test c∇g === gradient(cg)
+c∇gx = evaluate(c∇g,cx)
+test_cell_value(c∇gx,a∇gx)
+test_cell_field_like_with_gradient_no_array(cg,cx,agx,a∇gx)
+
+cg = cf - cf
+agx = fill(fill(0.0,np),l)
+a∇gx = fill(fill(VectorValue(0.0,0.0),np),l)
+cgx = evaluate(cg,cx)
+c∇g = gradient(cg)
+@test c∇g === gradient(cg)
+@test c∇g === gradient(cg)
+c∇gx = evaluate(c∇g,cx)
+test_cell_value(c∇gx,a∇gx)
+test_cell_field_like_with_gradient_no_array(cg,cx,agx,a∇gx)
+
 #test_cell_field_with_gradient(cg,cx,agx,a∇gx)
 
 
