@@ -33,12 +33,29 @@ import InplaceArrays: evaluate
 import InplaceArrays: gradient
 import InplaceArrays: apply
 
+"""
+    const CellFieldLike = CellValue{V} where V<:FieldLike{D,T,N} where {D,T,N}
+"""
 const CellFieldLike = CellValue{V} where V<:FieldLike{D,T,N} where {D,T,N}
+
+"""
+    const CellField = CellFieldLike{D,T,1} where {D,T}
+"""
 const CellField = CellFieldLike{D,T,1} where {D,T}
+
+"""
+    const CellBasis = CellFieldLike{D,T,2} where {D,T}
+"""
 const CellBasis = CellFieldLike{D,T,2} where {D,T}
 
+"""
+    const CellPoints = CellValue{A} where A<:AbstractVector{P} where P<:Point{D,T} where {D,T}
+"""
 const CellPoints = CellValue{A} where A<:AbstractVector{P} where P<:Point{D,T} where {D,T}
 
+"""
+    evaluate(cf::CellFieldLike,x::CellPoints) -> CellArray
+"""
 function evaluate(cf::CellFieldLike,x::CellPoints)
   r = evaluate_array_of_functors(cf.array,x.array)
   CellValue(x,r)
@@ -48,17 +65,24 @@ gradient(a::Fill) = Fill(gradient(a.value),a.axes)
 
 #TODO implement also gradient for compressed
 
+"""
+    gradient(cf::CellFieldLike) -> CellFieldLike
+"""
 function gradient(cf::CellFieldLike)
   a = gradient(cf.array)
   CellValue(cf,a)
 end
 
+"""
+"""
 function test_cell_field_like(cf::CellFieldLike,cx::CellPoints,v::AbstractArray,cmp=(==))
   cfx = evaluate(cf,cx)
   test_cell_value(cfx,v,cmp)
   test_array_of_functors(cf.array,(cx.array,),v,cmp)
 end
 
+"""
+"""
 function test_cell_field_like_with_gradient(
   cf::CellFieldLike,cx::CellPoints,v::AbstractArray,g::AbstractArray,cmp=(==))
   test_cell_field_like(cf,cx,v,cmp)
@@ -66,19 +90,27 @@ function test_cell_field_like_with_gradient(
   test_cell_field_like(c∇f,cx,g,cmp)
 end
 
+"""
+"""
 function test_cell_field(cf::CellField,x::CellPoints,v::AbstractArray,cmp=(==))
   test_cell_field_like(cf,x,v)
 end
 
+"""
+"""
 function test_cell_field_with_gradient(
   cf::CellField,x::CellPoints,v::AbstractArray,g::AbstractArray,cmp=(==))
   test_cell_field_like_with_gradient(cf,x,v,g)
 end
 
+"""
+"""
 function test_cell_basis(cf::CellBasis,x::CellPoints,v::AbstractArray,cmp=(==))
   test_cell_field_like(cf,x,v)
 end
 
+"""
+"""
 function test_cell_basis_with_gradient(
   cf::CellBasis,x::CellPoints,v::AbstractArray,g::AbstractArray,cmp=(==))
   test_cell_field_like_with_gradient(cf,x,v,g)
@@ -260,12 +292,16 @@ for op in (:+,:-)
   end
 end
 
+"""
+"""
 function test_cell_field_like_no_array(
   cf::CellFieldLike{D},cx::CellPoints{D},v::AbstractArray,cmp=(==)) where D
   cfx = evaluate(cf,cx)
   test_cell_value(cfx,v,cmp)
 end
 
+"""
+"""
 function test_cell_field_like_with_gradient_no_array(
   cf::CellFieldLike{D},cx::CellPoints{D},
   v::AbstractArray,g::AbstractArray,cmp=(==)) where D

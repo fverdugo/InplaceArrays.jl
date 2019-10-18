@@ -16,6 +16,7 @@ export evaluate!
 export new_cache
 export gradient
 export ∇
+export num_dofs
 export FieldLike
 export Field
 export Basis
@@ -29,8 +30,6 @@ export gradtype
 #export ApplyToGradStyle
 #export ApplyGradStyle
 
-#TODO list of methods to overwrite
-
 """
     const Point{D,T} = VectorValue{D,T}
 
@@ -40,10 +39,40 @@ const Point{D,T} = VectorValue{D,T}
 
 # Definition of the interface
 
+"""
+    abstract type FieldLike{D,T,N}
+
+Abstract type representing either a field ( for `N==1`) or a basis of fields
+(for `N==2`) of value `T`, evaluable at points with `D` components.
+
+The following functions need to be overloaded for derived types:
+
+- [`evaluate!`](@ref)
+- [`new_cache`](@ref)
+- [`return_type(::FieldLike)`](@ref)
+- [`num_dofs`](@ref) (Only for `CellBasis`, i.e. `N==2`.)
+
+The following functions can optionally be also provided
+
+- [`gradient(f::FieldLike)`](@ref)
+
+The interface can be tested with these functions
+
+- [`test_fieldlike`](@ref)
+- [`test_field`](@ref)
+- [`test_field_with_gradient`](@ref)
+
+"""
 abstract type FieldLike{D,T,N} end
 
+"""
+    const Field = FieldLike{D,T,1} where {D,T}
+"""
 const Field = FieldLike{D,T,1} where {D,T}
 
+"""
+    const Basis = FieldLike{D,T,2} where {D,T}
+"""
 const Basis = FieldLike{D,T,2} where {D,T}
 
 """
@@ -59,15 +88,28 @@ function evaluate! end
 """
 function new_cache end
 
+function gradient end
+const ∇ = gradient
+
 """
     gradient(f::FieldLike) -> FieldLike
 """
-function gradient end
+function gradient(f::FieldLike) end
 
-const ∇ = gradient
+"""
+    return_type(::FieldLike) -> DataType
+"""
+function return_type(::FieldLike) end
+# TODO really needed? I think it is only needed if we want to implement
+# the functor interface. But, I think it is not needed to implement this
+# interface anymore. EDIT: YES! it is needed for evaluating cell fields
+
+#TODO use @abstract method, also in new array interface
 
 # Testers
 
+"""
+"""
 function test_fieldlike(
   f::FieldLike{D,T,N},x::AbstractVector{<:Point},v::AbstractVector,cmp=(==)) where {D,T,N}
   w = evaluate(f,x)
@@ -83,22 +125,31 @@ function functor_return_type(f::Field,Ts...)
   return_type(f)
 end
 
+"""
+"""
 function test_field(f::Field,x,v,cmp::Function=(==))
   test_fieldlike(f,x,v,cmp)
 end
 
+"""
+"""
 function test_field_with_gradient(f::Field,x,v,g,cmp::Function=(==))
   test_field(f,x,v,cmp)
   ∇f = gradient(f)
   test_field(∇f,x,g,cmp)
 end
 
+"""
+"""
 function test_basis(f::Basis,x,v,cmp::Function=(==))
   test_fieldlike(f,x,v,cmp)
 end
 
 # info getters
 
+"""
+    evaluate(f::FieldLike,x::AbstractVector{<:Point})
+"""
 function evaluate(f::FieldLike,x::AbstractVector{<:Point})
   cache = new_cache(f)
   v = evaluate!(cache,f,x)
@@ -144,6 +195,8 @@ function valuetypes(a,b...)
   (Ta,Tb...)
 end
 
+# TODO needed if we have map?
+
 function valuetypes(a)
   Ta = valuetype(a)
   (Ta,)
@@ -157,6 +210,7 @@ end
   evaluate!(cache,f,x)
 end
 
+# TODO needed if we have map?
 function new_caches(a,b...)
   ca = new_cache(a)
   cb = new_caches(b...)
