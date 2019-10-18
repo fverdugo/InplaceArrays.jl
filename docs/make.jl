@@ -11,6 +11,7 @@ DocMeta.setdocmeta!(InplaceArrays.Arrays,:DocTestSetup,init)
 
 pages = [
   "Home" => "index.md",
+  "Inferring return types" => "Inference.md",
   "The functor interface" => "Functors.md",
   "Extended AbstractArray interface" => "Arrays.md",
   "The CellValue interface" => "CellValues.md"]

@@ -7,6 +7,19 @@ export testargs_broadcast
 export return_type
 export return_type_broadcast
 
+"""
+    return_type(f::Function,Ts::DataType...) -> DataType
+
+Returns the type returned by function `f` when called with arguments
+of the types in `Ts`.
+
+The underlying implementation uses the function [`testargs`](@ref) to generate
+some test values in order to call the function and determine the returned type.
+This mechanism does not use `Base._return_type`. One of the advantages is
+that the given function `f` is called, and thus, meaningful error messages
+will be displayed if there is any error in `f`. 
+    
+"""
 function return_type(f::Function,Ts...)
   args = testargs(f,Ts...)
   try
@@ -24,6 +37,11 @@ function return_type(f::Function,Ts...)
 
 end
 
+"""
+    return_type_broadcast(f::Function,Ts::DataType...) -> DataType
+
+Like [`return_type`](@ref), but when function `f` is used in a broadcast operation.
+"""
 function return_type_broadcast(f::Function,Ts...)
   args = testargs_broadcast(f,Ts...)
   r = broadcast(f,args...)
@@ -48,6 +66,27 @@ end
 
 _new_arg(vi,yi) = yi
 
+"""
+    testargs(f::Function,Ts::DataType...) -> Tuple
+
+Returns a tuple with valid arguments of the types in `Ts` in order to call
+function `f`. It defaults to `testvalues(Ts...)`, see the [`testvalues`](@ref)
+function.
+The user can overload the `testargs`
+function for particular functions if the default test arguments are not in the domain
+of the function and a `DomainError` is raised.
+
+# Examples
+
+For the following function, the default test argument (which is a zero)
+is not in the domain. We can overload the `testargs` function to provide
+a valid test argument.
+    
+    foo(x) = sqrt(x-1)
+    testargs(::typeof(foo),T::DataType) = (zero(T)+one(T),)
+    return_type(foo, Int) == Float64
+
+"""
 testargs(f::Function,Ts...) = testvalues(Ts...)
 
 """
@@ -55,21 +94,9 @@ testargs(f::Function,Ts...) = testvalues(Ts...)
 
 Returns an arbitrary instance of type `T`. It defaults to `zero(T)` for
 non-array types and to an empty array for array types.
- This function is useful to determine the type returned by a
-function without calling `Base._return_type`.
-
-# Examples
-
-```jldoctests
-julia> a = testvalue(Int)
-0
-
-julia> b = testvalue(Float64)
-0.0
-
-julia> typeof(a + b)
-Float64
-```
+This function is used to compute the default test arguments in
+[`testargs`](@ref).
+It can be overloaded for new types `T` if `zero(T)` does not makes sense. 
 """
 function testvalue end
 
@@ -79,6 +106,12 @@ function testvalue(::Type{T}) where T<:AbstractArray{E,N} where {E,N}
    similar(T,fill(0,N)...)
 end
 
+"""
+    testvalues(Ts::DataType...) -> Tuple
+
+Returns a tuple with test values for each of the types in `Ts`.
+Equivalent to `map(testvalue,Ts)`.
+"""
 function testvalues(a,b...)
   ta = testvalue(a)
   tb = testvalues(b...)

@@ -19,7 +19,10 @@ export functor_return_types
 # Define Functor interface
 
 """
-    functor_return_type(f,Ts...)
+    functor_return_type(f,Ts::DataType...)
+
+Returns the type of the result of calling functor `f` with
+arguments of the types in `Ts`.
 """
 function functor_return_type end
 
@@ -75,6 +78,15 @@ function evaluate_functor(f,x...)
   y
 end
 
+"""
+    test_functor(f,x,y,cmp::Function=(==))
+
+Function used to test if the functor `f` has been
+implemented correctly. `f` is a functor object, `x` is the input
+of the functor, and `y` is the expected result. Function `cmp` is used to compare
+the computed result with the expected one. The checks are done with the `@test`
+macro.
+"""
 function test_functor(f,x,y,cmp=(==))
   z = evaluate_functor(f,x...)
   @test cmp(z,y)

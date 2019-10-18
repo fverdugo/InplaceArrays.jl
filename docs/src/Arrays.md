@@ -8,12 +8,23 @@ the scratch data. In order to circumvent this problem, we add new methods to the
 
 ## New functions
 
+The functions added to the `AbstractArray` interface are:
+- [`getindex!`](@ref)
+- [`array_cache`](@ref)
+- [`uses_hash`](@ref)
+- [`testitem`](@ref)
+
+The new methods can be tested with the these functions:
+- [`test_array`](@ref)
+- [`test_array_of_functors`](@ref)
+
 ```@docs
 getindex!
 array_cache
 uses_hash
 testitem
-testvalue
+test_array
+test_array_of_functors
 ```
 
 ## Working with several arrays
@@ -25,13 +36,7 @@ testitems
 ## Creating lazy operation trees
 
 ```@docs
-evaluate_functor_with_arrays
+evaluate_array_of_functors(f,a::AbstractArray...)
+evaluate_array_of_functors(f::AbstractArray,a::AbstractArray...)
 ```
 
-## Working with arrays of functors
-
-```@docs
-evaluate_array_of_functors
-compose_functor_with_arrays
-compose_arrays_of_functors
-```

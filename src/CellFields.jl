@@ -29,7 +29,6 @@ import Base: +, -
 import InplaceArrays: valuetype
 import InplaceArrays: pointdim
 import InplaceArrays: gradtype
-import InplaceArrays: GradStyle
 import InplaceArrays: evaluate
 import InplaceArrays: gradient
 import InplaceArrays: apply

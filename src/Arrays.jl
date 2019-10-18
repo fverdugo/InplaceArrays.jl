@@ -7,8 +7,7 @@ using FillArrays
 export test_array
 export test_array_of_functors
 export evaluate_array_of_functors
-export evaluate_array_of_functors
-export array_cache
+export array_cache #TODO replace by new_cache
 export array_caches
 export array_of_functors_cache
 export getindex!
@@ -214,6 +213,10 @@ getindex!(cache,a::AbstractArray,i...) = a[i...]
 
 # Test the interface
 
+"""
+    test_array(
+      a::AbstractArray{T,N}, b::AbstractArray{S,N},cmp=(==)) where {T,S,N}
+"""
 function test_array(
   a::AbstractArray{T,N}, b::AbstractArray{S,N},cmp=(==)) where {T,S,N}
   @test cmp(a,b)
@@ -236,6 +239,10 @@ function test_array(
   true
 end
 
+"""
+    test_array_of_functors(
+      a::AbstractArray, x::Tuple, r::AbstractArray, cmp=(==) )
+"""
 function test_array_of_functors(
   a::AbstractArray, x::Tuple, r::AbstractArray, cmp=(==) )
   ca, cai, cx = array_of_functors_cache(a,x...)

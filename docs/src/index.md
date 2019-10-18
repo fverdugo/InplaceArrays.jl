@@ -4,7 +4,7 @@
 Documentation for InplaceArrays.jl
 
 ```@contents
-Pages = ["index.md", "Functors.md", "Arrays.md", "CellValues.md"]
+Pages = ["index.md", "Inference.md", "Functors.md", "Arrays.md", "CellValues.md"]
 ```
 
 
