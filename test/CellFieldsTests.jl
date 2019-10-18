@@ -145,6 +145,10 @@ function evaluate(cf::AppliedCellFieldLike,x::CellPoints)
   apply(cf.g,fx...)
 end
 
+function evaluate(cd::CellData,x::CellPoints)
+  cd
+end
+
 function gradient(cf::AppliedCellFieldLike)
   if cf.grad === nothing
     cf.grad = _gradient(cf,cf.gradstyle)
@@ -249,7 +253,16 @@ c∇gx = evaluate(c∇g,cx)
 test_cell_value(c∇gx,a∇gx)
 test_cell_field_like_with_gradient_no_array(cg,cx,agx,a∇gx)
 
-#test_cell_field_with_gradient(cg,cx,agx,a∇gx)
+fun(x,y) = x - y
+cv = CellValue(fill(v,np),l)
+cg = apply(bcast(fun),cf,cv)
+agx = fill(fill(0.0,np),l)
+test_cell_field_like_no_array(cg,cx,agx)
 
+fun(x,y,z) = x - z
+cv = CellValue(fill(v,np),l)
+cg = apply(bcast(fun),cv,cv,cf)
+agx = fill(fill(0.0,np),l)
+test_cell_field_like_no_array(cg,cx,agx)
 
 end # module
