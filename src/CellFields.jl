@@ -247,6 +247,7 @@ function apply(s::GradStyle,g,f::CellFieldLikeOrData...)
   AppliedCellFieldLike(s,g,f...)
 end
 
+# TODO add also ops between CellFields and CellBasis
 for op in (:+,:-)
   @eval begin
     function ($op)(a::CellFieldLike)

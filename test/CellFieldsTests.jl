@@ -89,4 +89,11 @@ cg = apply(bcast(fun),cv,cv,cf)
 agx = fill(fill(0.0,np),l)
 test_cell_field_like_no_array(cg,cx,agx)
 
+ca = cf
+cb = ca + ca
+cd = ca - cb
+cdx = evaluate(cd,cx)
+c∇d = gradient(cd)
+cdx = evaluate(c∇d,cx)
+
 end # module
