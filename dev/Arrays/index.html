@@ -12,7 +12,7 @@ julia&gt; getindex!(cache,a,2)
 2
 
 julia&gt; getindex!(cache,a,4)
-4</code></pre><p>In this example, using the extended interface provides little benefit, but for new array types that need scratch data, efficient implementations of <code>getindex!</code> can make a performance difference by avoiding  low granularity allocations.</p></div></div><a class="source-link" target="_blank" href="https://github.com/fverdugo/InplaceArrays.jl/blob/de06dab2cf424172491f7f85fd02fcd2074bcf38/src/Arrays.jl#L175-L209">source</a></section><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="InplaceArrays.Arrays.array_cache" href="#InplaceArrays.Arrays.array_cache"><code>InplaceArrays.Arrays.array_cache</code></a> — <span class="docstring-category">Function</span>.</div><div><div><pre><code class="language-julia">array_cache(a::AbstractArray)</code></pre><p>Returns a cache object to be used in the <a href="#InplaceArrays.Arrays.getindex!"><code>getindex!</code></a> function. It defaults to </p><pre><code class="language-none">array_cache(a::T) where T = nothing</code></pre><p>for types <code>T</code> such that <code>uses_hash(T) == Val(false)</code>, and </p><pre><code class="language-none">function array_cache(a::T) where T
+4</code></pre><p>In this example, using the extended interface provides little benefit, but for new array types that need scratch data, efficient implementations of <code>getindex!</code> can make a performance difference by avoiding  low granularity allocations.</p></div></div><a class="source-link" target="_blank" href="https://github.com/fverdugo/InplaceArrays.jl/blob/91ae4c74f7f80ab3851f1f2117ad9231a0faacf0/src/Arrays.jl#L175-L209">source</a></section><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="InplaceArrays.Arrays.array_cache" href="#InplaceArrays.Arrays.array_cache"><code>InplaceArrays.Arrays.array_cache</code></a> — <span class="docstring-category">Function</span>.</div><div><div><pre><code class="language-julia">array_cache(a::AbstractArray)</code></pre><p>Returns a cache object to be used in the <a href="#InplaceArrays.Arrays.getindex!"><code>getindex!</code></a> function. It defaults to </p><pre><code class="language-none">array_cache(a::T) where T = nothing</code></pre><p>for types <code>T</code> such that <code>uses_hash(T) == Val(false)</code>, and </p><pre><code class="language-none">function array_cache(a::T) where T
   hash = Dict{UInt,Any}()
   array_cache(hash,a)
 end</code></pre><p>for types <code>T</code> such that <code>uses_hash(T) == Val(true)</code>, see the <a href="#InplaceArrays.Arrays.uses_hash"><code>uses_hash</code></a> function. In the later case, the type <code>T</code> should implement the following signature:</p><pre><code class="language-none">array_cache(hash::Dict,a::AbstractArray)</code></pre><p>where we pass a dictionary (i.e., a hash table) in the first argument. This hash table can be used to test if the object <code>a</code> has already build a cache and re-use it as follows</p><pre><code class="language-none">id = objectid(a)
@@ -21,7 +21,7 @@ if haskey(hash,id)
 else
   cache = ... # Build a new cache depending on your needs
   hash[id] = cache # Register the cache in the hash table
-end</code></pre><p>This mechanism is needed, e.g., to re-use intermediate results in complex lazy operation trees. In multi-threading computations, a different hash table per thread has to be used in order to avoid race conditions.</p></div></div><a class="source-link" target="_blank" href="https://github.com/fverdugo/InplaceArrays.jl/blob/de06dab2cf424172491f7f85fd02fcd2074bcf38/src/Arrays.jl#L75-L109">source</a></section><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="InplaceArrays.Arrays.uses_hash" href="#InplaceArrays.Arrays.uses_hash"><code>InplaceArrays.Arrays.uses_hash</code></a> — <span class="docstring-category">Function</span>.</div><div><div><pre><code class="language-julia">uses_hash(::Type{T}) where T &lt;:AbstractArray</code></pre><p>This function is used to specify if the type <code>T</code> uses the hash-based mechanism to reuse caches.  It should return either <code>Val(true)</code> or <code>Val(false)</code>. It defaults to</p><pre><code class="language-none">uses_hash(::Type{&lt;:AbstractArray}) = Val(false)</code></pre><p>Once this function is defined for the type <code>T</code> it can also be called on instances of <code>T</code>.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl">julia&gt; uses_hash(Matrix{Float64})
+end</code></pre><p>This mechanism is needed, e.g., to re-use intermediate results in complex lazy operation trees. In multi-threading computations, a different hash table per thread has to be used in order to avoid race conditions.</p></div></div><a class="source-link" target="_blank" href="https://github.com/fverdugo/InplaceArrays.jl/blob/91ae4c74f7f80ab3851f1f2117ad9231a0faacf0/src/Arrays.jl#L75-L109">source</a></section><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="InplaceArrays.Arrays.uses_hash" href="#InplaceArrays.Arrays.uses_hash"><code>InplaceArrays.Arrays.uses_hash</code></a> — <span class="docstring-category">Function</span>.</div><div><div><pre><code class="language-julia">uses_hash(::Type{T}) where T &lt;:AbstractArray</code></pre><p>This function is used to specify if the type <code>T</code> uses the hash-based mechanism to reuse caches.  It should return either <code>Val(true)</code> or <code>Val(false)</code>. It defaults to</p><pre><code class="language-none">uses_hash(::Type{&lt;:AbstractArray}) = Val(false)</code></pre><p>Once this function is defined for the type <code>T</code> it can also be called on instances of <code>T</code>.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl">julia&gt; uses_hash(Matrix{Float64})
 Val{false}()
 
 julia&gt; a = ones(2,3)
@@ -31,46 +31,16 @@ julia&gt; a = ones(2,3)
 
 julia&gt; uses_hash(a)
 Val{false}()
-</code></pre></div></div><a class="source-link" target="_blank" href="https://github.com/fverdugo/InplaceArrays.jl/blob/de06dab2cf424172491f7f85fd02fcd2074bcf38/src/Arrays.jl#L132-L159">source</a></section><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="InplaceArrays.Arrays.testitem" href="#InplaceArrays.Arrays.testitem"><code>InplaceArrays.Arrays.testitem</code></a> — <span class="docstring-category">Function</span>.</div><div><div><pre><code class="language-julia">testitem(a::AbstractArray)</code></pre><p>Returns an arbitrary instance of <code>eltype(a)</code>. The default returned value is the first entry in the array if <code>length(a)&gt;0</code> and <code>testvalue(eltype(a))</code> if <code>length(a)==0</code> See the <a href="../Inference/#InplaceArrays.Inference.testvalue"><code>testvalue</code></a> function.</p><p>This function is useful to determine the type resulting from applying a given function to the items in the array without calling the <code>Base._return_type</code> function.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl">julia&gt; a = collect(1:0)
+</code></pre></div></div><a class="source-link" target="_blank" href="https://github.com/fverdugo/InplaceArrays.jl/blob/91ae4c74f7f80ab3851f1f2117ad9231a0faacf0/src/Arrays.jl#L132-L159">source</a></section><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="InplaceArrays.Arrays.testitem" href="#InplaceArrays.Arrays.testitem"><code>InplaceArrays.Arrays.testitem</code></a> — <span class="docstring-category">Function</span>.</div><div><div><pre><code class="language-julia">testitem(a::AbstractArray)</code></pre><p>Returns an arbitrary instance of <code>eltype(a)</code>. The default returned value is the first entry in the array if <code>length(a)&gt;0</code> and <code>testvalue(eltype(a))</code> if <code>length(a)==0</code> See the <a href="../Inference/#InplaceArrays.Inference.testvalue"><code>testvalue</code></a> function.</p><p>This function is useful to determine the type resulting from applying a given function to the items in the array without calling the <code>Base._return_type</code> function.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl">julia&gt; a = collect(1:0)
 0-element Array{Int64,1}
 
 julia&gt; ai = testitem(a) # Safely works with empty arrays
 0
 
 julia&gt; typeof(sqrt(ai))
-Float64</code></pre></div></div><a class="source-link" target="_blank" href="https://github.com/fverdugo/InplaceArrays.jl/blob/de06dab2cf424172491f7f85fd02fcd2074bcf38/src/Arrays.jl#L21-L43">source</a></section><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="InplaceArrays.Arrays.test_array" href="#InplaceArrays.Arrays.test_array"><code>InplaceArrays.Arrays.test_array</code></a> — <span class="docstring-category">Function</span>.</div><div><div><pre><code class="language-julia">test_array(
-  a::AbstractArray{T,N}, b::AbstractArray{S,N},cmp=(==)) where {T,S,N}</code></pre></div></div><a class="source-link" target="_blank" href="https://github.com/fverdugo/InplaceArrays.jl/blob/de06dab2cf424172491f7f85fd02fcd2074bcf38/src/Arrays.jl#L216-L219">source</a></section><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="InplaceArrays.Arrays.test_array_of_functors" href="#InplaceArrays.Arrays.test_array_of_functors"><code>InplaceArrays.Arrays.test_array_of_functors</code></a> — <span class="docstring-category">Function</span>.</div><div><div><pre><code class="language-julia">test_array_of_functors(
-  a::AbstractArray, x::Tuple, r::AbstractArray, cmp=(==) )</code></pre></div></div><a class="source-link" target="_blank" href="https://github.com/fverdugo/InplaceArrays.jl/blob/de06dab2cf424172491f7f85fd02fcd2074bcf38/src/Arrays.jl#L242-L245">source</a></section><h2><a class="nav-anchor" id="Working-with-several-arrays-1" href="#Working-with-several-arrays-1">Working with several arrays</a></h2><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="InplaceArrays.Arrays.testitems" href="#InplaceArrays.Arrays.testitems"><code>InplaceArrays.Arrays.testitems</code></a> — <span class="docstring-category">Function</span>.</div><div><div><pre><code class="language-julia">testitems(b::AbstractArray...) -&gt; Tuple</code></pre><p>Returns a tuple with the result of <code>testitem</code> applied to each of the arrays in <code>b</code>.</p></div></div><a class="source-link" target="_blank" href="https://github.com/fverdugo/InplaceArrays.jl/blob/de06dab2cf424172491f7f85fd02fcd2074bcf38/src/Arrays.jl#L58-L63">source</a></section><h2><a class="nav-anchor" id="Creating-lazy-operation-trees-1" href="#Creating-lazy-operation-trees-1">Creating lazy operation trees</a></h2><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="InplaceArrays.Arrays.evaluate_array_of_functors-Tuple{Any,Vararg{AbstractArray,N} where N}" href="#InplaceArrays.Arrays.evaluate_array_of_functors-Tuple{Any,Vararg{AbstractArray,N} where N}"><code>InplaceArrays.Arrays.evaluate_array_of_functors</code></a> — <span class="docstring-category">Method</span>.</div><div><div><pre><code class="language-julia">evaluate_array_of_functors(f,a::AbstractArray...)</code></pre><p>Returns a (lazy) array representing the evaluation of the given functor <code>f</code> to the entries of the input arrays <code>a</code>. The returned array <code>r</code> is such that <code>r[i] == evaluate_functor(f,a[1][i],a[2][i],...)</code> Items in the resulting array <code>r</code> can be memory-efficiently recovered by using the <a href="#InplaceArrays.Arrays.getindex!"><code>getindex!</code></a> function. Note that this function returns a lazy object. The operations are not performed until an entry of the array is retrieved. By applying this function to the result <code>r</code> again (possibly with another functor) we create a lazy operation tree. The underlying implementation is able to reuse intermediate results in this operation tree.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl">julia&gt; a = collect(1:5)
-5-element Array{Int64,1}:
- 1
- 2
- 3
- 4
- 5
-
-julia&gt; b = collect(6:10)
-5-element Array{Int64,1}:
-  6
-  7
-  8
-  9
- 10
-
-julia&gt; c = evaluate_array_of_functors(+,a,b)
-5-element InplaceArrays.Arrays.EvaluatedArray{Int64,1,Tuple{Array{Int64,1},Array{Int64,1}},FillArrays.Fill{typeof(+),1,Tuple{Base.OneTo{Int64}}}}:
-  7
-  9
- 11
- 13
- 15
-
-julia&gt; d = evaluate_array_of_functors(*,c,c)
-5-element InplaceArrays.Arrays.EvaluatedArray{Int64,1,Tuple{InplaceArrays.Arrays.EvaluatedArray{Int64,1,Tuple{Array{Int64,1},Array{Int64,1}},FillArrays.Fill{typeof(+),1,Tuple{Base.OneTo{Int64}}}},InplaceArrays.Arrays.EvaluatedArray{Int64,1,Tuple{Array{Int64,1},Array{Int64,1}},FillArrays.Fill{typeof(+),1,Tuple{Base.OneTo{Int64}}}}},FillArrays.Fill{typeof(*),1,Tuple{Base.OneTo{Int64}}}}:
-  49
-  81
- 121
- 169
- 225</code></pre></div></div><a class="source-link" target="_blank" href="https://github.com/fverdugo/InplaceArrays.jl/blob/de06dab2cf424172491f7f85fd02fcd2074bcf38/src/Arrays.jl#L297-L344">source</a></section><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="InplaceArrays.Arrays.evaluate_array_of_functors-Tuple{AbstractArray,Vararg{AbstractArray,N} where N}" href="#InplaceArrays.Arrays.evaluate_array_of_functors-Tuple{AbstractArray,Vararg{AbstractArray,N} where N}"><code>InplaceArrays.Arrays.evaluate_array_of_functors</code></a> — <span class="docstring-category">Method</span>.</div><div><div><pre><code class="language-julia">evaluate_array_of_functors(f::AbstractArray,a::AbstractArray...)</code></pre><p><strong>Examples</strong></p><pre><code class="language-julia-repl">julia&gt; g = [+,-,*,mod,max]
+Float64</code></pre></div></div><a class="source-link" target="_blank" href="https://github.com/fverdugo/InplaceArrays.jl/blob/91ae4c74f7f80ab3851f1f2117ad9231a0faacf0/src/Arrays.jl#L21-L43">source</a></section><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="InplaceArrays.Arrays.test_array" href="#InplaceArrays.Arrays.test_array"><code>InplaceArrays.Arrays.test_array</code></a> — <span class="docstring-category">Function</span>.</div><div><div><pre><code class="language-julia">test_array(
+  a::AbstractArray{T,N}, b::AbstractArray{S,N},cmp=(==)) where {T,S,N}</code></pre></div></div><a class="source-link" target="_blank" href="https://github.com/fverdugo/InplaceArrays.jl/blob/91ae4c74f7f80ab3851f1f2117ad9231a0faacf0/src/Arrays.jl#L216-L219">source</a></section><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="InplaceArrays.Arrays.test_array_of_functors" href="#InplaceArrays.Arrays.test_array_of_functors"><code>InplaceArrays.Arrays.test_array_of_functors</code></a> — <span class="docstring-category">Function</span>.</div><div><div><pre><code class="language-julia">test_array_of_functors(
+  a::AbstractArray, x::Tuple, r::AbstractArray, cmp=(==) )</code></pre></div></div><a class="source-link" target="_blank" href="https://github.com/fverdugo/InplaceArrays.jl/blob/91ae4c74f7f80ab3851f1f2117ad9231a0faacf0/src/Arrays.jl#L242-L245">source</a></section><h2><a class="nav-anchor" id="Working-with-several-arrays-1" href="#Working-with-several-arrays-1">Working with several arrays</a></h2><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="InplaceArrays.Arrays.testitems" href="#InplaceArrays.Arrays.testitems"><code>InplaceArrays.Arrays.testitems</code></a> — <span class="docstring-category">Function</span>.</div><div><div><pre><code class="language-julia">testitems(b::AbstractArray...) -&gt; Tuple</code></pre><p>Returns a tuple with the result of <code>testitem</code> applied to each of the arrays in <code>b</code>.</p></div></div><a class="source-link" target="_blank" href="https://github.com/fverdugo/InplaceArrays.jl/blob/91ae4c74f7f80ab3851f1f2117ad9231a0faacf0/src/Arrays.jl#L58-L63">source</a></section><h2><a class="nav-anchor" id="Creating-lazy-operation-trees-1" href="#Creating-lazy-operation-trees-1">Creating lazy operation trees</a></h2><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="InplaceArrays.Arrays.evaluate_array_of_functors-Tuple{AbstractArray,Vararg{AbstractArray,N} where N}" href="#InplaceArrays.Arrays.evaluate_array_of_functors-Tuple{AbstractArray,Vararg{AbstractArray,N} where N}"><code>InplaceArrays.Arrays.evaluate_array_of_functors</code></a> — <span class="docstring-category">Method</span>.</div><div><div><pre><code class="language-julia">evaluate_array_of_functors(f::AbstractArray,a::AbstractArray...)</code></pre><p><strong>Examples</strong></p><pre><code class="language-julia-repl">julia&gt; g = [+,-,*,mod,max]
 5-element Array{Function,1}:
  +  
  -  
@@ -100,4 +70,34 @@ julia&gt; evaluate_array_of_functors(g,x,y)
  -5
  24
   4
- 10</code></pre></div></div><a class="source-link" target="_blank" href="https://github.com/fverdugo/InplaceArrays.jl/blob/de06dab2cf424172491f7f85fd02fcd2074bcf38/src/Arrays.jl#L379-L417">source</a></section><footer><hr/><a class="previous" href="../Functors/"><span class="direction">Previous</span><span class="title">The functor interface</span></a><a class="next" href="../CellValues/"><span class="direction">Next</span><span class="title">The CellValue interface</span></a></footer></article></body></html>
+ 10</code></pre></div></div><a class="source-link" target="_blank" href="https://github.com/fverdugo/InplaceArrays.jl/blob/91ae4c74f7f80ab3851f1f2117ad9231a0faacf0/src/Arrays.jl#L379-L417">source</a></section><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="InplaceArrays.Arrays.evaluate_array_of_functors-Tuple{Any,Vararg{AbstractArray,N} where N}" href="#InplaceArrays.Arrays.evaluate_array_of_functors-Tuple{Any,Vararg{AbstractArray,N} where N}"><code>InplaceArrays.Arrays.evaluate_array_of_functors</code></a> — <span class="docstring-category">Method</span>.</div><div><div><pre><code class="language-julia">evaluate_array_of_functors(f,a::AbstractArray...)</code></pre><p>Returns a (lazy) array representing the evaluation of the given functor <code>f</code> to the entries of the input arrays <code>a</code>. The returned array <code>r</code> is such that <code>r[i] == evaluate_functor(f,a[1][i],a[2][i],...)</code> Items in the resulting array <code>r</code> can be memory-efficiently recovered by using the <a href="#InplaceArrays.Arrays.getindex!"><code>getindex!</code></a> function. Note that this function returns a lazy object. The operations are not performed until an entry of the array is retrieved. By applying this function to the result <code>r</code> again (possibly with another functor) we create a lazy operation tree. The underlying implementation is able to reuse intermediate results in this operation tree.</p><p><strong>Examples</strong></p><pre><code class="language-julia-repl">julia&gt; a = collect(1:5)
+5-element Array{Int64,1}:
+ 1
+ 2
+ 3
+ 4
+ 5
+
+julia&gt; b = collect(6:10)
+5-element Array{Int64,1}:
+  6
+  7
+  8
+  9
+ 10
+
+julia&gt; c = evaluate_array_of_functors(+,a,b)
+5-element InplaceArrays.Arrays.EvaluatedArray{Int64,1,Tuple{Array{Int64,1},Array{Int64,1}},FillArrays.Fill{typeof(+),1,Tuple{Base.OneTo{Int64}}}}:
+  7
+  9
+ 11
+ 13
+ 15
+
+julia&gt; d = evaluate_array_of_functors(*,c,c)
+5-element InplaceArrays.Arrays.EvaluatedArray{Int64,1,Tuple{InplaceArrays.Arrays.EvaluatedArray{Int64,1,Tuple{Array{Int64,1},Array{Int64,1}},FillArrays.Fill{typeof(+),1,Tuple{Base.OneTo{Int64}}}},InplaceArrays.Arrays.EvaluatedArray{Int64,1,Tuple{Array{Int64,1},Array{Int64,1}},FillArrays.Fill{typeof(+),1,Tuple{Base.OneTo{Int64}}}}},FillArrays.Fill{typeof(*),1,Tuple{Base.OneTo{Int64}}}}:
+  49
+  81
+ 121
+ 169
+ 225</code></pre></div></div><a class="source-link" target="_blank" href="https://github.com/fverdugo/InplaceArrays.jl/blob/91ae4c74f7f80ab3851f1f2117ad9231a0faacf0/src/Arrays.jl#L297-L344">source</a></section><footer><hr/><a class="previous" href="../Functors/"><span class="direction">Previous</span><span class="title">The functor interface</span></a><a class="next" href="../CellValues/"><span class="direction">Next</span><span class="title">The CellValue interface</span></a></footer></article></body></html>
