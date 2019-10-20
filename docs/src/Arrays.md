@@ -36,7 +36,7 @@ testitems
 ## Creating lazy operation trees
 
 ```@docs
-evaluate_array_of_functors(f,a::AbstractArray...)
 evaluate_array_of_functors(f::AbstractArray,a::AbstractArray...)
+evaluate_array_of_functors(f,a::AbstractArray...)
 ```
 

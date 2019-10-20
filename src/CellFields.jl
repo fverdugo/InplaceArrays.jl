@@ -268,6 +268,11 @@ function _gradient(cf,::ApplyToGradStyle)
   AppliedCellFieldLike(cf.gradstyle,g,f...)
 end
 
+"""
+    apply(g,f::CellFieldLikeOrData...) -> CellFieldLike
+
+Apply the given functor `g` to  `f...`.
+"""
 function apply(g,f::CellFieldLikeOrData...)
   s = ApplyGradStyle()
   apply(s,g,f...)

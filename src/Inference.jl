@@ -7,6 +7,7 @@ export testargs_broadcast
 export return_type
 export return_type_broadcast
 
+#TODO use DocStringExtensions
 """
     return_type(f::Function,Ts::DataType...) -> DataType
 

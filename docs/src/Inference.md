@@ -6,7 +6,7 @@ the following mechanism in order to compute returned types. We do not rely on
 the `Base._return_type` function.
 
 ```@docs
-return_type
+return_type(f::Function,::Any...)
 return_type_broadcast
 testargs
 testvalue
