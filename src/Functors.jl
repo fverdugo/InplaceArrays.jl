@@ -92,6 +92,11 @@ function test_functor(f,x,y,cmp=(==))
   @test cmp(z,y)
   Ts = map(typeof,x)
   @test typeof(z) == functor_return_type(f,Ts...)
+  cache = functor_cache(f,x...)
+  z = evaluate_functor!(cache,f,x...)
+  @test cmp(z,y)
+  z = evaluate_functor!(cache,f,x...)
+  @test cmp(z,y)
 end
 
 # Get the cache of several functors at once
