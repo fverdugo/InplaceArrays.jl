@@ -68,4 +68,14 @@ c∇f = gradient(cf)
 @test c∇f === gradient(cf)
 @test c∇f === gradient(cf)
 
+af = cf.array
+cache = array_cache(af)
+for i in eachindex(af)
+  f = getindex!(cache,af,i)
+  @test evaluate(f,x) ≈ r
+  ∇f = gradient(f)
+  @test evaluate(∇f,x) ≈ ∇r
+end
+
+
 end # module
