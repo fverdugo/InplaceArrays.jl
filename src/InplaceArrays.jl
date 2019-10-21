@@ -2,8 +2,7 @@ module InplaceArrays
 
 using Reexport
 
-export InplaceArray
-export getindex!
+@reexport using TensorValues
 
 include("CachedArrays.jl")
 @reexport using InplaceArrays.CachedArrays

@@ -110,6 +110,8 @@ for the arguments `x...`.
 function functor_caches(fs::Tuple,x...)
   _functor_caches(x,fs...)
 end
+# TODO replace x by the types of x? It is more consistent with
+# the functor_return_type
 
 function _functor_caches(x::Tuple,a,b...)
   ca = functor_cache(a,x...)
