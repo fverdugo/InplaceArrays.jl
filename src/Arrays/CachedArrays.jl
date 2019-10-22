@@ -1,16 +1,26 @@
 
 """
+$(TYPEDEF)
+
 Type providing a re-sizable array that only allocates memory
 when the underlying buffer needs to grow.
+
+The size of a `CachedArray` is changed via the [`setsize!`](@ref) function.
+
 """
 mutable struct CachedArray{T,N,A<:AbstractArray{T,N}} <: AbstractArray{T,N}
   array::A
   size::NTuple{N,Int}
 end
 
+"""
+"""
 const CachedMatrix{T,A} = CachedArray{T,2,A}
 
+"""
+"""
 const CachedVector{T,A} = CachedArray{T,1,A}
+
 
 CachedArray(a::AbstractArray) = CachedArray(a,size(a))
 
@@ -34,6 +44,9 @@ end
 
 size(self::CachedArray) = self.size
 
+"""
+$(SIGNATURES)
+"""
 function setsize!(self::CachedArray{T,N},s::NTuple{N,Int}) where {T,N}
   if s <= size(self.array)
     self.size = s

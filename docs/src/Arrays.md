@@ -29,6 +29,11 @@ test_array
 
 ## Useful array implementations
 
+### `CachedArray`
+
 ```@docs
 CachedArray
+CachedMatrix
+CachedVector
+setsize!
 ```
