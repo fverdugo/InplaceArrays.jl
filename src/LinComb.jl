@@ -122,7 +122,7 @@ struct LinCombArray{T,N,B,V} <: AbstractArray{T,N}
   b::B
   v::V
   k::LinCombKernel
-  s
+  s::NTuple{N,Int}
   function LinCombArray(b::AbstractArray,v::AbstractArray)
     k = LinCombKernel()
     Bi = eltype(b)

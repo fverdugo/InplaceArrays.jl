@@ -1,12 +1,10 @@
-include("../src/LinComb.jl")
 module LinCombTests
 
 using Test
 using InplaceArrays
 
-using ..LinComb
-using ..LinComb: LinCombKernel
-using ..LinComb: LinCombField
+using InplaceArrays.LinComb: LinCombKernel
+using InplaceArrays.LinComb: LinCombField
 using ..MockFields
 
 
