@@ -28,4 +28,7 @@ include("CellFields.jl")
 include("LinComb.jl")
 @reexport using InplaceArrays.LinComb
 
+include("Compose.jl")
+@reexport using InplaceArrays.Compose
+
 end # module

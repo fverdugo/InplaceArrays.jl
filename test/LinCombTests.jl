@@ -7,7 +7,6 @@ using InplaceArrays.LinComb: LinCombKernel
 using InplaceArrays.LinComb: LinCombField
 using ..MockFields
 
-
 npoin = 4
 ndofs = 8
 b = rand(ndofs,npoin)
@@ -74,6 +73,5 @@ for i in eachindex(af)
   ∇f = gradient(f)
   @test evaluate(∇f,x) ≈ ∇r
 end
-
 
 end # module
