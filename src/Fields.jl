@@ -9,6 +9,7 @@ import InplaceArrays.Functors: evaluate_functor!
 import InplaceArrays.Functors: functor_return_type
 import InplaceArrays: return_type # Needed?
 import Base: +, -, *
+import Base: length
 
 export Point
 export evaluate
@@ -20,15 +21,14 @@ export num_dofs
 export FieldLike
 export Field
 export Basis
-export test_fieldlike
+export test_field_like
 export test_field
 export test_field_with_gradient
 export test_basis
+export test_basis_with_gradient
 export valuetype
 export pointdim
 export gradtype
-#export ApplyToGradStyle
-#export ApplyGradStyle
 
 """
     const Point{D,T} = VectorValue{D,T}
@@ -58,7 +58,7 @@ The following functions can optionally be also provided
 
 The interface can be tested with these functions
 
-- [`test_fieldlike`](@ref)
+- [`test_field_like`](@ref)
 - [`test_field`](@ref)
 - [`test_field_with_gradient`](@ref)
 
@@ -103,6 +103,7 @@ function return_type(::FieldLike) end
 # TODO really needed? I think it is only needed if we want to implement
 # the functor interface. But, I think it is not needed to implement this
 # interface anymore. EDIT: YES! it is needed for evaluating cell fields
+# Perhaps not needed since we always return a CachedArray
 
 #TODO use @abstract method, also in new array interface
 
@@ -110,8 +111,8 @@ function return_type(::FieldLike) end
 
 """
 """
-function test_fieldlike(
-  f::FieldLike{D,T,N},x::AbstractVector{<:Point},v::AbstractVector,cmp=(==)) where {D,T,N}
+function test_field_like(
+  f::FieldLike{D,T,N},x::AbstractVector{<:Point},v::AbstractArray,cmp=(==)) where {D,T,N}
   w = evaluate(f,x)
   @test ndims(w) == N
   @test T == eltype(w)
@@ -121,14 +122,17 @@ function test_fieldlike(
   test_functor(f,(x,),v,cmp)
 end
 
-function functor_return_type(f::Field,Ts...)
+function functor_return_type(f::FieldLike,Ts...)
   return_type(f)
 end
 
 """
 """
 function test_field(f::Field,x,v,cmp::Function=(==))
-  test_fieldlike(f,x,v,cmp)
+  test_field_like(f,x,v,cmp)
+  r = evaluate(f,x)
+  npoin = length(r)
+  @test npoin == length(x)
 end
 
 """
@@ -142,7 +146,20 @@ end
 """
 """
 function test_basis(f::Basis,x,v,cmp::Function=(==))
-  test_fieldlike(f,x,v,cmp)
+  test_field_like(f,x,v,cmp)
+  r = evaluate(f,x)
+  ndofs, npoin = size(r)
+  @test ndofs == num_dofs(f)
+  @test ndofs == length(f)
+  @test npoin == length(x)
+end
+
+"""
+"""
+function test_basis_with_gradient(f::Basis,x,v,g,cmp::Function=(==))
+  test_basis(f,x,v,cmp)
+  ∇f = gradient(f)
+  test_basis(∇f,x,g,cmp)
 end
 
 # info getters
@@ -176,11 +193,14 @@ pointdim(f::T) where T = pointdim(T)
 """
 function num_dofs end #TODO use in tester
 
+length(b::Basis) = num_dofs(b)
+
 """
     gradtype(::Type) -> DataType
 """
 function gradtype(::Type{F}) where F<:FieldLike{D,T} where {D,T}
-  P = Point{D,Int16}
+  E = eltype(T)
+  P = Point{D,E}
   p = zero(P)
   v = zero(T)
   g = outer(p,v)
