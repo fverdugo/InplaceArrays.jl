@@ -4,6 +4,8 @@ using InplaceArrays
 pages = [
   "Home" => "index.md",
   "Helpers" => "Helpers.md",
+  "Type inference" => "Inference.md",
+  "Arrays" => "Arrays.md",
  ]
 
 makedocs(
