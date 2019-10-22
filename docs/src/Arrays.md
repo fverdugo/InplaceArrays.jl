@@ -26,3 +26,9 @@ uses_hash(::Type{<:AbstractArray})
 testitem(a::AbstractArray)
 test_array
 ```
+
+## Useful array implementations
+
+```@docs
+CachedArray
+```
