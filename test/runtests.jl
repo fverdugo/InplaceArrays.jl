@@ -18,6 +18,8 @@ include("MockFields.jl")
 
 @time @testset "LinCombTests" begin include("LinCombTests.jl") end
 
+@time @testset "ComposeTests" begin include("ComposeTests.jl") end
+
 @testset "Benchmarks" begin include("../bench/runbenchs.jl") end
 
 end # module
