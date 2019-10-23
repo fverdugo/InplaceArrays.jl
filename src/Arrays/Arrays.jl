@@ -20,9 +20,12 @@ using Base: @propagate_inbounds
 
 export array_cache
 export getindex!
+export getitems!
 export testitem
 export uses_hash
 export test_array
+export testitems
+export array_caches
 
 export CachedArray
 export CachedMatrix
@@ -39,6 +42,8 @@ export bcast
 export kernel_return_type
 export kernel_return_types
 
+export apply
+
 import Base: size
 import Base: getindex, setindex!
 import Base: similar
@@ -48,5 +53,7 @@ include("Interface.jl")
 include("CachedArrays.jl")
 
 include("Kernels.jl")
+
+include("Apply.jl")
 
 end # module

@@ -8,4 +8,6 @@ using Test
 
 @time @testset "Arrays" begin include("ArraysTests/runtests.jl") end
 
+include("../bench/runbenchs.jl")
+
 end # module

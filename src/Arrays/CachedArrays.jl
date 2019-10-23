@@ -85,7 +85,7 @@ Changes the size of the `CachedArray` `a` to the size described the the tuple
 `s`.
 
 !!! warning
-    After calling `setsize!`, the array can store arbitrary values.
+    After calling `setsize!`, the array can store uninitialized values.
 """
 function setsize!(a::CachedArray{T,N},s::NTuple{N,Int}) where {T,N}
   if s <= size(a.array)

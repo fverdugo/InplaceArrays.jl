@@ -10,7 +10,7 @@ Arrays
 
 ## Extended AbstractArray interface
 
-New methods added:
+New methods added that can be overload by new types:
 - [`getindex!(cache,a::AbstractArray,i...)`](@ref)
 - [`array_cache(a::AbstractArray)`](@ref)
 - [`uses_hash(::Type{<:AbstractArray})`](@ref)
@@ -21,13 +21,21 @@ The interface can be tested with the following function
 
 ```@docs
 getindex!(cache,a::AbstractArray,i...)
+getitems!
 array_cache(a::AbstractArray)
+array_caches
 uses_hash(::Type{<:AbstractArray})
 testitem(a::AbstractArray)
+testitems
 test_array
 ```
 
 ## Creting lazy operation trees
+
+```@docs
+apply(f,a::AbstractArray...)
+apply(f::AbstractArray,a::AbstractArray...)
+```
 
 ### Operation kernels
 

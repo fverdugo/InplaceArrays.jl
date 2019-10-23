@@ -8,4 +8,6 @@ using Test
 
 @testset "Kernels" begin include("KernelsTests.jl") end
 
+@testset "Apply" begin include("ApplyTests.jl") end
+
 end # module

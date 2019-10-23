@@ -133,3 +133,60 @@ function test_array(
   true
 end
 
+# Some API
+
+"""
+    testitems(b::AbstractArray...) -> Tuple
+
+Returns a tuple with the result of `testitem` applied to each of the
+arrays in `b`.
+"""
+function testitems(a::AbstractArray,b::AbstractArray...)
+  va = testitem(a)
+  vb = testitems(b...)
+  (va,vb...)
+end
+
+function testitems(a::AbstractArray)
+  va = testitem(a)
+  (va,)
+end
+
+"""
+$(SIGNATURES)
+"""
+function array_caches(a::AbstractArray,b::AbstractArray...)
+  hash = Dict{UInt,Any}()
+  array_caches(hash,a,b...)
+end
+
+function array_caches(hash::Dict,a::AbstractArray,b::AbstractArray...)
+  ca = array_cache(hash,a)
+  cb = array_caches(hash,b...)
+  (ca,cb...)
+end
+
+function array_caches(hash::Dict,a::AbstractArray)
+  ca = array_cache(hash,a)
+  (ca,)
+end
+
+"""
+$(SIGNATURES)
+"""
+@inline function getitems!(cf::Tuple,a::Tuple{Vararg{<:AbstractArray}},i...)
+  _getitems!(cf,i,a...)
+end
+
+@inline function _getitems!(c,i,a,b...)
+  ca,cb = _split(c...)
+  ai = getindex!(ca,a,i...)
+  bi = getitems!(cb,b,i...)
+  (ai,bi...)
+end
+
+@inline function _getitems!(c,i,a)
+  ca, = c
+  ai = getindex!(ca,a,i...)
+  (ai,)
+end

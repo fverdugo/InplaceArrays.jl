@@ -25,5 +25,7 @@ include("Arrays/Arrays.jl")
 using InplaceArrays.Arrays
 export array_cache
 export getindex!
+export apply
+export bcast
 
 end # module
