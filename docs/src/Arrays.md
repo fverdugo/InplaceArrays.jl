@@ -1,42 +1,122 @@
 
-# Extended AbstractArray interface
+```@meta
+CurrentModule = InplaceArrays.Arrays
+```
+# Gridap.Arrays
 
-When implementing new array types, we encounter a similar problem than when implementing some functions:
-It can be needed some scratch data (e.g., allocating the output),
-when recovering an item from an array (typically if the array elements are mutable or non-isbits objects, e.g., for "lazy" array of arrays). Here, we adopt the same solution as for functors: the user provides the scratch data. However, the Julia array interface does not support this approach. When calling `a[i]`, in order to get the element with index `i` in array `a`, there is no extra argument for
-the scratch data. In order to circumvent this problem, we add new methods to the `AbstractArray` interface of Julia. We provide default implementations to the new methods, so that any `AbstractArray` can be used with the extended interface. The most important among the new methods is [`getindex!`](@ref), which allows to recover an item in the array by passing some scratch data. The new mehtods are listed below.
+```@docs
+Arrays
+```
 
-## New functions
+## Extended AbstractArray interface
 
-The functions added to the `AbstractArray` interface are:
-- [`getindex!`](@ref)
-- [`array_cache`](@ref)
-- [`uses_hash`](@ref)
-- [`testitem`](@ref)
+New methods added that can be overload by new types:
+- [`getindex!(cache,a::AbstractArray,i...)`](@ref)
+- [`array_cache(a::AbstractArray)`](@ref)
+- [`uses_hash(::Type{<:AbstractArray})`](@ref)
+- [`testitem(a::AbstractArray)`](@ref)
 
-The new methods can be tested with the these functions:
+The interface can be tested with the following function
 - [`test_array`](@ref)
-- [`test_array_of_functors`](@ref)
 
 ```@docs
-getindex!
-array_cache
-uses_hash
-testitem
-test_array
-test_array_of_functors
-```
-
-## Working with several arrays
-
-```@docs
+getindex!(cache,a::AbstractArray,i...)
+getitems!
+array_cache(a::AbstractArray)
+array_caches
+uses_hash(::Type{<:AbstractArray})
+testitem(a::AbstractArray)
 testitems
+test_array
 ```
 
-## Creating lazy operation trees
+## Creting lazy operation trees
 
 ```@docs
-evaluate_array_of_functors(f::AbstractArray,a::AbstractArray...)
-evaluate_array_of_functors(f,a::AbstractArray...)
+apply(f,a::AbstractArray...)
+apply(f::AbstractArray,a::AbstractArray...)
 ```
 
+### Operation kernels
+
+The [`apply`](@ref) function provides a mechanism to construct lazy arrays
+obtained by applying some operations to other arrays. The operations are
+represented by objects (referred to as *kernels*). We rely in duck typing here.
+There is not an abstract type representing a kernel. Any type is
+referred to as a *kernel* if it implements the following interface:
+
+- [`apply_kernel!(cache,k,x...)`](@ref)
+- [`kernel_cache(k,x...)`](@ref)
+- [`kernel_return_type(k,x...)`](@ref)
+
+The kernel interface can be tested with the [`test_kernel`](@ref) function.
+
+We provide some default (obvious) implementations of this interface so that `Function`,
+`Number`, and `AbstractArray` objects behave like kernels.
+
+```jldoctests
+julia> using InplaceArrays.Arrays
+
+julia> cache = kernel_cache(+,0,0)
+
+julia> apply_kernel!(cache,+,1,2)
+3
+
+julia> apply_kernel!(cache,+,-1,10)
+9
+```
+
+`Number` and `AbstractArray` objects behave like "constant" kernels.
+
+```jldoctests
+julia> using InplaceArrays.Arrays
+
+julia> a = 2.0
+2.0
+
+julia> cache = kernel_cache(a,0)
+
+julia> apply_kernel!(cache,a,1)
+2.0
+
+julia> apply_kernel!(cache,a,2)
+2.0
+
+julia> apply_kernel!(cache,a,3)
+2.0
+```
+
+```@docs
+apply_kernel!
+kernel_cache
+kernel_return_type
+test_kernel
+```
+
+### Build-in kernels
+
+```@docs
+bcast
+```
+
+### Other functions acting on kernels
+
+```@docs
+apply_kernel
+apply_kernels!
+kernel_caches
+kernel_return_types
+```
+
+## Concrete array implementations
+
+### CachedArray
+
+```@docs
+CachedArray
+CachedArray(a::AbstractArray)
+CachedArray(T,N)
+setsize!
+CachedMatrix
+CachedVector
+```

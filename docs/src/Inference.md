@@ -1,14 +1,16 @@
 
-# Inferring return types
+```@meta
+CurrentModule = InplaceArrays.Inference
+```
 
-In Gridap, we rely as less as possible in type inference. But, when needed, we adopt
-the following mechanism in order to compute returned types. We do not rely on
-the `Base._return_type` function.
+# Gridap.Inference
 
 ```@docs
+Inference
 return_type(f::Function,::Any...)
 return_type_broadcast
 testargs
+testargs_broadcast
 testvalue
 testvalues
 ```

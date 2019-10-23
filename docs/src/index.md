@@ -4,9 +4,14 @@
 Documentation for InplaceArrays.jl
 
 ```@contents
-Pages = ["index.md", "Inference.md",
-  "Functors.md", "Arrays.md",
-  "CellValues.md", "Fields.md", "CellFields.md"]
+Pages = [
+  "index.md",
+  "Gridap.md",
+  "Helpers.md",
+  "Inference.md",
+  "Arrays.md",
+  "Fields.md",
+  ]
 ```
 
 

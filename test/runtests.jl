@@ -1,26 +1,15 @@
-module Runtests
+module RunTests
 
 using Test
 
-@time @testset "CachedArraysTests" begin include("CachedArraysTests.jl") end
+@time @testset "Helpers" begin include("HelpersTests/runtests.jl") end
 
-@time @testset "FunctorsTests" begin include("FunctorsTests.jl") end
+@time @testset "Inference" begin include("InferenceTests/runtests.jl") end
 
-@time @testset "ArraysTests" begin include("ArraysTests.jl") end
+@time @testset "Arrays" begin include("ArraysTests/runtests.jl") end
 
-@time @testset "CellValuesTests" begin include("CellValuesTests.jl") end
+@time @testset "Fields" begin include("FieldsTests/runtests.jl") end
 
-include("MockFields.jl")
-
-@time @testset "FieldsTests" begin include("FieldsTests.jl") end
-
-@time @testset "CellFieldsTests" begin include("CellFieldsTests.jl") end
-
-@time @testset "LinCombTests" begin include("LinCombTests.jl") end
-
-@time @testset "ComposeTests" begin include("ComposeTests.jl") end
-
-@testset "Benchmarks" begin include("../bench/runbenchs.jl") end
+include("../bench/runbenchs.jl")
 
 end # module
-

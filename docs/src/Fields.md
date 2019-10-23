@@ -1,5 +1,11 @@
+```@meta
+CurrentModule = InplaceArrays.Fields
+```
+# Gridap.Fields
 
-# Physical fields
+```@docs
+Fields
+```
 
 ## Interface
 
@@ -8,17 +14,16 @@ FieldLike
 Field
 Basis
 Point
-evaluate!
-new_cache
-return_type(::FieldLike)
+evaluate!(cache,f::FieldLike,x)
+field_cache(f::FieldLike)
 gradient(::FieldLike)
-num_dofs
-test_fieldlike
+∇(::FieldLike)
+num_dofs(f::Basis)
+test_field_like
 test_field
-test_field_with_gradient
 test_basis
 ```
-## API
+## Other functions using fields
 
 ```@docs
 evaluate

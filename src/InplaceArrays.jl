@@ -1,34 +1,33 @@
+"""
+Gridap, grid-based approximation of PDEs in the Julia programming language
+
+This module provides rich set of tools for the numerical solution of PDE, mainly based
+on finite element methods.
+
+The module is structured in the following sub-modules:
+
+- [`InplaceArrays.Helpers`](@ref)
+- [`InplaceArrays.Inference`](@ref)
+- [`InplaceArrays.Arrays`](@ref)
+
+The exported names are:
+$(EXPORTS)
+"""
 module InplaceArrays
 
-using Reexport
+using DocStringExtensions
 
-@reexport using TensorValues
+include("Helpers/Helpers.jl")
 
-include("CachedArrays.jl")
-@reexport using InplaceArrays.CachedArrays
+include("Inference/Inference.jl")
 
-include("Inference.jl")
-@reexport using InplaceArrays.Inference
+include("Arrays/Arrays.jl")
+using InplaceArrays.Arrays
+export array_cache
+export getindex!
+export apply
+export bcast
 
-include("Functors.jl")
-@reexport using InplaceArrays.Functors
-
-include("Arrays.jl")
-@reexport using InplaceArrays.Arrays
-
-include("CellValues.jl")
-@reexport using InplaceArrays.CellValues
-
-include("Fields.jl")
-@reexport using InplaceArrays.Fields
-
-include("CellFields.jl")
-@reexport using InplaceArrays.CellFields
-
-include("LinComb.jl")
-@reexport using InplaceArrays.LinComb
-
-include("Compose.jl")
-@reexport using InplaceArrays.Compose
+include("Fields/Fields.jl")
 
 end # module

@@ -1,13 +1,5 @@
-module RunBenchs
+module Benchs
 
-include("FunctorsBenchs.jl")
-
-include("ArraysBenchs.jl")
-
-include("../test/MockFields.jl")
-
-include("LinCombBenchs.jl")
-
-include("ComposeBenchs.jl")
+include("ArraysBenchs/runbenchs.jl")
 
 end # module
