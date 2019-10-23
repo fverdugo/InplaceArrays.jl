@@ -4,9 +4,9 @@
 $(SIGNATURES)
 
 Returns the type of the result of calling kernel `f` with
-arguments of the types in `Ts`.
+arguments of the types of the objects `x`.
 """
-function kernel_return_type(f,Ts::Type...)
+function kernel_return_type(f,x...)
   @abstractmethod
 end
 
@@ -50,8 +50,7 @@ macro.
 function test_kernel(f,x,y,cmp=(==))
   z = apply_kernel(f,x...)
   @test cmp(z,y)
-  Ts = map(typeof,x)
-  @test typeof(z) == kernel_return_type(f,Ts...)
+  @test typeof(z) == kernel_return_type(f,x...)
   cache = kernel_cache(f,x...)
   z = apply_kernel!(cache,f,x...)
   @test cmp(z,y)
@@ -89,8 +88,6 @@ for the arguments `x...`.
 function kernel_caches(fs::Tuple,x...)
   _kernel_caches(x,fs...)
 end
-# TODO replace x by the types of x? It is more consistent with
-# the kernel_return_type
 
 function _kernel_caches(x::Tuple,a,b...)
   ca = kernel_cache(a,x...)
@@ -138,32 +135,35 @@ function kernel_return_types(f::Tuple,Ts...)
   _kernel_return_types(Ts,f...)
 end
 
-function _kernel_return_types(Ts,a,b...)
-  Ta = kernel_return_type(a,Ts...)
-  Tb = kernel_return_types(b,Ts...)
+function _kernel_return_types(x,a,b...)
+  Ta = kernel_return_type(a,x...)
+  Tb = kernel_return_types(b,x...)
   (Ta,Tb...)
 end
 
-function _kernel_return_types(Ts,a)
-  Ta = kernel_return_type(a,Ts...)
+function _kernel_return_types(x,a)
+  Ta = kernel_return_type(a,x...)
   (Ta,)
 end
 
 # Include some well-known types in this interface
 
-kernel_return_type(f::Function,Ts::Type...) = return_type(f,Ts...)
+function kernel_return_type(f::Function,x...)
+  Ts = map(typeof,x)
+  return_type(f,Ts...)
+end
 
 @inline kernel_cache(f::Function,args...) = nothing
 
 @inline apply_kernel!(::Nothing,f::Function,args...) = f(args...)
 
-kernel_return_type(a::Number,Ts::Type...) = typeof(a)
+kernel_return_type(a::Number,x...) = typeof(a)
 
 @inline kernel_cache(f::Number,args...) = nothing
 
 @inline apply_kernel!(::Nothing,f::Number,args...) = f
 
-kernel_return_type(a::AbstractArray,Ts::Type...) = typeof(a)
+kernel_return_type(a::AbstractArray,x...) = typeof(a)
 
 @inline kernel_cache(f::AbstractArray,args...) = nothing
 
@@ -183,7 +183,8 @@ function `f`.
 """
 bcast(f::Function) = BCasted(f)
 
-function kernel_return_type(f::BCasted,Ts::Type...)
+function kernel_return_type(f::BCasted,x...)
+  Ts = map(typeof,x)
   T = return_type_broadcast(f.f,Ts...)
   c = CachedArray(testvalue(T))
   typeof(c)

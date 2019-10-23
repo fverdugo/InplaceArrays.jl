@@ -56,8 +56,8 @@ struct AppliedArray{T,N,F,G} <: AbstractArray{T,N}
     G = typeof(g)
     F = typeof(f)
     gi = testitem(g) #Assumes that all kernels return the same type
-    Ts = map(eltype,f)
-    T = kernel_return_type(gi,Ts...)
+    fi = testitems(f...)
+    T = kernel_return_type(gi,fi...)
     N, s = _prepare_shape(g,f...)
     new{T,N,F,G}(g,f,s)
   end

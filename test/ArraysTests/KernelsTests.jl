@@ -5,7 +5,7 @@ using InplaceArrays.Arrays
 
 test_kernel(+,(3,2),5)
 
-@test kernel_return_types((+,/),Int,Int) == (Int,Float64)
+@test kernel_return_types((+,/),1,1) == (Int,Float64)
 
 f = bcast(+)
 a = rand(3,2)
