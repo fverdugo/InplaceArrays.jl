@@ -2,7 +2,7 @@
 ```@meta
 CurrentModule = InplaceArrays.Arrays
 ```
-# Arrays
+# Gridap.Arrays
 
 ```@docs
 Arrays
@@ -27,13 +27,90 @@ testitem(a::AbstractArray)
 test_array
 ```
 
+## Creting lazy operation trees
+
+### Operation kernels
+
+We provide a mechanism in order to construct lazy arrays
+obtained by applying some operations to other arrays. The operations are
+represented by objects (referred to as *kernels*) that implement the following
+interface. We rely in duck typing here.
+There is not an abstract type representing a kernel. Any type is
+referred to as a *kernel* if it implements the following interface.
+
+The functions to be overloaded for a new kernel are
+- [`apply_kernel!(cache,k,x...)`](@ref)
+- [`kernel_cache(k,x...)`](@ref)
+- [`kernel_return_type(k,Ts::Type...)`](@ref)
+
+The kernel interface can be tested with the [`test_kernel`](@ref) function.
+
+We provide some default (obvious) implementations of this interface so that `Function`,
+`Number`, and `AbstractArray` objects behave like kernels.
+
+```jldoctests
+julia> using InplaceArrays.Arrays
+
+julia> cache = kernel_cache(+,0,0)
+
+julia> apply_kernel!(cache,+,1,2)
+3
+
+julia> apply_kernel!(cache,+,-1,10)
+9
+```
+
+`Number` and `AbstractArray` objects behave like "constant" kernels.
+
+```jldoctests
+julia> using InplaceArrays.Arrays
+
+julia> a = 2.0
+2.0
+
+julia> cache = kernel_cache(a,0)
+
+julia> apply_kernel!(cache,a,1)
+2.0
+
+julia> apply_kernel!(cache,a,2)
+2.0
+
+julia> apply_kernel!(cache,a,3)
+2.0
+```
+
+```@docs
+apply_kernel!
+kernel_cache
+kernel_return_type
+test_kernel
+```
+
+### Build-in kernels
+
+```@docs
+bcast
+```
+
+### Other functions acting on kernels
+
+```@docs
+apply_kernel
+apply_kernels!
+kernel_caches
+kernel_return_types
+```
+
 ## Useful array implementations
 
-### `CachedArray`
+### CachedArray
 
 ```@docs
 CachedArray
+CachedArray(a::AbstractArray)
+CachedArray(T,N)
+setsize!
 CachedMatrix
 CachedVector
-setsize!
 ```

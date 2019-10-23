@@ -3,9 +3,10 @@ using InplaceArrays
 
 pages = [
   "Home" => "index.md",
-  "Helpers" => "Helpers.md",
-  "Type inference" => "Inference.md",
-  "Arrays" => "Arrays.md",
+  "Gridap" => "Gridap.md",
+  "Gridap.Helpers" => "Helpers.md",
+  "Gridap.Inference" => "Inference.md",
+  "Gridap.Arrays" => "Arrays.md",
  ]
 
 makedocs(

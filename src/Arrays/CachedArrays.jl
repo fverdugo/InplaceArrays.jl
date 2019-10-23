@@ -7,6 +7,20 @@ when the underlying buffer needs to grow.
 
 The size of a `CachedArray` is changed via the [`setsize!`](@ref) function.
 
+A `CachedArray` can be build with the constructors
+- [`CachedArray(a::AbstractArray)`](@ref)
+- [`CachedArray(T,N)`](@ref)
+
+```jldoctests
+using InplaceArrays.Arrays
+# Create an empty CachedArray
+a = CachedArray(Float64,2)
+# Resize to new shape (2,3)
+setsize!(a,(2,3))
+size(a)
+# output
+(2, 3)
+```
 """
 mutable struct CachedArray{T,N,A<:AbstractArray{T,N}} <: AbstractArray{T,N}
   array::A
@@ -14,30 +28,50 @@ mutable struct CachedArray{T,N,A<:AbstractArray{T,N}} <: AbstractArray{T,N}
 end
 
 """
+    const CachedMatrix{T,A} = CachedArray{T,2,A}
 """
 const CachedMatrix{T,A} = CachedArray{T,2,A}
 
 """
+    const CachedVector{T,A} = CachedArray{T,1,A}
 """
 const CachedVector{T,A} = CachedArray{T,1,A}
 
 
+"""
+$(SIGNATURES)
+"""
 CachedArray(a::AbstractArray) = CachedArray(a,size(a))
 
+"""
+$(SIGNATURES)
+"""
 CachedVector(a::AbstractVector) = CachedArray(a,size(a))
 
+"""
+$(SIGNATURES)
+"""
 CachedMatrix(a::AbstractMatrix) = CachedArray(a,size(a))
 
+"""
+$(SIGNATURES)
+"""
 function CachedArray(T,N)
   s = tuple([0 for i in 1:N]...)
   a = Array{T,N}(undef,s)
   CachedArray(a)
 end
 
+"""
+$(SIGNATURES)
+"""
 function CachedVector(T)
   CachedArray(T,1)
 end
 
+"""
+$(SIGNATURES)
+"""
 function CachedMatrix(T)
   CachedArray(T,2)
 end
@@ -46,13 +80,19 @@ size(self::CachedArray) = self.size
 
 """
 $(SIGNATURES)
+
+Changes the size of the `CachedArray` `a` to the size described the the tuple
+`s`.
+
+!!! warning
+    After calling `setsize!`, the array can store arbitrary values.
 """
-function setsize!(self::CachedArray{T,N},s::NTuple{N,Int}) where {T,N}
-  if s <= size(self.array)
-    self.size = s
+function setsize!(a::CachedArray{T,N},s::NTuple{N,Int}) where {T,N}
+  if s <= size(a.array)
+    a.size = s
   else
-    self.array = similar(self.array,T,s...)
-    self.size = s
+    a.array = similar(a.array,T,s...)
+    a.size = s
   end
 end
 

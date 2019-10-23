@@ -35,6 +35,9 @@ functor_return_type
 test_functor
 ```
 
+
+
+
 ## Default implementations
 
 We provide some default (obvious) implementations of this interface so that `Function`,

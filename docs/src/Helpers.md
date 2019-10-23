@@ -3,7 +3,7 @@
 CurrentModule = InplaceArrays.Helpers
 ```
 
-# Helpers
+# Gridap.Helpers
 
 ```@autodocs
 Modules = [Helpers,]

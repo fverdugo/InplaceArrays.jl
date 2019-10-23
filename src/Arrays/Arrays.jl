@@ -1,7 +1,8 @@
 """
 This module provides:
-- an extension of the `AbstractArray` interface in order to properly deal with mutable caches
-- a collection of concrete implementations of `AbstractArray`.
+- An extension of the `AbstractArray` interface in order to properly deal with mutable caches.
+- A mechanism to generate lazy arrays resulting from operations between arrays.
+- A collection of concrete implementations of `AbstractArray`.
 
 The exported names in this module are:
 
@@ -9,7 +10,9 @@ $(EXPORTS)
 """
 module Arrays
 
+using InplaceArrays.Helpers
 using InplaceArrays.Inference
+
 using DocStringExtensions
 using Test
 using FillArrays
@@ -20,10 +23,21 @@ export getindex!
 export testitem
 export uses_hash
 export test_array
+
 export CachedArray
 export CachedMatrix
 export CachedVector
 export setsize!
+
+export kernel_cache
+export kernel_caches
+export apply_kernels!
+export apply_kernel!
+export apply_kernel
+export test_kernel
+export bcast
+export kernel_return_type
+export kernel_return_types
 
 import Base: size
 import Base: getindex, setindex!
@@ -32,5 +46,7 @@ import Base: similar
 include("Interface.jl")
 
 include("CachedArrays.jl")
+
+include("Kernels.jl")
 
 end # module

@@ -16,6 +16,7 @@ using DocStringExtensions
 export testvalue
 export testvalues
 export testargs
+export testargs_broadcast
 export return_type
 export return_type_broadcast
 
@@ -60,6 +61,9 @@ function return_type_broadcast(f::Function,Ts...)
   typeof(r)
 end
 
+"""
+$(SIGNATURES)
+"""
 function testargs_broadcast(f::Function,Ts...)
   v = testvalues(Ts...)
   Ys = map(eltype,Ts)
@@ -93,10 +97,16 @@ of the function and a `DomainError` is raised.
 For the following function, the default test argument (which is a zero)
 is not in the domain. We can overload the `testargs` function to provide
 a valid test argument.
-    
-    foo(x) = sqrt(x-1)
-    testargs(::typeof(foo),T::DataType) = (zero(T)+one(T),)
-    return_type(foo, Int) == Float64
+
+```jldoctests
+using InplaceArrays.Inference
+import InplaceArrays.Inference: testargs
+foo(x) = sqrt(x-1)
+testargs(::typeof(foo),T::DataType) = (one(T),)
+return_type(foo, Int)
+# output
+Float64
+```
 
 """
 testargs(f::Function,Ts...) = testvalues(Ts...)

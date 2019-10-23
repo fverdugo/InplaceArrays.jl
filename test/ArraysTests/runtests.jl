@@ -6,4 +6,6 @@ using Test
 
 @testset "CachedArrays" begin include("CachedArraysTests.jl") end
 
+@testset "Kernels" begin include("KernelsTests.jl") end
+
 end # module
