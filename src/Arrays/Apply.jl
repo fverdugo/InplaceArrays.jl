@@ -164,7 +164,26 @@ mutable struct Evaluation{X,F}
   end
 end
 
-# TODO Particular implementations for Fill
+# Particular implementations for Fill
+
+function apply(f::Fill,a::Fill...)
+  ai = getvalues(a...)
+  r = apply_kernel(f.value,ai...)
+  s = common_size(f,a...)
+  Fill(r,s)
+end
+
+function getvalues(a::Fill,b::Fill...)
+  ai = a.value
+  bi = getvalues(b...)
+  (ai,bi...)
+end
+
+function getvalues(a::Fill)
+  ai = a.value
+  (ai)
+end
+
 # TODO Implement Compressed
 # TODO Think about iteration and sub-iteration
 

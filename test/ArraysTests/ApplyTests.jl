@@ -135,4 +135,14 @@ end
 @test all(a.counter .== 2) 
 @test all(b.counter .== 1)
 
+l = 10
+ai = 1.0
+bi = 2.0
+a = Fill(ai,l)
+b = Fill(bi,l)
+c = apply(+,a,b)
+r = map(+,a,b)
+test_array(c,r)
+@test isa(c,Fill)
+
 end # module
