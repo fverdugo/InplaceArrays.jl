@@ -1,6 +1,23 @@
 
 """
-$(SIGNATURES)
+    apply(f,a::AbstractArray...) -> AbstractArray
+
+Applies the kernel `f` to all entries in the arrays in `a`.
+
+The resulting array has the same entries as the one obtained with (see function
+[`apply_kernel`](@ref)):
+
+    map( (x...)->apply_kernel(f,x...), a...)
+
+# Examples
+
+```jldoctests
+using InplaceArrays.Arrays
+a = apply(+,[1,2,3],[4,5,6])
+println(a)
+# output
+[5, 7, 9]
+```
 """
 function apply(f,a::AbstractArray...)
   s = common_size(a...)
@@ -8,7 +25,22 @@ function apply(f,a::AbstractArray...)
 end
 
 """
-$(SIGNATURES)
+    apply(f::AbstractArray,a::AbstractArray...) -> AbstractArray
+Applies the kernels in the array of kernels `f` to the entries in the arrays in `a`.
+
+The resulting array has the same entries as the one obtained with (see function
+[`apply_kernel`](@ref)):
+
+    map( apply_kernel, f, a...)
+
+# Examples
+```jldoctests
+using InplaceArrays.Arrays
+a = apply([+,-,mod],[1,2,3],[4,5,6])
+println(a)
+# output
+[5, -3, 3]
+```
 """
 function apply(f::AbstractArray,a::AbstractArray...)
   AppliedArray(f,a...)
@@ -135,3 +167,4 @@ end
 # TODO Particular implementations for Fill
 # TODO Implement Compressed
 # TODO Think about iteration and sub-iteration
+

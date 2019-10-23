@@ -39,14 +39,12 @@ apply(f::AbstractArray,a::AbstractArray...)
 
 ### Operation kernels
 
-We provide a mechanism in order to construct lazy arrays
+The [`apply`](@ref) function provides a mechanism to construct lazy arrays
 obtained by applying some operations to other arrays. The operations are
-represented by objects (referred to as *kernels*) that implement the following
-interface. We rely in duck typing here.
+represented by objects (referred to as *kernels*). We rely in duck typing here.
 There is not an abstract type representing a kernel. Any type is
-referred to as a *kernel* if it implements the following interface.
+referred to as a *kernel* if it implements the following interface:
 
-The functions to be overloaded for a new kernel are
 - [`apply_kernel!(cache,k,x...)`](@ref)
 - [`kernel_cache(k,x...)`](@ref)
 - [`kernel_return_type(k,Ts::Type...)`](@ref)
@@ -110,7 +108,7 @@ kernel_caches
 kernel_return_types
 ```
 
-## Useful array implementations
+## Concrete array implementations
 
 ### CachedArray
 
