@@ -7,6 +7,7 @@ pages = [
   "Gridap.Helpers" => "Helpers.md",
   "Gridap.Inference" => "Inference.md",
   "Gridap.Arrays" => "Arrays.md",
+  "Gridap.Fields" => "Fields.md",
  ]
 
 makedocs(

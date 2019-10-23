@@ -10,6 +10,7 @@ Pages = [
   "Helpers.md",
   "Inference.md",
   "Arrays.md",
+  "Fields.md",
   ]
 ```
 

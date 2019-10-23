@@ -47,7 +47,7 @@ referred to as a *kernel* if it implements the following interface:
 
 - [`apply_kernel!(cache,k,x...)`](@ref)
 - [`kernel_cache(k,x...)`](@ref)
-- [`kernel_return_type(k,Ts::Type...)`](@ref)
+- [`kernel_return_type(k,x...)`](@ref)
 
 The kernel interface can be tested with the [`test_kernel`](@ref) function.
 

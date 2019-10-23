@@ -28,4 +28,6 @@ export getindex!
 export apply
 export bcast
 
+include("Fields/Fields.jl")
+
 end # module

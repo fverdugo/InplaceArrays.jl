@@ -19,7 +19,6 @@ of the same type as the objects in `x...`.
 function kernel_cache(f,x...)
   @abstractmethod
 end
-#TODO perhaps use types instead of values ?? I'm not sure
 
 """
 $(SIGNATURES)

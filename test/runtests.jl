@@ -8,6 +8,8 @@ using Test
 
 @time @testset "Arrays" begin include("ArraysTests/runtests.jl") end
 
+@time @testset "Fields" begin include("FieldsTests/runtests.jl") end
+
 include("../bench/runbenchs.jl")
 
 end # module
