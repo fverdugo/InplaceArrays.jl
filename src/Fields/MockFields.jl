@@ -1,29 +1,17 @@
 
-struct MockField{D,T} <: Field{D,T}
+struct MockField{D,T} <: Field{T}
   v::T
-  function MockField(d::Int,v::T) where T
+  function MockField(d::Integer,v::T) where T
     new{d,T}(v)
   end
 end
 
-function field_cache(f::MockField)
-  T = valuetype(f)
-  v = CachedVector(T)
-  v
-end
+field_cache(f::MockField,x::Point) = nothing
 
-function evaluate!(v,f::MockField,x)
-  setsize!(v,(length(x),))
-  for (i,xi) in enumerate(x)
-    v[i] = f.v*xi[1]
-  end
-  v
-end
+evaluate!(::Nothing,f::MockField,x::Point) = f.v*x[1]
 
-function gradient(f::MockField)
-  T = valuetype(f)
+function gradient(f::MockField{D,T}) where {D,T}
   E = eltype(T)
-  D = pointdim(f)
   P = Point{D,E}
   _p = zero(mutable(P))
   _p[1] = one(E)
@@ -32,36 +20,27 @@ function gradient(f::MockField)
   MockField(D,vg)
 end
 
-struct MockBasis{D,T} <: Basis{D,T}
-  v::T
+struct MockBasis{D,V} <: Field{Vector{V}}
+  v::V
   ndofs::Int
-  function MockBasis(d::Int,v::T,ndofs::Int) where T
-    new{d,T}(v,ndofs)
+  function MockBasis(d::Int,v::V,ndofs::Int) where V
+    new{d,V}(v,ndofs)
   end
 end
 
-num_dofs(b::MockBasis) = b.ndofs
+function field_cache(f::MockBasis{D,T},x::Point) where {D,T}
+  zeros(T,f.ndofs)
+end
 
-function evaluate!(v,f::MockBasis,x)
-  setsize!(v,(f.ndofs,length(x)))
-  for (i,xi) in enumerate(x)
-    for j in 1:f.ndofs
-      v[j,i] = f.v*xi[1]
-    end
+function evaluate!(v,f::MockBasis,x::Point)
+  for j in 1:f.ndofs
+    v[j] = f.v*x[1]
   end
   v
 end
 
-function field_cache(f::MockBasis)
-  T = valuetype(f)
-  v = CachedMatrix(T)
-  v
-end
-
-function gradient(f::MockBasis)
-  T = valuetype(f)
+function gradient(f::MockBasis{D,T}) where {D,T}
   E = eltype(T)
-  D = pointdim(f)
   P = Point{D,E}
   _p = zero(mutable(P))
   _p[1] = one(E)

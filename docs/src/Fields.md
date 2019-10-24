@@ -10,25 +10,22 @@ Fields
 ## Interface
 
 ```@docs
-FieldLike
 Field
-Basis
 Point
-evaluate!(cache,f::FieldLike,x)
-field_cache(f::FieldLike)
-gradient(::FieldLike)
-∇(::FieldLike)
-num_dofs(f::Basis)
-test_field_like
+evaluate!(cache,f::Field,x::Point)
+field_cache(f::Field,x::Point)
+gradient(::Field)
+∇(::Field)
+field_return_type(f::Field,x::Point)
+evaluate!(cache,f::Field,x::AbstractVector{<:Point})
+field_cache(f::Field,x::AbstractVector{<:Point})
+field_return_type(f::Field,x::AbstractVector{<:Point})
 test_field
-test_basis
 ```
 ## Other functions using fields
 
 ```@docs
-evaluate
-valuetype
-pointdim
-gradtype
+evaluate(f::Field,x)
+valuetype(::Type{<:Field})
 ```
 

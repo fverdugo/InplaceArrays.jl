@@ -16,6 +16,7 @@ test_field(f,x,fx)
 
 ∇fx = fill(VectorValue(v,0.0),np)
 ∇f = gradient(f)
+
 test_field(∇f,x,∇fx)
 test_field(f,x,fx,grad=∇fx)
 
@@ -23,6 +24,6 @@ ndof = 8
 b = MockBasis(d,v,ndof)
 bx = fill(v,ndof,np)
 ∇bx = fill(VectorValue(v,0.0),ndof,np)
-test_basis(b,x,bx,grad=∇bx)
+test_field(b,x,bx,grad=∇bx)
 
 end # module
