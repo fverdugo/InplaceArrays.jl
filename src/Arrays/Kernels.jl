@@ -221,3 +221,167 @@ end
   (size(a),)
 end
 
+"""
+    elem(f::Function)
+
+Returns a kernel that represents the element-wise
+version of the binary or unary operation `f`
+"""
+elem(f::Function) = Elem(f)
+
+struct Elem{F}
+  f::F
+  Elem(f::Function) = new{typeof(f)}(f)
+end
+
+# Number
+
+function kernel_return_type(k::Elem,a::Number)
+  return_type(k.f,typeof(a))
+end
+
+function kernel_cache(k::Elem,a::Number)
+  nothing
+end
+
+@inline function apply_kernel!(c,k::Elem,a::Number)
+  k.f(a)
+end
+
+# Array
+
+function kernel_return_type(k::Elem,a::AbstractArray)
+  typeof(kernel_cache(k,a))
+end
+
+function kernel_cache(k::Elem,a::AbstractArray)
+  T = return_type(k.f,eltype(a))
+  similar(a,T)
+end
+
+@inline function apply_kernel!(c,f::Elem,a::AbstractArray)
+  _checks(c,a)
+  for i in eachindex(a)
+    c[i] = f.f(a[i])
+  end
+  c
+end
+
+# Array vs Array
+
+function kernel_return_type(k::Elem,a::AbstractArray,b::AbstractArray)
+  typeof(kernel_cache(k,a,b))
+end
+
+function kernel_cache(k::Elem,a::AbstractArray,b::AbstractArray)
+  _checks(a,b)
+  T = return_type(k.f,eltype(a),eltype(b))
+  similar(a,T)
+end
+
+@inline function apply_kernel!(c,f::Elem,a::AbstractArray,b::AbstractArray)
+  _checks(a,b)
+  _checks(c,b)
+  for i in eachindex(a)
+    c[i] = f.f(a[i],b[i])
+  end
+  c
+end
+
+# Number vs Number
+
+function kernel_return_type(k::Elem,a::Number,b::Number)
+  return_type(k.f,typeof(a),typeof(b))
+end
+
+function kernel_cache(k::Elem,a::Number,b::Number)
+  nothing
+end
+
+@inline function apply_kernel!(c,k::Elem,a::Number,b::Number)
+  k.f(a,b)
+end
+
+# Array vs Number
+
+function kernel_return_type(k::Elem,a::AbstractArray,b::Number)
+  typeof(kernel_cache(k,a,b))
+end
+
+function kernel_cache(k::Elem,a::AbstractArray,b::Number)
+  T = return_type(k.f,eltype(a),typeof(b))
+  similar(a,T)
+end
+
+@inline function apply_kernel!(c,k::Elem,a::AbstractArray,b::Number)
+  _checks(c,a)
+  for i in eachindex(a)
+    c[i] = k.f(a[i],b)
+  end
+  c
+end
+
+# Number vs Array
+
+function kernel_return_type(k::Elem,a::Number,b::AbstractArray)
+  typeof(kernel_cache(k,a,b))
+end
+
+function kernel_cache(k::Elem,a::Number,b::AbstractArray)
+  T = return_type(k.f,typeof(a),eltype(b))
+  similar(b,T)
+end
+
+@inline function apply_kernel!(c,k::Elem,a::Number,b::AbstractArray)
+  _checks(c,b)
+  for i in eachindex(b)
+    c[i] = k.f(a,b[i])
+  end
+  c
+end
+
+function _checks(a,b)
+  @assert size(a) == size(b) "Sizes must agree."
+  nothing
+end
+
+"""
+    contract(f::Function)
+
+Like the dot product between to vectors, but using operation `f` instead
+of `*` between components.
+
+# Examples
+
+```jldoctests
+using InplaceArrays.Arrays
+k = contract(-)
+apply_kernel(k,[1,2],[2,4]) # Equivalent to (1-2) + (2-4)
+# output
+-3
+```
+"""
+contract(f::Function) = Contracted(f)
+
+struct Contracted{F}
+  f::F
+  Contracted(f::Function) = new{typeof(f)}(f)
+end
+
+function kernel_return_type(k::Contracted,a::AbstractArray,b::AbstractArray)
+  return_type(k.f,eltype(a),eltype(b))
+end
+
+function kernel_cache(k::Contracted,a::AbstractArray,b::AbstractArray)
+  kernel_return_type(k,a,b)
+end
+
+@inline function apply_kernel!(T,f::Contracted,a::AbstractArray,b::AbstractArray)
+  _checks(a,b)
+  c = zero(T)
+  for i in eachindex(a)
+    c += f.f(a[i],b[i])
+  end
+  c
+end
+

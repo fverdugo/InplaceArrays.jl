@@ -97,6 +97,8 @@ test_kernel
 
 ```@docs
 bcast
+elem
+contract
 ```
 
 ### Other functions acting on kernels

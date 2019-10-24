@@ -39,6 +39,8 @@ export apply_kernel!
 export apply_kernel
 export test_kernel
 export bcast
+export elem
+export contract
 export kernel_return_type
 export kernel_return_types
 
