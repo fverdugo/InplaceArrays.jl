@@ -41,6 +41,7 @@ abstract type Field{T} end
 # from operation trees is more difficult
 # TODO valuetype and field_return_type kind of duplicated, even though
 # the last one allows to dispatch for vectorized and non-vectorized versions
+# Any decision here has consequences in AppliedField
 
 """
     field_cache(f::Field,x::Point)
@@ -276,46 +277,4 @@ valuetype(::Type{T}) where T<:AbstractArray = T
 valuetype(f::T) where T<:AbstractArray = valuetype(T)
 
 
-# Result of applying a kernel to the value of some fields
-
-struct AppliedField{K,F,T} <: Field{T}
-  k::K
-  f::F
-  function AppliedField(k,f...)
-    Ts = map(valuetype,f)
-    vs = map(testvalue,Ts)
-    T = kernel_return_type(k,vs...)
-    new{typeof(k),typeof(f),T}(k,f)
-  end
-end
-
-function field_return_type(f::AppliedField,x::Point)
-  Ts = kernel_return_types(f.f,x)
-  kernel_return_type(f.k, map(testvalue,Ts)...)
-end
-
-function field_cache(f::AppliedField,x::Point)
-  cf = kernel_caches(f.f,x)
-  fx = apply_kernels!(cf,f.f,x)
-  ck = kernel_cache(f.k,fx...)
-  (ck,cf)
-end
-
-@inline function evaluate!(cache,f::AppliedField,x::Point)
-  ck, cf = cache
-  fx = apply_kernels!(cf,f.f,x)
-  apply_kernel!(ck,f.k,fx...)
-end
-
-function gradient(f::AppliedField)
-  gradient(f.k,f.f...) # TODO each kernel implements its gradient
-  #TODO it also will be necessary to implement gradient for numbers and arrays
-end
-
-## Option B
-#function gradient(f::AppliedField)
-#  ∇f = map(gradient,f.f) # TODO Define gradient for numbers and arrays
-#  ∇k = gradient(f.k) #TODO define gradient for kernels returning a tuple of coefs, one for each arg
-#  _lincom(∇k,∇f) #TODO here we assume that * by scalar and binary + is defined to the objects in ∇f
-#end
 
