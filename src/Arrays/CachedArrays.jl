@@ -96,8 +96,17 @@ function setsize!(a::CachedArray{T,N},s::NTuple{N,Int}) where {T,N}
   end
 end
 
+@propagate_inbounds function getindex(self::CachedArray, kj::Integer)
+    self.array[kj]
+end
+
 @propagate_inbounds function getindex(self::CachedArray{T,N}, kj::Vararg{Integer,N}) where {T,N}
     self.array[kj...]
+end
+
+@propagate_inbounds function setindex!(B::CachedArray, v, kj::Integer)
+    B.array[kj] = v
+    v
 end
 
 @propagate_inbounds function setindex!(B::CachedArray{T,N}, v, kj::Vararg{Integer,N}) where {T,N}

@@ -170,9 +170,7 @@ kernel_return_type(a::AbstractArray,x...) = typeof(a)
 
 # Some particular cases
 
-struct BCasted{F<:Function}
-  f::F
-end
+const NumberOrArray = Union{Number,AbstractArray}
 
 """
     bcast(f::Function)
@@ -182,15 +180,31 @@ function `f`.
 """
 bcast(f::Function) = BCasted(f)
 
-#TODO what if all are numbers ?
-function kernel_return_type(f::BCasted,x...)
+struct BCasted{F<:Function}
+  f::F
+end
+
+function kernel_return_type(f::BCasted,x::Number...)
+  Ts = map(typeof,x)
+  return_type(f.f,Ts...)
+end
+
+function kernel_cache(f::BCasted,x::Number...)
+  nothing
+end
+
+@inline function apply_kernel!(::Nothing,f::BCasted,x::Number...)
+  f.f(x...)
+end
+
+function kernel_return_type(f::BCasted,x::NumberOrArray...)
   Ts = map(typeof,x)
   T = return_type_broadcast(f.f,Ts...)
   c = CachedArray(testvalue(T))
   typeof(c)
 end
 
-function kernel_cache(f::BCasted,x...)
+function kernel_cache(f::BCasted,x::NumberOrArray...)
   Ts = map(typeof,x)
   args = testargs_broadcast(f.f,Ts...)
   r = broadcast(f.f,args...)
@@ -198,7 +212,7 @@ function kernel_cache(f::BCasted,x...)
    _prepare_cache(cache,x...)
 end
 
-@inline function apply_kernel!(cache,f::BCasted,x...)
+@inline function apply_kernel!(cache,f::BCasted,x::NumberOrArray...)
   r = _prepare_cache(cache,x...)
   broadcast!(f.f,r,x...)
   r
@@ -227,15 +241,35 @@ end
 
 Returns a kernel that represents the element-wise
 version of the binary or unary operation `f`
-It does not broadcast in singleton axis. Thus, allows some speed up
+It does not broadcast in singleton axes. Thus, allows some speed up
 """
 elem(f::Function) = Elem(f)
-#TODO, we need to resize
 
 struct Elem{F}
   f::F
   Elem(f::Function) = new{typeof(f)}(f)
 end
+
+# TODO more tests here
+
+# It defaults to bcast (TODO test these ones)
+
+@inline function apply_kernel!(cache,k::Elem,x::NumberOrArray...)
+  b = bcast(k.f)
+  apply_kernel!(cache,b,x...)
+end
+
+function kernel_cache(k::Elem,x::NumberOrArray...)
+  b = bcast(k.f)
+  kernel_cache(b,x...)
+end
+
+function kernel_return_type(k::Elem,x::NumberOrArray...)
+  b = bcast(k.f)
+  kernel_return_type(b,x...)
+end
+
+# More Efficient implementations
 
 # Number
 
@@ -259,11 +293,11 @@ end
 
 function kernel_cache(k::Elem,a::AbstractArray)
   T = return_type(k.f,eltype(a))
-  similar(a,T)
+  CachedArray(similar(a,T))
 end
 
 @inline function apply_kernel!(c,f::Elem,a::AbstractArray)
-  _checks(c,a)
+  #setsize!(c,size(a))
   for i in eachindex(a)
     c[i] = f.f(a[i])
   end
@@ -279,12 +313,12 @@ end
 function kernel_cache(k::Elem,a::AbstractArray,b::AbstractArray)
   _checks(a,b)
   T = return_type(k.f,eltype(a),eltype(b))
-  similar(a,T)
+  CachedArray(similar(a,T))
 end
 
 @inline function apply_kernel!(c,f::Elem,a::AbstractArray,b::AbstractArray)
   _checks(a,b)
-  _checks(c,b)
+  #setsize!(c,size(a))
   for i in eachindex(a)
     c[i] = f.f(a[i],b[i])
   end
@@ -313,11 +347,11 @@ end
 
 function kernel_cache(k::Elem,a::AbstractArray,b::Number)
   T = return_type(k.f,eltype(a),typeof(b))
-  similar(a,T)
+  CachedArray(similar(a,T))
 end
 
 @inline function apply_kernel!(c,k::Elem,a::AbstractArray,b::Number)
-  _checks(c,a)
+  #setsize!(c,size(a))
   for i in eachindex(a)
     c[i] = k.f(a[i],b)
   end
@@ -332,11 +366,11 @@ end
 
 function kernel_cache(k::Elem,a::Number,b::AbstractArray)
   T = return_type(k.f,typeof(a),eltype(b))
-  similar(b,T)
+  CachedArray(similar(b,T))
 end
 
 @inline function apply_kernel!(c,k::Elem,a::Number,b::AbstractArray)
-  _checks(c,b)
+  #setsize!(c,size(b))
   for i in eachindex(b)
     c[i] = k.f(a,b[i])
   end

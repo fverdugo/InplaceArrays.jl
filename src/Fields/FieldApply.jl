@@ -1,6 +1,4 @@
 
-const NumberOrArray = Union{Number,AbstractArray}
-
 const FieldNumberOrArray = Union{Field,Number,AbstractArray}
 
 """

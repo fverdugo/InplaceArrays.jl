@@ -14,20 +14,6 @@ import InplaceArrays.Fields: gradient
 #TODO test all possible combinations
 const NumberOrArray = Union{Number,AbstractArray}
 
-@inline function apply_kernel!(cache,k::Elem,x::NumberOrArray...)
-  b = bcast(k.f)
-  apply_kernel!(cache,b,x...)
-end
-
-function kernel_cache(k::Elem,x::NumberOrArray...)
-  b = bcast(k.f)
-  kernel_cache(b,x...)
-end
-
-function kernel_return_type(k::Elem,x::NumberOrArray...)
-  b = bcast(k.f)
-  kernel_return_type(b,x...)
-end
 
 
 import InplaceArrays.Fields: ∇

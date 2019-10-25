@@ -36,6 +36,6 @@ af = Fill(f,l)
 ax = Fill(x,l)
 ag = apply_to_field(elem(+),af,af)
 r1 = evaluate(ag,ax)
-@test isa(r1,Fill{Vector{Float64}})
+@test isa(r1,Fill)
 
 end # module
