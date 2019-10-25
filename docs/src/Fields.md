@@ -29,3 +29,9 @@ evaluate(f::Field,x)
 valuetype(::Type{<:Field})
 ```
 
+## Applying kernels to fields
+
+```@docs
+apply_kernel_to_field(k,f...)
+gradient(k,f...)
+```

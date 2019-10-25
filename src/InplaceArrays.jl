@@ -9,6 +9,7 @@ The module is structured in the following sub-modules:
 - [`InplaceArrays.Helpers`](@ref)
 - [`InplaceArrays.Inference`](@ref)
 - [`InplaceArrays.Arrays`](@ref)
+- [`InplaceArrays.Fields`](@ref)
 
 The exported names are:
 $(EXPORTS)

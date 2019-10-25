@@ -1,7 +1,35 @@
 
-# Extending Kernels to work with fields
+"""
+    apply_kernel_to_field(k,f...) -> Field
 
+Returns a field obtained by applying the kernel `k` to the 
+values of the fields in `f`. That is, the returned field evaluated at
+a point `x` provides the value obtained by applying kernel `k` to the
+values of the fields `f` at point `x`.
+
+# Examples
+
+    #TODO
+
+In order to be able to call the [`gradient`](@ref) function of the
+resulting field, one needs to define the gradient operator
+associated with the underlying kernel. This is done by adding a new method
+to the `gradient` function as detailed below.
+"""
+function apply_kernel_to_field(k,f...)
+  AppliedField(k,f...)
+end
+
+# TODO really needed??
 FieldNumberOrArray = Union{Field,Number,AbstractArray}
+
+"""
+    gradient(k,f...)
+"""
+function gradient(k,f...)
+end
+
+# Extending Kernels to work with fields
 
 # Elem
 
@@ -16,7 +44,7 @@ function kernel_cache(k::Elem,a::Field)
 end
 
 @inline function apply_kernel!(c,k::Elem,a::Field)
-  AppliedField(k,a)
+  apply_kernel_to_field(k,a)
 end
 
 gradient(k::Elem{typeof(+)},a::Field) = gradient(a)
@@ -34,13 +62,33 @@ function kernel_cache(k::Elem,a::FieldNumberOrArray,b::FieldNumberOrArray)
 end
 
 @inline function apply_kernel!(c,k::Elem,a::FieldNumberOrArray,b::FieldNumberOrArray)
-  AppliedField(k,a,b)
+  apply_kernel_to_field(k,a,b)
 end
 
 for op in (:+,:-)
-  @evel begin
+  @eval begin
     function gradient(k::Elem{typeof($op)},a::FieldNumberOrArray,b::FieldNumberOrArray)
       apply_kernel(k,gradient(a),gradient(b))
+    end
+  end
+end
+
+
+# Arithmetic operations on fields
+
+# TODO: test these ones
+for op in (:+,:-)
+  @eval begin
+    function ($op)(a::Field)
+      apply_kernel(elem($op),a)
+    end
+  end
+end
+
+for op in (:+,:-,:*)
+  @eval begin
+    function ($op)(a::Field,b::Field)
+      apply_kernel(elem($op),a,b)
     end
   end
 end

@@ -9,7 +9,9 @@ $(EXPORTS)
 module Fields
 
 using InplaceArrays.Helpers
+using InplaceArrays.Inference
 using InplaceArrays.Arrays
+using InplaceArrays.Arrays: Elem
 
 using Test
 using DocStringExtensions
@@ -25,15 +27,17 @@ export ∇
 export Field
 export test_field
 export valuetype
+export apply_kernel_to_field
 
 import InplaceArrays.Arrays: kernel_cache
 import InplaceArrays.Arrays: apply_kernel!
 import InplaceArrays.Arrays: kernel_return_type
+import Base: +, - , *
 
 include("Interface.jl")
 
 include("MockFields.jl")
 
-#include("Apply.jl")
+include("Apply.jl")
 
 end # module
