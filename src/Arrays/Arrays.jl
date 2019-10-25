@@ -45,6 +45,7 @@ export kernel_return_type
 export kernel_return_types
 
 export apply
+export apply_all
 
 import Base: size
 import Base: getindex, setindex!

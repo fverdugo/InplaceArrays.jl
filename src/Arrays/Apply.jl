@@ -46,6 +46,32 @@ function apply(f::AbstractArray,a::AbstractArray...)
   AppliedArray(f,a...)
 end
 
+function apply(f::AbstractArray{<:Number},a::AbstractArray...)
+  f
+end
+
+function apply(f::AbstractArray{<:AbstractArray},a::AbstractArray...)
+  f
+end
+
+"""
+    apply_all(f::Tuple,a::AbstractArray...)
+"""
+function apply_all(f::Tuple,a::AbstractArray...)
+  _apply_several(a,f...)
+end
+
+function _apply_several(a,f,g...)
+  fa = apply(f,a...)
+  ga = _apply_several(a,g...)
+  (fa,ga...)
+end
+
+function _apply_several(a,f)
+  fa = apply(f,a...)
+  (fa,)
+end
+
 # Helpers
 
 struct AppliedArray{T,N,F,G} <: AbstractArray{T,N}
@@ -61,6 +87,11 @@ struct AppliedArray{T,N,F,G} <: AbstractArray{T,N}
     N, s = _prepare_shape(g,f...)
     new{T,N,F,G}(g,f,s)
   end
+end
+
+function apply(f::AppliedArray, a::AbstractArray...)
+  fa = apply_all(f.f,a...)
+  apply(f.g,fa...)
 end
 
 function uses_hash(::Type{<:AppliedArray})

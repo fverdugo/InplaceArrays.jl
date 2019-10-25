@@ -145,4 +145,29 @@ r = map(+,a,b)
 test_array(c,r)
 @test isa(c,Fill)
 
+f = rand(10)
+a = rand(10)
+@test apply(f,a) === f
+
+f = fill(rand(4),10)
+a = rand(10)
+@test apply(f,a) === f
+
+f = fill(rand(4),10)
+g = fill(rand(4),10)
+a = rand(10)
+h = apply_all((f,g),a)
+@test h[1] === f
+@test h[2] === g
+
+l = 10
+ai = 1.0
+bi = 2.0
+a = fill(ai,l)
+b = fill(bi,l)
+c = apply(+,a,b)
+d = apply(c,a,b)
+@test c == d
+@test typeof(d) == typeof(c)
+
 end # module
