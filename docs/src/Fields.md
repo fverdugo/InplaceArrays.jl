@@ -27,6 +27,7 @@ test_field
 ```@docs
 evaluate(f::Field,x)
 valuetype(::Type{<:Field})
+compose(g::Function,f...)
 ```
 
 ## Applying kernels to fields
@@ -43,6 +44,7 @@ evaluate(::AbstractArray{<:Field},::AbstractArray)
 gradient(::AbstractArray{<:Field})
 apply_to_field(k,f::AbstractArray...)
 field_cache(::AbstractArray{<:Field},::AbstractArray)
+compose(g::Function,f::AbstractArray...)
 test_array_of_fields
 ```
 

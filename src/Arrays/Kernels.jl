@@ -297,9 +297,9 @@ function kernel_cache(k::Elem,a::AbstractArray)
 end
 
 @inline function apply_kernel!(c,f::Elem,a::AbstractArray)
-  #setsize!(c,size(a))
+  setsize!(c,size(a))
   for i in eachindex(a)
-    c[i] = f.f(a[i])
+    @inbounds c[i] = f.f(a[i])
   end
   c
 end
@@ -318,9 +318,9 @@ end
 
 @inline function apply_kernel!(c,f::Elem,a::AbstractArray,b::AbstractArray)
   _checks(a,b)
-  #setsize!(c,size(a))
+  setsize!(c,size(a))
   for i in eachindex(a)
-    c[i] = f.f(a[i],b[i])
+    @inbounds c[i] = f.f(a[i],b[i])
   end
   c
 end
@@ -351,9 +351,9 @@ function kernel_cache(k::Elem,a::AbstractArray,b::Number)
 end
 
 @inline function apply_kernel!(c,k::Elem,a::AbstractArray,b::Number)
-  #setsize!(c,size(a))
+  setsize!(c,size(a))
   for i in eachindex(a)
-    c[i] = k.f(a[i],b)
+    @inbounds c[i] = k.f(a[i],b)
   end
   c
 end
@@ -370,9 +370,9 @@ function kernel_cache(k::Elem,a::Number,b::AbstractArray)
 end
 
 @inline function apply_kernel!(c,k::Elem,a::Number,b::AbstractArray)
-  #setsize!(c,size(b))
+  setsize!(c,size(b))
   for i in eachindex(b)
-    c[i] = k.f(a,b[i])
+    @inbounds c[i] = k.f(a,b[i])
   end
   c
 end

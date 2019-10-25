@@ -3,43 +3,11 @@ module ComposeTests
 using InplaceArrays.Arrays
 using InplaceArrays.Fields
 using InplaceArrays.Fields: MockField
+using InplaceArrays.Fields: Comp
 using TensorValues
-
-using InplaceArrays.Arrays: Elem
-import InplaceArrays.Arrays: kernel_cache
-import InplaceArrays.Arrays: apply_kernel!
-import InplaceArrays.Arrays: kernel_return_type
-import InplaceArrays.Fields: gradient
-
-#TODO test all possible combinations
-const NumberOrArray = Union{Number,AbstractArray}
-
-
+using FillArrays
 
 import InplaceArrays.Fields: ∇
-
-function compose(g::Function,f...)
-  k = Comp(g)
-  apply_kernel_to_field(k,f...)
-end
-
-struct Comp{F}
-  e::Elem{F}
-  @inline Comp(f::Function) = new{typeof(f)}(Elem(f))
-end
-
-@inline apply_kernel!(cache,k::Comp,x...) = apply_kernel!(cache,k.e,x...)
-
-kernel_cache(k::Comp,x...) = kernel_cache(k.e,x...)
-
-kernel_return_type(k::Comp,x...) = kernel_return_type(k.e,x...)
-
-function gradient(k::Comp,f...)
-  g = gradient(k.e.f)
-  compose(g,f...)
-end
-
-
 
 np = 4
 p = Point(1,2)
@@ -61,5 +29,13 @@ g = compose(fun,f,f)
 gx = 2*fx
 ∇gx = fill(∇fun(v,v),np)
 test_field(g,x,gx,grad=∇gx)
+
+l = 10
+af = Fill(f,l)
+ax = fill(x,l)
+ag = compose(fun,af,af)
+agx = fill(gx,l)
+a∇gx = fill(∇gx,l)
+test_array_of_fields(ag,ax,agx,grad=a∇gx)
 
 end # module

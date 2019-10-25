@@ -32,6 +32,7 @@ export valuetype
 export apply_kernel_to_field
 export apply_to_field
 export test_array_of_fields
+export compose
 
 import InplaceArrays.Arrays: kernel_cache
 import InplaceArrays.Arrays: apply_kernel!
@@ -45,5 +46,7 @@ include("MockFields.jl")
 include("FieldApply.jl")
 
 include("FieldArrays.jl")
+
+include("Compose.jl")
 
 end # module
