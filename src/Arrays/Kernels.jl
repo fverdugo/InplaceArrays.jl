@@ -182,6 +182,7 @@ function `f`.
 """
 bcast(f::Function) = BCasted(f)
 
+#TODO what if all are numbers ?
 function kernel_return_type(f::BCasted,x...)
   Ts = map(typeof,x)
   T = return_type_broadcast(f.f,Ts...)
@@ -226,8 +227,10 @@ end
 
 Returns a kernel that represents the element-wise
 version of the binary or unary operation `f`
+It does not broadcast in singleton axis. Thus, allows some speed up
 """
 elem(f::Function) = Elem(f)
+#TODO, we need to resize
 
 struct Elem{F}
   f::F

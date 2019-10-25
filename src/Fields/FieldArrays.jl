@@ -90,3 +90,45 @@ function test_array_of_fields(
   end
 
 end
+
+"""
+    apply_kernel_to_field(k,f::AbstractArray...)
+"""
+function apply_kernel_to_field(k,f::AbstractArray...)
+  v = Valued(k)
+  apply(v,f...)
+end
+
+struct Valued{K}
+  k::K
+  Valued(k) = new{typeof(k)}(k)
+end
+
+@inline function apply_kernel!(cache,k::Valued,x::NumberOrArray...)
+  b = k.k
+  apply_kernel!(cache,b,x...)
+end
+
+function kernel_cache(k::Valued,x::NumberOrArray...)
+  b = k.k
+  kernel_cache(b,x...)
+end
+
+function kernel_return_type(k::Valued,x::NumberOrArray...)
+  b = k.k
+  kernel_return_type(b,x...)
+end
+
+@inline function apply_kernel!(cache,k::Valued,x::FieldNumberOrArray...)
+  apply_kernel_to_field(k.k,x...)
+end
+
+function kernel_cache(k::Valued,x::FieldNumberOrArray...)
+  nothing
+end
+
+function kernel_return_type(k::Valued,x::FieldNumberOrArray...)
+  typeof(apply_kernel(k,x...))
+end
+
+

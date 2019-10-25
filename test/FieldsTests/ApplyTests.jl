@@ -3,8 +3,11 @@ module ApplyTests
 using Test
 using InplaceArrays.Arrays
 using InplaceArrays.Fields
+using FillArrays
+using TensorValues
 
 using InplaceArrays.Fields: MockField
+using InplaceArrays.Fields: Valued
 
 k = elem(-)
 
@@ -67,5 +70,46 @@ h = apply_kernel(k,f,g)
 hp1 = apply_kernel(k,evaluate(f,p1),evaluate(g,p1))
 hp1 = reshape(hp1,(3,1))
 test_field(h,[p1,],hp1)
+
+k = Valued(elem(-))
+
+np = 4
+p = Point(1,2)
+x = fill(p,np)
+v = 3.0
+d = 2
+f = MockField(d,v)
+fx = evaluate(f,x)
+∇fx = evaluate(∇(f),x)
+
+test_kernel(k,(1,2),-1)
+test_kernel(k,(f,2),apply_kernel_to_field(elem(-),f,2))
+test_kernel(k,(2,f),apply_kernel_to_field(elem(-),2,f))
+test_kernel(k,(f,f),apply_kernel_to_field(elem(-),f,f))
+
+g = apply_kernel(k,f,1)
+test_field(g,x,fx.-1,grad=∇fx)
+
+g = apply_kernel(k,1,f)
+test_field(g,x,1 .- fx,grad=-∇fx)
+
+g = apply_kernel(k,f,f)
+test_field(g,x,fx .- fx,grad=∇fx.-∇fx)
+
+l = 10
+af = Fill(f,l)
+ax = fill(x,l)
+
+ag = apply_kernel_to_field(elem(-),af)
+agx = evaluate(ag,ax)
+gx = fill(-v,np)
+∇gx = fill(VectorValue(-v,0.0),np)
+agx = fill(gx,l)
+a∇gx = fill(∇gx,l)
+test_array_of_fields(ag,ax,agx,grad=a∇gx)
+
+ag = apply_kernel_to_field(elem(-),ax)
+@test isa(testitem(testitem(ag)),Point)
+
 
 end # module

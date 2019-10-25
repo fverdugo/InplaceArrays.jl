@@ -1,4 +1,8 @@
 
+const NumberOrArray = Union{Number,AbstractArray}
+
+const FieldNumberOrArray = Union{Field,Number,AbstractArray}
+
 """
     apply_kernel_to_field(k,f...) -> Field
 
@@ -16,12 +20,13 @@ resulting field, one needs to define the gradient operator
 associated with the underlying kernel. This is done by adding a new method
 to the `gradient` function as detailed below.
 """
-function apply_kernel_to_field(k,f...)
+function apply_kernel_to_field(k,f::FieldNumberOrArray...)
   AppliedField(k,f...)
 end
 
-# TODO really needed??
-FieldNumberOrArray = Union{Field,Number,AbstractArray}
+function apply_kernel_to_field(k,f::NumberOrArray...)
+  apply_kernel(k,f...)
+end
 
 """
     gradient(k,f...)

@@ -41,6 +41,9 @@ gradient(k,f...)
 ```@docs
 evaluate(::AbstractArray{<:Field},::AbstractArray)
 gradient(::AbstractArray{<:Field})
+apply_kernel_to_field(k,f::AbstractArray...)
 field_cache(::AbstractArray{<:Field},::AbstractArray)
 test_array_of_fields
 ```
+
+
