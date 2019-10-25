@@ -37,11 +37,11 @@ import InplaceArrays.Arrays: apply_kernel!
 import InplaceArrays.Arrays: kernel_return_type
 import Base: +, - , *
 
-include("Interface.jl")
+include("FieldInterface.jl")
 
 include("MockFields.jl")
 
-include("Apply.jl")
+include("FieldApply.jl")
 
 include("FieldArrays.jl")
 
