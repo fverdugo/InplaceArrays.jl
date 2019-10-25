@@ -92,9 +92,9 @@ function test_array_of_fields(
 end
 
 """
-    apply_kernel_to_field(k,f::AbstractArray...)
+    apply_to_field(k,f::AbstractArray...)
 """
-function apply_kernel_to_field(k,f::AbstractArray...)
+function apply_to_field(k,f::AbstractArray...)
   v = Valued(k)
   apply(v,f...)
 end

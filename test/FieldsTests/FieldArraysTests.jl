@@ -24,7 +24,7 @@ afx = fill(fx,l)
 a∇fx = fill(∇fx,l)
 test_array_of_fields(af,ax,afx,grad=a∇fx)
 
-ag = apply(elem(+),af,af)
+ag = apply_to_field(elem(+),af,af)
 gx = fill(v+v,np)
 ∇gx = fill(VectorValue(v+v,0.0),np)
 agx = fill(gx,l)
@@ -34,7 +34,7 @@ test_array_of_fields(ag,ax,agx,grad=a∇gx)
 l = 10
 af = Fill(f,l)
 ax = Fill(x,l)
-ag = apply(elem(+),af,af)
+ag = apply_to_field(elem(+),af,af)
 r1 = evaluate(ag,ax)
 @test isa(r1,Fill{Vector{Float64}})
 

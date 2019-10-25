@@ -34,50 +34,19 @@ end
 function gradient(k,f...)
 end
 
-# Extending Kernels to work with fields
-
-# Elem
-
-# Unary
-
-function kernel_return_type(k::Elem,a::Field)
-  typeof(apply_kernel(k,a))
-end
-
-function kernel_cache(k::Elem,a::Field)
-  nothing
-end
-
-@inline function apply_kernel!(c,k::Elem,a::Field)
-  apply_kernel_to_field(k,a)
-end
+#TODO also for broad cast?
 
 gradient(k::Elem{typeof(+)},a::Field) = gradient(a)
 
-gradient(k::Elem{typeof(-)},a::Field) = apply_kernel(k,gradient(a))
-
-# Binary
-
-function kernel_return_type(k::Elem,a::FieldNumberOrArray,b::FieldNumberOrArray)
-  typeof(apply_kernel(k,a,b))
-end
-
-function kernel_cache(k::Elem,a::FieldNumberOrArray,b::FieldNumberOrArray)
-  nothing
-end
-
-@inline function apply_kernel!(c,k::Elem,a::FieldNumberOrArray,b::FieldNumberOrArray)
-  apply_kernel_to_field(k,a,b)
-end
+gradient(k::Elem{typeof(-)},a::Field) = apply_kernel_to_field(k,gradient(a))
 
 for op in (:+,:-)
   @eval begin
     function gradient(k::Elem{typeof($op)},a::FieldNumberOrArray,b::FieldNumberOrArray)
-      apply_kernel(k,gradient(a),gradient(b))
+      apply_kernel_to_field(k,gradient(a),gradient(b))
     end
   end
 end
-
 
 # Arithmetic operations on fields
 
@@ -85,7 +54,7 @@ end
 for op in (:+,:-)
   @eval begin
     function ($op)(a::Field)
-      apply_kernel(elem($op),a)
+      apply_kernel_to_field(elem($op),a)
     end
   end
 end
@@ -93,7 +62,7 @@ end
 for op in (:+,:-,:*)
   @eval begin
     function ($op)(a::Field,b::Field)
-      apply_kernel(elem($op),a,b)
+      apply_kernel_to_field(elem($op),a,b)
     end
   end
 end
