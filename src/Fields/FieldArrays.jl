@@ -93,6 +93,10 @@ end
 
 """
     apply_to_field(k,f::AbstractArray...)
+
+Numerically equivalent to
+
+    map( (x...) -> apply_kernel_to_field(k,x...), f )
 """
 function apply_to_field(k,f::AbstractArray...)
   v = Valued(k)

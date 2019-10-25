@@ -32,7 +32,7 @@ valuetype(::Type{<:Field})
 ## Applying kernels to fields
 
 ```@docs
-apply_kernel_to_field(k,f...)
+apply_kernel_to_field(k,f::FieldNumberOrArray...)
 gradient(k,f...)
 ```
 

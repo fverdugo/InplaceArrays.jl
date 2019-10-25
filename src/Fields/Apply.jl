@@ -104,7 +104,7 @@ end
 
 gradient(a::T) where T<:Number = zero(T)
 
-function gradient(a::AbstractArray{T}) where T
+function gradient(a::AbstractArray{T}) where T <:Number
   z = similar(a)
   zi = zero(T)
   for i in eachindex(z)
