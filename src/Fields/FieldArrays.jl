@@ -18,8 +18,13 @@ Numerically equivalent to
     map(gradient,a)
 """
 function gradient(a::AbstractArray{<:Field})
+  s = "You are calling a very inefficient default"
+  s *= " implementation of gradient for array of fields"
+  @warn s
   map(gradient,a)
 end
+#TODO to get rid of this warning, each kernel needs to define the global
+# version of the gradient
 
 function evaluate(a::Fill{<:AppliedField},x::AbstractArray)
   ai = a.value
@@ -74,7 +79,7 @@ function test_array_of_fields(
   ca, cfi, cx = field_cache(a,x)
 
   t = true
-  for i in length(a)
+  for i in 1:length(a)
     fi = getindex!(ca,a,i)
     xi = getindex!(cx,x,i)
     fxi = evaluate!(cfi,fi,xi)

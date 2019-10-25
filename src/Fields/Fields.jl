@@ -13,6 +13,7 @@ using InplaceArrays.Inference
 using InplaceArrays.Arrays
 using InplaceArrays.Arrays: Elem
 using InplaceArrays.Arrays: NumberOrArray
+using InplaceArrays.Arrays: AppliedArray
 
 using Test
 using DocStringExtensions

@@ -102,12 +102,18 @@ end
 
 gradient(a::T) where T<:Number = zero(T)
 
-function gradient(a::AbstractArray{T}) where T <:Number
-  z = similar(a)
-  zi = zero(T)
-  for i in eachindex(z)
-    z[i] = zi
-  end
-  z
+#function gradient(a::AbstractArray{T}) where T <:Number
+#  z = similar(a)
+#  zi = zero(T)
+#  for i in eachindex(z)
+#    z[i] = zi
+#  end
+#  z
+#end
+
+function gradient(a::AbstractArray{<:Number})
+  T = eltype(a)
+  Fill(zero(T),size(a))
 end
+
 

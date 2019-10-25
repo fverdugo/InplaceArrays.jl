@@ -31,6 +31,15 @@ agx = fill(gx,l)
 a∇gx = fill(∇gx,l)
 test_array_of_fields(ag,ax,agx,grad=a∇gx)
 
+ap = fill(p,l)
+ag = apply_to_field(elem(+),af,ap)
+gx = fill(v+p,np)
+∇gx = fill(VectorValue(v,0.0),np)
+agx = fill(gx,l)
+a∇gx = fill(∇gx,l)
+
+test_array_of_fields(ag,ax,agx,grad=a∇gx)
+
 l = 10
 af = Fill(f,l)
 ax = Fill(x,l)
