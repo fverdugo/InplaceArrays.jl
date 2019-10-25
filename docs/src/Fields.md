@@ -35,3 +35,12 @@ valuetype(::Type{<:Field})
 apply_kernel_to_field(k,f...)
 gradient(k,f...)
 ```
+
+## Working with arrays of fields
+
+```@docs
+evaluate(::AbstractArray{<:Field},::AbstractArray)
+gradient(::AbstractArray{<:Field})
+field_cache(::AbstractArray{<:Field},::AbstractArray)
+test_array_of_fields
+```

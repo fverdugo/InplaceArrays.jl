@@ -15,7 +15,8 @@ using InplaceArrays.Arrays: Elem
 
 using Test
 using DocStringExtensions
-using TensorValues
+using TensorValues #TODO integrate here
+using FillArrays
 
 export Point
 export evaluate
@@ -28,6 +29,7 @@ export Field
 export test_field
 export valuetype
 export apply_kernel_to_field
+export test_array_of_fields
 
 import InplaceArrays.Arrays: kernel_cache
 import InplaceArrays.Arrays: apply_kernel!
@@ -39,5 +41,7 @@ include("Interface.jl")
 include("MockFields.jl")
 
 include("Apply.jl")
+
+include("FieldArrays.jl")
 
 end # module

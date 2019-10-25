@@ -35,6 +35,7 @@ test_array
 ```@docs
 apply(f,a::AbstractArray...)
 apply(f::AbstractArray,a::AbstractArray...)
+apply_all
 ```
 
 ### Operation kernels

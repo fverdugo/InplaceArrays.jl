@@ -212,7 +212,7 @@ end
 
 function getvalues(a::Fill)
   ai = a.value
-  (ai)
+  (ai,)
 end
 
 # TODO Implement Compressed
