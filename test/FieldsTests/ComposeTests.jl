@@ -19,7 +19,7 @@ fun(x,y) = 2*x
 
 v = 3.0
 d = 2
-f = MockField(d,v)
+f = MockField{d}(v)
 fx = fill(v,np)
 
 k = Comp(fun)

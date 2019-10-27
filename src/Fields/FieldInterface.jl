@@ -128,7 +128,7 @@ end
     xi = x[i]
     fi = evaluate!(cfi,f,xi)
     for ci in cis
-      ca[ci,i] = fi[ci]
+      @inbounds ca[ci,i] = fi[ci]
     end
   end
   ca
@@ -141,7 +141,7 @@ end
   for i in 1:length(x)
     xi = x[i]
     fi = evaluate!(cfi,f,xi)
-    ca[i] = fi
+    @inbounds ca[i] = fi
   end
   ca
 end

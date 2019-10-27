@@ -10,7 +10,7 @@ x = fill(p,np)
 
 v = 3.0
 d = 2
-f = MockField(d,v)
+f = MockField{d}(v)
 fx = fill(v,np)
 test_field(f,x,fx)
 
@@ -21,7 +21,7 @@ test_field(∇f,x,∇fx)
 test_field(f,x,fx,grad=∇fx)
 
 ndof = 8
-b = MockBasis(d,v,ndof)
+b = MockBasis{d}(v,ndof)
 bx = fill(v,ndof,np)
 ∇bx = fill(VectorValue(v,0.0),ndof,np)
 test_field(b,x,bx,grad=∇bx)

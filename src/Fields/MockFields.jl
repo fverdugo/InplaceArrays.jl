@@ -1,8 +1,8 @@
 
 struct MockField{D,T} <: Field{T}
   v::T
-  function MockField(d::Integer,v::T) where T
-    new{d,T}(v)
+  function MockField{D}(v::T) where {D,T}
+    new{D,T}(v)
   end
 end
 
@@ -17,14 +17,14 @@ function gradient(f::MockField{D,T}) where {D,T}
   _p[1] = one(E)
   p = Point(_p)
   vg = outer(p,f.v)
-  MockField(D,vg)
+  MockField{D}(vg)
 end
 
 struct MockBasis{D,V} <: Field{Vector{V}}
   v::V
   ndofs::Int
-  function MockBasis(d::Int,v::V,ndofs::Int) where V
-    new{d,V}(v,ndofs)
+  function MockBasis{D}(v::V,ndofs::Int) where {D,V}
+    new{D,V}(v,ndofs)
   end
 end
 
@@ -34,7 +34,7 @@ end
 
 function evaluate!(v,f::MockBasis,x::Point)
   for j in 1:f.ndofs
-    v[j] = f.v*x[1]
+    @inbounds v[j] = f.v*x[1]
   end
   v
 end
@@ -46,5 +46,5 @@ function gradient(f::MockBasis{D,T}) where {D,T}
   _p[1] = one(E)
   p = Point(_p)
   vg = outer(p,f.v)
-  MockBasis(D,vg,f.ndofs)
+  MockBasis{D}(vg,f.ndofs)
 end
