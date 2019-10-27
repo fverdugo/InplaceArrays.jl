@@ -6,7 +6,7 @@ using InplaceArrays.Fields
 using FillArrays
 using TensorValues
 
-using InplaceArrays.Fields: MockField
+using InplaceArrays.Fields: MockField, MockBasis
 using InplaceArrays.Fields: Valued
 
 k = elem(-)
@@ -111,5 +111,19 @@ test_array_of_fields(ag,ax,agx,grad=a∇gx)
 ag = apply_to_field(elem(-),ax)
 @test isa(testitem(testitem(ag)),Point)
 
+np = 4
+p = Point(1,2)
+x = fill(p,np)
+v = 2.0
+d = 2
+ndof = 8
+wi = 3.0
+w = fill(wi,ndof)
+ri = fill(v+wi,ndof)
+r = fill(v+wi,ndof,np)
+f = MockBasis{d}(v,ndof)
+g = apply_kernel_to_field(elem(+),f,w)
+test_field(g,[p,],reshape(ri,(ndof,1)))
+test_field(g,x,r)
 
 end # module

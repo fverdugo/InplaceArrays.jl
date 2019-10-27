@@ -35,19 +35,20 @@ will be displayed if there is any error in `f`.
 """
 function return_type(f::Function,Ts...)
   args = testargs(f,Ts...)
-  try
+  #try
     typeof(f(args...))
-  catch e
-    if isa(e,DomainError)
-      s = "Function $(nameof(f)) cannot be evaluated at $args, its not in the domain.\n"
-      s *= " Define function `testargs(::typeof{$(nameof(f))},Ts...)`\n"
-      s *= " which sould return an argument tuple in the function domain."
-      error(s)
-    else
-      throw(e)
-    end
-  end
-
+  #catch e
+  #  if isa(e,DomainError)
+  #    s = "Function $(nameof(f)) cannot be evaluated at $args, its not in the domain.\n"
+  #    s *= " Define function `testargs(::typeof{$(nameof(f))},Ts...)`\n"
+  #    s *= " which sould return an argument tuple in the function domain."
+  #    error(s)
+  #  else
+  #    throw(e)
+  #  end
+  #end
+  # TODO try - catch block makes function very in-efficient when
+  # called multiple times
 end
 
 """

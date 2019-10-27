@@ -18,11 +18,11 @@ resulting field, one needs to define the gradient operator
 associated with the underlying kernel. This is done by adding a new method
 to the `gradient` function as detailed below.
 """
-function apply_kernel_to_field(k,f::FieldNumberOrArray...)
+@inline function apply_kernel_to_field(k,f::FieldNumberOrArray...)
   AppliedField(k,f...)
 end
 
-function apply_kernel_to_field(k,f::NumberOrArray...)
+@inline function apply_kernel_to_field(k,f::NumberOrArray...)
   apply_kernel(k,f...)
 end
 
@@ -72,7 +72,7 @@ struct AppliedField{K,F,T} <: Field{T}
   f::F
   @inline function AppliedField(k,f...)
     Ts = map(valuetype,f)
-    vs = map(testvalue,Ts)
+    vs = testvalues(Ts...)
     T = kernel_return_type(k,vs...)
     new{typeof(k),typeof(f),T}(k,f)
   end

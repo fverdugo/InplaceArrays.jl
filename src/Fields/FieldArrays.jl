@@ -101,7 +101,7 @@ end
 
 Numerically equivalent to
 
-    map( (x...) -> apply_kernel_to_field(k,x...), f )
+    map( (x...) -> apply_to_field(k,x...), f )
 """
 function apply_to_field(k,f::AbstractArray...)
   v = Valued(k)

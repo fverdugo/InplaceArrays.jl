@@ -3,7 +3,7 @@ module FieldArraysTests
 using Test
 using InplaceArrays.Arrays
 using InplaceArrays.Fields
-using InplaceArrays.Fields: MockField
+using InplaceArrays.Fields: MockField, MockBasis
 using FillArrays
 using TensorValues # TODO
 
@@ -46,5 +46,26 @@ ax = Fill(x,l)
 ag = apply_to_field(elem(+),af,af)
 r1 = evaluate(ag,ax)
 @test isa(r1,Fill)
+
+## TODO not working
+#np = 4
+#p = Point(1,2)
+#x = fill(p,np)
+#v = 2.0
+#d = 2
+#ndof = 8
+#wi = 3.0
+#w = fill(wi,ndof)
+#ri = fill(v+wi,ndof)
+#r = fill(v+wi,ndof,np)
+#f = MockBasis{d}(v,ndof)
+#af = Fill(f,l)
+#ax = fill(x,l)
+#aw = fill(w,l)
+#ag = apply_to_field(elem(+),af,aw)
+#agx = evaluate(ag,ax)
+#@show typeof(ag)
+##display(agx)
+
 
 end # module
