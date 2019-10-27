@@ -30,6 +30,7 @@ export ∇
 export Field
 export test_field
 export valuetype
+export pointdim
 export apply_kernel_to_field
 export apply_to_field
 export test_array_of_fields
@@ -43,6 +44,8 @@ import Base: +, - , *
 include("FieldInterface.jl")
 
 include("MockFields.jl")
+
+include("ConstantFields.jl")
 
 include("FieldApply.jl")
 

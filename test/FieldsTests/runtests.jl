@@ -8,6 +8,8 @@ using Test
 
 @testset "FieldApply" begin include("FieldApplyTests.jl") end
 
+@testset "ConstantFields" begin include("ConstantFieldsTests.jl") end
+
 @testset "FieldArrays" begin include("FieldArraysTests.jl") end
 
 @testset "Compose" begin include("ComposeTests.jl") end

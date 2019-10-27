@@ -6,9 +6,14 @@ Type representing a point of D dimensions with coordinates of type T
 const Point{D,T} = VectorValue{D,T}
 
 """
-$(TYPEDEF)
+abstract type Field{V,D}
 
-Abstract type representing either a field.
+Abstract type representing field. 
+
+- `D` is the number of components of the points where the field can be evaluated.
+- `V` has to be a type `<:Number` if the field returns a number when evaluated at a single point.
+- `V` has to be a type `<:AbstractArray` if the field returns an array when evaluated at a single point. E.g., for basis of fields `V` is a type `<:AbstractVector`.
+- Note that `eltype(V)` is allowed to be any number type since the actual returned type can depend in general on the particular type of the evaluation point components.
 
 The following functions need to be overloaded for derived types:
 
@@ -32,7 +37,7 @@ The interface can be tested with
 - [`test_field`](@ref)
 
 """
-abstract type Field{T} end
+abstract type Field{V,D} end
 #TODO not sure if we need Field{D,T}
 # Even if we adopt this, T will be a number for a field
 # and a vector for a basis
@@ -42,6 +47,10 @@ abstract type Field{T} end
 # TODO valuetype and field_return_type kind of duplicated, even though
 # the last one allows to dispatch for vectorized and non-vectorized versions
 # Any decision here has consequences in AppliedField
+# EDIT:
+# V needed to dispatch by either number or AbstractArray
+# D needed in order to define gradients
+# V first to facilitate dispatching
 
 """
     field_cache(f::Field,x::Point)
@@ -191,15 +200,17 @@ end
       grad=nothing)
 """
 function test_field(
-  f::Field,
+  f::Field{T,D},
   x::AbstractVector{<:Point},
   v::AbstractArray,cmp=(==);
-  grad=nothing)
+  grad=nothing) where {T,D}
 
   w = evaluate(f,x)
   @test cmp(w,v)
   @test typeof(w) == field_return_type(f,x)
   test_kernel(f,(x,),v,cmp)
+  @test pointdim(f) == D
+  @test valuetype(f) == T
 
   _testloop(valuetype(f),f,x,v,cmp)
 
@@ -263,18 +274,25 @@ function evaluate(f::Field,x)
 end
 
 """
-    valuetype(::Type{Field{T}}) where T
+    valuetype(::Type{Field{T,D}}) where {T,D}
 
 Returns `T`
 """
-valuetype(::Type{<:Field{T}}) where T = T
+valuetype(::Type{<:Field{T,D}}) where {T,D} = T
 valuetype(f::T) where T<:Field = valuetype(T)
+
+"""
+    pointdim(::Type{Field{T,D}}) where {T,D}
+
+Returns `D`
+"""
+pointdim(::Type{<:Field{T,D}}) where {T,D} = D
+pointdim(f::T) where T<:Field = pointdim(T)
 
 valuetype(::Type{T}) where T<:Number = T
 valuetype(f::T) where T<:Number = valuetype(T)
 
 valuetype(::Type{T}) where T<:AbstractArray = T
 valuetype(f::T) where T<:AbstractArray = valuetype(T)
-
 
 

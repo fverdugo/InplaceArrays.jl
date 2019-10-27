@@ -1,8 +1,8 @@
 
-struct MockField{D,T} <: Field{T}
+struct MockField{T,D} <: Field{T,D}
   v::T
-  function MockField{D}(v::T) where {D,T}
-    new{D,T}(v)
+  function MockField{D}(v::T) where {T,D}
+    new{T,D}(v)
   end
 end
 
@@ -10,7 +10,7 @@ field_cache(f::MockField,x::Point) = nothing
 
 evaluate!(::Nothing,f::MockField,x::Point) = f.v*x[1]
 
-function gradient(f::MockField{D,T}) where {D,T}
+function gradient(f::MockField{T,D}) where {T,D}
   E = eltype(T)
   P = Point{D,E}
   _p = zero(mutable(P))
@@ -20,15 +20,15 @@ function gradient(f::MockField{D,T}) where {D,T}
   MockField{D}(vg)
 end
 
-struct MockBasis{D,V} <: Field{Vector{V}}
+struct MockBasis{V,D} <: Field{Vector{V},D}
   v::V
   ndofs::Int
-  function MockBasis{D}(v::V,ndofs::Int) where {D,V}
-    new{D,V}(v,ndofs)
+  function MockBasis{D}(v::V,ndofs::Int) where {V,D}
+    new{V,D}(v,ndofs)
   end
 end
 
-function field_cache(f::MockBasis{D,T},x::Point) where {D,T}
+function field_cache(f::MockBasis{T,D},x::Point) where {T,D}
   zeros(T,f.ndofs)
 end
 
@@ -39,7 +39,7 @@ function evaluate!(v,f::MockBasis,x::Point)
   v
 end
 
-function gradient(f::MockBasis{D,T}) where {D,T}
+function gradient(f::MockBasis{T,D}) where {T,D}
   E = eltype(T)
   P = Point{D,E}
   _p = zero(mutable(P))

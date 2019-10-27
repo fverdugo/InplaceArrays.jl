@@ -18,7 +18,7 @@ Numerically equivalent to
     map(gradient,a)
 """
 function gradient(a::AbstractArray{<:Field})
-  s = "You are calling a very inefficient default"
+  s = "You are calling a very memory inefficient default"
   s *= " implementation of gradient for array of fields"
   @warn s
   map(gradient,a)

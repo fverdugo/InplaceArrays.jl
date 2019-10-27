@@ -1,5 +1,5 @@
 
-const FieldNumberOrArray = Union{Field,Number,AbstractArray}
+const FieldNumberOrArray = Union{Field{T,D} where T,Number,AbstractArray} where D
 
 """
     apply_kernel_to_field(k,f...) -> Field
@@ -18,18 +18,35 @@ resulting field, one needs to define the gradient operator
 associated with the underlying kernel. This is done by adding a new method
 to the `gradient` function as detailed below.
 """
-@inline function apply_kernel_to_field(k,f::FieldNumberOrArray...)
-  AppliedField(k,f...)
+@inline function apply_kernel_to_field(k,f::FieldNumberOrArray{D}...) where D
+  g = _to_fields(Val{D}(),f...)
+  AppliedField(k,g...)
 end
 
 @inline function apply_kernel_to_field(k,f::NumberOrArray...)
-  apply_kernel(k,f...)
+  @unreachable "At least one input must be a Field"
 end
+
+function _to_fields(d::Val,a,b...)
+  f = _to_field(d,a)
+  g = _to_fields(d,b...)
+  (f,g...)
+end
+
+function _to_fields(d::Val,a)
+  f = _to_field(d,a)
+  (f,)
+end
+
+_to_field(::Val,a::Field) = a
+
+_to_field(::Val{D},a::NumberOrArray) where D = ConstantField{D}(a)
 
 """
     gradient(k,f...)
 """
 function gradient(k,f...)
+  @abstractmethod
 end
 
 #TODO also for broad cast?
@@ -40,7 +57,7 @@ gradient(k::Elem{typeof(-)},a::Field) = apply_kernel_to_field(k,gradient(a))
 
 for op in (:+,:-)
   @eval begin
-    function gradient(k::Elem{typeof($op)},a::FieldNumberOrArray,b::FieldNumberOrArray)
+    function gradient(k::Elem{typeof($op)},a::Field,b::Field)
       apply_kernel_to_field(k,gradient(a),gradient(b))
     end
   end
@@ -67,14 +84,14 @@ end
 
 # Result of applying a kernel to the value of some fields
 
-struct AppliedField{K,F,T} <: Field{T}
+struct AppliedField{K,F,T,D} <: Field{T,D}
   k::K
   f::F
-  @inline function AppliedField(k,f...)
+  @inline function AppliedField(k,f::(Field{T,D} where T)...) where D
     Ts = map(valuetype,f)
     vs = testvalues(Ts...)
     T = kernel_return_type(k,vs...)
-    new{typeof(k),typeof(f),T}(k,f)
+    new{typeof(k),typeof(f),T,D}(k,f)
   end
 end
 
@@ -100,7 +117,7 @@ function gradient(f::AppliedField)
   gradient(f.k,f.f...)
 end
 
-gradient(a::T) where T<:Number = zero(T)
+#gradient(a::T) where T<:Number = zero(T)
 
 #function gradient(a::AbstractArray{T}) where T <:Number
 #  z = similar(a)
@@ -111,9 +128,9 @@ gradient(a::T) where T<:Number = zero(T)
 #  z
 #end
 
-function gradient(a::AbstractArray{<:Number})
-  T = eltype(a)
-  Fill(zero(T),size(a))
-end
+#function gradient(a::AbstractArray{<:Number})
+#  T = eltype(a)
+#  Fill(zero(T),size(a))
+#end
 
 

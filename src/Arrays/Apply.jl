@@ -89,10 +89,10 @@ struct AppliedArray{T,N,F,G} <: AbstractArray{T,N}
   end
 end
 
-function apply(f::AppliedArray, a::AbstractArray...)
-  fa = apply_all(f.f,a...)
-  apply(f.g,fa...)
-end
+#function apply(f::AppliedArray, a::AbstractArray...)
+#  fa = apply_all(f.f,a...)
+#  apply(f.g,fa...)
+#end
 
 function uses_hash(::Type{<:AppliedArray})
   Val(true)

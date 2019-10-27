@@ -156,6 +156,12 @@ end
 
 @inline apply_kernel!(::Nothing,f::Function,args...) = f(args...)
 
+#kernel_return_type(::Type{T},x...) where T = T
+#
+#@inline kernel_cache(::Type,args...) = nothing
+#
+#@inline apply_kernel!(::Nothing,::Type{T},args...) where T = T(args...)
+
 kernel_return_type(a::Number,x...) = typeof(a)
 
 @inline kernel_cache(f::Number,args...) = nothing
