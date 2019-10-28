@@ -19,9 +19,16 @@ println(a)
 [5, 7, 9]
 ```
 """
-function apply(f,a::AbstractArray...)
+function apply(f::Kernel,a::AbstractArray...)
   s = common_size(a...)
   apply(Fill(f,s...),a...)
+end
+
+"""
+"""
+function apply(f::Function,a::AbstractArray...)
+  k = f2k(f)
+  apply(k,a...)
 end
 
 """
@@ -42,7 +49,7 @@ println(a)
 [5, -3, 3]
 ```
 """
-function apply(f::AbstractArray,a::AbstractArray...)
+function apply(f::AbstractArray{<:Kernel},a::AbstractArray...)
   AppliedArray(f,a...)
 end
 

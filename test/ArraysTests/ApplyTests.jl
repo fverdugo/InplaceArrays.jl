@@ -13,16 +13,16 @@ test_array(a,a)
 
 a = rand(3,2)
 a = CartesianIndices(a)
-c = apply(f2k(-),a)
+c = apply(-,a)
 test_array(c,-a)
 
 a = rand(12)
-c = apply(f2k(-),a)
+c = apply(-,a)
 test_array(c,-a)
 
 a = rand(12)
 b = rand(12)
-c = apply(f2k(-),a,b)
+c = apply(-,a,b)
 test_array(c,a.-b)
 
 a = rand(0)
