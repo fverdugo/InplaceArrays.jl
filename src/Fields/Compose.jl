@@ -7,7 +7,7 @@ function compose(g::Function,f...)
   apply_kernel_to_field(k,f...)
 end
 
-struct Comp{F}
+struct Comp{F} <: Kernel
   e::Elem{F}
   @inline Comp(f::Function) = new{typeof(f)}(Elem(f))
 end

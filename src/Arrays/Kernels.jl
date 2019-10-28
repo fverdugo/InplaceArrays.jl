@@ -1,12 +1,17 @@
 # Define kernel interface
 
 """
+"""
+abstract type Kernel end
+
+
+"""
 $(SIGNATURES)
 
 Returns the type of the result of calling kernel `f` with
 arguments of the types of the objects `x`.
 """
-function kernel_return_type(f,x...)
+function kernel_return_type(f::Kernel,x...)
   @abstractmethod
 end
 
@@ -16,7 +21,7 @@ $(SIGNATURES)
 Returns the `cache` needed to apply kernel `f` with arguments
 of the same type as the objects in `x...`.
 """
-function kernel_cache(f,x...)
+function kernel_cache(f::Kernel,x...)
   @abstractmethod
 end
 
@@ -31,7 +36,7 @@ If the result of two or more invocations of this function need to be accessed si
 (e.g., in multi-threading), create and use various `cache` objects (e.g., one cache
 per thread).
 """
-function apply_kernel!(cache,f,x...)
+function apply_kernel!(cache,f::Kernel,x...)
   @abstractmethod
 end
 
@@ -46,7 +51,7 @@ of the kernel, and `y` is the expected result. Function `cmp` is used to compare
 the computed result with the expected one. The checks are done with the `@test`
 macro.
 """
-function test_kernel(f,x,y,cmp=(==))
+function test_kernel(f::Kernel,x::Tuple,y,cmp=(==))
   z = apply_kernel(f,x...)
   @test cmp(z,y)
   @test typeof(z) == kernel_return_type(f,x...)
@@ -70,7 +75,7 @@ cache = kernel_cache(f,x...)
 apply_kernel!(cache,f,x...)
 ```
 """
-function apply_kernel(f,x...)
+function apply_kernel(f::Kernel,x...)
   cache = kernel_cache(f,x...)
   y = apply_kernel!(cache,f,x...)
   y
@@ -147,14 +152,23 @@ end
 
 # Include some well-known types in this interface
 
-function kernel_return_type(f::Function,x...)
-  Ts = map(typeof,x)
-  return_type(f,Ts...)
+"""
+"""
+f2k(f::Function) = Func(f)
+
+struct Func{F} <: Kernel
+  f::F
+  @inline Func(f::Function) = new{typeof(f)}(f)
 end
 
-@inline kernel_cache(f::Function,args...) = nothing
+function kernel_return_type(f::Func,x...)
+  Ts = map(typeof,x)
+  return_type(f.f,Ts...)
+end
 
-@inline apply_kernel!(::Nothing,f::Function,args...) = f(args...)
+@inline kernel_cache(f::Func,args...) = nothing
+
+@inline apply_kernel!(::Nothing,f::Func,args...) = f.f(args...)
 
 #kernel_return_type(::Type{T},x...) where T = T
 #
@@ -162,17 +176,17 @@ end
 #
 #@inline apply_kernel!(::Nothing,::Type{T},args...) where T = T(args...)
 
-kernel_return_type(a::Number,x...) = typeof(a)
-
-@inline kernel_cache(f::Number,args...) = nothing
-
-@inline apply_kernel!(::Nothing,f::Number,args...) = f
-
-kernel_return_type(a::AbstractArray,x...) = typeof(a)
-
-@inline kernel_cache(f::AbstractArray,args...) = nothing
-
-@inline apply_kernel!(::Nothing,f::AbstractArray,args...) = f
+#kernel_return_type(a::Number,x...) = typeof(a)
+#
+#@inline kernel_cache(f::Number,args...) = nothing
+#
+#@inline apply_kernel!(::Nothing,f::Number,args...) = f
+#
+#kernel_return_type(a::AbstractArray,x...) = typeof(a)
+#
+#@inline kernel_cache(f::AbstractArray,args...) = nothing
+#
+#@inline apply_kernel!(::Nothing,f::AbstractArray,args...) = f
 
 # Some particular cases
 
@@ -186,7 +200,7 @@ function `f`.
 """
 bcast(f::Function) = BCasted(f)
 
-struct BCasted{F<:Function}
+struct BCasted{F<:Function} <: Kernel
   f::F
 end
 
@@ -251,7 +265,7 @@ It does not broadcast in singleton axes. Thus, allows some speed up
 """
 elem(f::Function) = Elem(f)
 
-struct Elem{F}
+struct Elem{F} <: Kernel
   f::F
   Elem(f::Function) = new{typeof(f)}(f)
 end
@@ -406,7 +420,7 @@ apply_kernel(k,[1,2],[2,4]) # Equivalent to (1-2) + (2-4)
 """
 contract(f::Function) = Contracted(f)
 
-struct Contracted{F}
+struct Contracted{F} <: Kernel
   f::F
   Contracted(f::Function) = new{typeof(f)}(f)
 end

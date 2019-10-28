@@ -46,14 +46,15 @@ function apply(f::AbstractArray,a::AbstractArray...)
   AppliedArray(f,a...)
 end
 
-function apply(f::AbstractArray{<:Number},a::AbstractArray...)
-  f
-end
+#function apply(f::AbstractArray{<:Number},a::AbstractArray...)
+#  f
+#end
+#
+#function apply(f::AbstractArray{<:AbstractArray},a::AbstractArray...)
+#  f
+#end
 
-function apply(f::AbstractArray{<:AbstractArray},a::AbstractArray...)
-  f
-end
-
+# TODO simply apply?
 """
     apply_all(f::Tuple,a::AbstractArray...)
 """

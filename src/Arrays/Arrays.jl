@@ -38,11 +38,13 @@ export apply_kernels!
 export apply_kernel!
 export apply_kernel
 export test_kernel
+export f2k
 export bcast
 export elem
 export contract
 export kernel_return_type
 export kernel_return_types
+export Kernel
 
 export apply
 export apply_all

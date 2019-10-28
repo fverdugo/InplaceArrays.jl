@@ -13,21 +13,21 @@ test_array(a,a)
 
 a = rand(3,2)
 a = CartesianIndices(a)
-c = apply(-,a)
+c = apply(f2k(-),a)
 test_array(c,-a)
 
 a = rand(12)
-c = apply(-,a)
+c = apply(f2k(-),a)
 test_array(c,-a)
 
 a = rand(12)
 b = rand(12)
-c = apply(-,a,b)
+c = apply(f2k(-),a,b)
 test_array(c,a.-b)
 
 a = rand(0)
 b = rand(0)
-c = apply(-,a,b)
+c = apply(f2k(-),a,b)
 test_array(c,a.-b)
 
 a = fill(rand(2,3),12)
@@ -71,7 +71,7 @@ ai, bi = testitems(a,b)
 @test ai == Array{Int,2}(undef,0,0)
 @test bi == zero(Int)
 
-a = fill(+,10)
+a = fill(f2k(+),10)
 x = rand(10)
 y = rand(10)
 v = apply(a,x,y)
@@ -140,34 +140,34 @@ ai = 1.0
 bi = 2.0
 a = Fill(ai,l)
 b = Fill(bi,l)
-c = apply(+,a,b)
+c = apply(f2k(+),a,b)
 r = map(+,a,b)
 test_array(c,r)
 @test isa(c,Fill)
 
-f = rand(10)
-a = rand(10)
-@test apply(f,a) === f
+#f = rand(10)
+#a = rand(10)
+#@test apply(f,a) === f
+#
+#f = fill(rand(4),10)
+#a = rand(10)
+#@test apply(f,a) === f
+#
+#f = fill(rand(4),10)
+#g = fill(rand(4),10)
+#a = rand(10)
+#h = apply_all((f,g),a)
+#@test h[1] === f
+#@test h[2] === g
 
-f = fill(rand(4),10)
-a = rand(10)
-@test apply(f,a) === f
-
-f = fill(rand(4),10)
-g = fill(rand(4),10)
-a = rand(10)
-h = apply_all((f,g),a)
-@test h[1] === f
-@test h[2] === g
-
-l = 10
-ai = 1.0
-bi = 2.0
-a = fill(ai,l)
-b = fill(bi,l)
-c = apply(+,a,b)
-d = apply(c,a,b)
-@test c == d
-@test typeof(d) == typeof(c)
+#l = 10
+#ai = 1.0
+#bi = 2.0
+#a = fill(ai,l)
+#b = fill(bi,l)
+#c = apply(f2k(+),a,b)
+#d = apply(c,a,b)
+#@test c == d
+#@test typeof(d) == typeof(c)
 
 end # module

@@ -37,7 +37,7 @@ The interface can be tested with
 - [`test_field`](@ref)
 
 """
-abstract type Field{V,D} end
+abstract type Field{V,D} <: Kernel end
 #TODO not sure if we need Field{D,T}
 # Even if we adopt this, T will be a number for a field
 # and a vector for a basis

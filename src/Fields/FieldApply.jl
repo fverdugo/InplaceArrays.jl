@@ -43,9 +43,9 @@ end
 @inline _to_field(::Val{D},a::NumberOrArray) where D = ConstantField{D}(a)
 
 """
-    gradient(k,f...)
+    gradient(k::Kernel,f...)
 """
-function gradient(k,f...)
+function gradient(k::Kernel,f...)
   @abstractmethod
 end
 
@@ -70,7 +70,7 @@ function lincomb(a::Field,b::AbstractArray)
   apply_kernel_to_field(k,a,b)
 end
 
-struct LinCom
+struct LinCom <: Kernel
   k::Contracted{typeof(outer)}
   @inline LinCom() = new(contract(outer))
 end

@@ -12,8 +12,9 @@ end
 function bench1(n)
   a = 1
   b = 2
-  cache = kernel_cache(+,a,b)
-  @time repeat(n,apply_kernel!,cache,+,a,b)
+  k = f2k(+)
+  cache = kernel_cache(k,a,b)
+  @time repeat(n,apply_kernel!,cache,k,a,b)
 end
 
 function bench2(n)

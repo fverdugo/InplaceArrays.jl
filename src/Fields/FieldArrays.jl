@@ -28,7 +28,7 @@ end
 #TODO to get rid of this warning, each kernel needs to define the global
 # version of the gradient
 
-struct Grad end
+struct Grad <: Kernel end
 
 # TODO a lot of kernels follow this pattern
 kernel_cache(::Grad,::Field) = nothing
@@ -121,7 +121,7 @@ function apply_to_field(k,f::AbstractArray...)
   apply(v,f...)
 end
 
-struct Valued{K}
+struct Valued{K} <: Kernel
   k::K
   Valued(k) = new{typeof(k)}(k)
 end
