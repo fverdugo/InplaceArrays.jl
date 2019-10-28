@@ -30,10 +30,10 @@ end
 
 struct Grad <: Kernel end
 
-# TODO a lot of kernels follow this pattern
-kernel_cache(::Grad,::Field) = nothing
+## TODO a lot of kernels follow this pattern
+#kernel_cache(::Grad,::Field) = nothing
 
-kernel_return_type(k::Grad,x::Field) = typeof(apply_kernel(k,x))
+#kernel_return_type(k::Grad,x::Field) = typeof(apply_kernel(k,x))
 
 @inline apply_kernel!(::Nothing,k::Grad,x::Field) = gradient(x)
 
@@ -146,13 +146,13 @@ end
   apply_kernel_to_field(k.k,x...)
 end
 
-function kernel_cache(k::Valued,x::FieldNumberOrArray...)
-  nothing
-end
+#function kernel_cache(k::Valued,x::FieldNumberOrArray...)
+#  nothing
+#end
 
-function kernel_return_type(k::Valued,x::FieldNumberOrArray...)
-  typeof(apply_kernel(k,x...))
-end
+#function kernel_return_type(k::Valued,x::FieldNumberOrArray...)
+#  typeof(apply_kernel(k,x...))
+#end
 
 """
 """
