@@ -8,4 +8,6 @@ include("FieldApplyBenchs.jl")
 
 include("FieldArraysBenchs.jl")
 
+include("ComposeBenchs.jl")
+
 end # module
