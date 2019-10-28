@@ -6,9 +6,9 @@ Type representing a point of D dimensions with coordinates of type T
 const Point{D,T} = VectorValue{D,T}
 
 """
-abstract type Field{V,D}
+    abstract type Field{V,D} <: Kernel
 
-Abstract type representing field. 
+Abstract type representing physical field, basis of fields, and other related objects. 
 
 - `D` is the number of components of the points where the field can be evaluated.
 - `V` has to be a type `<:Number` if the field returns a number when evaluated at a single point.
@@ -20,7 +20,7 @@ The following functions need to be overloaded for derived types:
 - [`evaluate!(cache,f::Field,x::Point)`](@ref)
 - [`field_cache(f::Field,x::Point)`](@ref)
 
-The following functions can optionally be also provided
+The following functions can be also provided optionally
 
 - [`gradient(f::Field)`](@ref)
 - [`field_return_type(f::Field,x::Point)`](@ref)
@@ -52,8 +52,18 @@ abstract type Field{V,D} <: Kernel end
 # D needed in order to define gradients
 # V first to facilitate dispatching
 
+
+"""
+    const Basis = Field{V,D} where {V<:AbstractVector, D}
+
+Alias for the particular case, where the field returns a vector of values.
+"""
+const Basis = Field{<:AbstractVector}
+
 """
     field_cache(f::Field,x::Point)
+
+Returns the cache object needed to evaluate field `f` at point `x`.
 """
 function field_cache(f::Field,x::Point)
   @abstractmethod
@@ -64,7 +74,7 @@ end
 
 Returns the value of field at point x.
 The value of a field is typically a number or an array.
-When the value is a vector, the field is informally referred to as a *basis*.
+When the value is a vector, the field is in fact a *basis*.
 """
 function evaluate!(cache,f::Field,x::Point)
   @abstractmethod
@@ -72,6 +82,8 @@ end
 
 """
     gradient(f::Field) -> Field
+
+Returns another field that represents the gradient of the given one
 """
 function gradient(f::Field)
   @abstractmethod
@@ -79,6 +91,8 @@ end
 
 """
    const ∇ = gradient
+
+A fancy alias for the `gradient` function.
 """
 const ∇ = gradient
 
@@ -86,6 +100,8 @@ const ∇ = gradient
 
 """
     field_return_type(f::Field,x::Point)
+
+Computes the type obtained when evaluating field `f` at point `x`.
 """
 function field_return_type(f::Field,x::Point)
   typeof(evaluate(f,x))
@@ -95,6 +111,9 @@ end
 
 """
     field_cache(f::Field,x::AbstractVector{<:Point})
+
+Returns the cache object needed to evaluate the field `f` at the vector of points
+`x` by means of the vectorized version of `evaluate!`.
 """
 function field_cache(f::Field,x::AbstractVector{<:Point})
   _field_cache(valuetype(f),f,x)
@@ -124,6 +143,12 @@ end
 
 """
     evaluate!(cache,f::Field,x::AbstractVector{<:Point})
+
+Vectorized version of [`evaluate!(f::Field,x::Point)`](@ref). 
+
+For fields `f` with `valuetype(f)<:Number`, it returns a vector with the value of `f` at each of the point in `x`. 
+
+For Fields `f` with `valuetype(f)<:AbstractArray`, it returns an array with one dimension more than the value of the field. E.g., for basis, it should return a matrix. The axis associated with the points `x` is the last axis in the resulting array. E.g., for a basis with `ndof` degrees of freedom, the returned matrix has size `(ndof,length(x))` .
 """
 @inline function evaluate!(cache,f::Field,x::AbstractVector{<:Point})
   _evaluate!(valuetype(f),cache,f,x)
@@ -157,6 +182,8 @@ end
 
 """
     field_return_type(f::Field,x::AbstractVector{<:Point})
+
+Returns the type of the object obtained when the field `f` is evaluated at the vector of points `x` by means of the vectorized version of `evaluate!`.
 """
 function field_return_type(f::Field,x::AbstractVector{<:Point})
   _field_return_type(valuetype(f),f,x)
@@ -194,10 +221,12 @@ end
 
 """
     test_field(
-      f::Fiel,
+      f::Field,
       x::AbstractVector{<:Point},
       v::AbstractArray,cmp=(==);
       grad=nothing)
+
+Function used to test the field interface.
 """
 function test_field(
   f::Field{T,D},
@@ -266,7 +295,12 @@ end
 # Some API
 
 """
-    evaluate(f::Field,x::Point)
+    evaluate(f::Field,x)
+
+Equivalent to 
+
+    cache = field_cache(f,x)
+    evaluate!(cache,f,x)
 """
 function evaluate(f::Field,x)
   cache = field_cache(f,x)

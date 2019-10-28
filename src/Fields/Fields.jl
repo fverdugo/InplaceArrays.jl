@@ -1,6 +1,9 @@
 """
-This module defines the interface for physical fields and  basis of
-physical fields. It also provides some helpers to work with fields and basis.
+This module provides:
+
+- An interface for physical fields and basis of physical fields.
+- Helpers functions to work with fields and basis.
+- Helpers functions to create lazy operation trees from fields and arrays of fields
 
 The exported names are:
 
@@ -29,6 +32,7 @@ export field_return_type
 export gradient
 export ∇
 export Field
+export Basis
 export test_field
 export valuetype
 export pointdim

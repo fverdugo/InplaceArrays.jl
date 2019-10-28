@@ -2,6 +2,9 @@
 """
     evaluate(a::AbstractArray{<:Field},x::AbstractArray)
 
+Evaluates the fields in the array `a` at the locations provided in the array `x`
+(which can be an array of points or an array of vectors of points).
+
 The result is numerically equivalent to 
 
     map(evaluate,a,x)
@@ -11,8 +14,9 @@ function evaluate(a::AbstractArray{<:Field},x::AbstractArray)
 end
 
 """
-    gradient(a::AbstractArray{<:Field},x::AbstractArray)
+    gradient(a::AbstractArray{<:Field})
 
+Returns an array containing the gradients of the fields in the array `a`.
 Numerically equivalent to 
 
     map(gradient,a)
@@ -78,6 +82,8 @@ end
       v::AbstractArray,
       cmp::Function=(==);
       grad = nothing)
+
+Function to test an array of fields.
 """
 function test_array_of_fields(
   a::AbstractArray{<:Field},
@@ -110,13 +116,13 @@ function test_array_of_fields(
 end
 
 """
-    apply_to_field(k,f::AbstractArray...)
+    apply_to_field(k::Kernel,f::AbstractArray...)
 
-Numerically equivalent to
+Returns an array of fields numerically equivalent to
 
-    map( (x...) -> apply_to_field(k,x...), f )
+    map( (x...) -> apply_kernel_to_field(k,x...), f )
 """
-function apply_to_field(k,f::AbstractArray...)
+function apply_to_field(k::Kernel,f::AbstractArray...)
   v = Valued(k)
   apply(v,f...)
 end
@@ -155,6 +161,11 @@ end
 #end
 
 """
+    lincomb(a::AbstractArray{<:Field},b::AbstractArray)
+
+Returns an array of field numerically equivalent to
+
+    map(lincomb,a,b)
 """
 function lincomb(a::AbstractArray{<:Field},b::AbstractArray)
   k = LinCom()
