@@ -123,13 +123,18 @@ Returns an array of fields numerically equivalent to
     map( (x...) -> apply_kernel_to_field(k,x...), f )
 """
 function apply_to_field(k::Kernel,f::AbstractArray...)
-  v = Valued(k)
+  fi = testitems(f...)
+  v = Valued(k,fi...)
   apply(v,f...)
 end
 
-struct Valued{K} <: Kernel
+struct Valued{T,K} <: Kernel
   k::K
-  Valued(k) = new{typeof(k)}(k)
+  function Valued(k,f...)
+    g = apply_kernel_to_field(k,f...)
+    T = valuetype(g)
+    new{T,typeof(k)}(k)
+  end
 end
 
 #TODO NumberOrArray versions needed??
@@ -148,8 +153,8 @@ function kernel_return_type(k::Valued,x::NumberOrArray...)
   kernel_return_type(b,x...)
 end
 
-@inline function apply_kernel!(cache,k::Valued,x::FieldNumberOrArray...)
-  apply_kernel_to_field(k.k,x...)
+@inline function apply_kernel!(cache,k::Valued{T},x::FieldNumberOrArray...) where T
+  apply_kernel_to_field(T,k.k,x...)
 end
 
 #function kernel_cache(k::Valued,x::FieldNumberOrArray...)

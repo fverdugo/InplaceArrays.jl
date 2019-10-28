@@ -61,6 +61,8 @@ function bench3(n)
   @time repeat(n,apply_kernel_to_field,k,f,v)
 end
 
+using InplaceArrays.Fields: Valued
+
 function bench4(n)
   np = 4
   p = Point(1,2)
@@ -71,7 +73,14 @@ function bench4(n)
   d = 2
   f = MockBasis{d}(v,ndof)
   k = elem(+)
-  @time repeat(n,apply_kernel_to_field,k,f,f)
+  fx = evaluate(f,x)
+  T = kernel_return_type(k,fx,fx)
+  @time repeat(n,apply_kernel_to_field,T,k,f,f)
+  @time repeat(n,apply_kernel_to_field,T,k,f,w)
+  @time repeat(n,apply_kernel_to_field,T,k,w,f)
+  vk = Valued(k,f,w)
+  cvk = kernel_cache(vk,f,w)
+  @time repeat(n,apply_kernel!,cvk,vk,f,w)
 end
 
 for n in (1,1,10,1000,100000)

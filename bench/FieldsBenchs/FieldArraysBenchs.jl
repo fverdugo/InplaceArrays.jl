@@ -7,7 +7,7 @@ using InplaceArrays.Fields: MockField, MockBasis
 using FillArrays
 using TensorValues # TODO
 
-@noinline function loop(a,cache)
+@inline function loop(a,cache)
   for i in eachindex(a)
     ai = getindex!(cache,a,i)
   end

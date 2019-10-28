@@ -1,7 +1,8 @@
 
 struct ConstantField{V,D} <: Field{V,D}
   value::V
-  @inline function ConstantField{D}(value::V) where {V<:NumberOrArray,D}
+  @inline function ConstantField{D}(value::NumberOrArray) where {D}
+    V = typeof(value)
     new{V,D}(value)
   end
 end

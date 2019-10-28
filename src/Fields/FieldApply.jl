@@ -34,6 +34,18 @@ end
   @unreachable "At least one input must be a Field"
 end
 
+"""
+"""
+@inline function apply_kernel_to_field(
+  ::Type{T}, k::Kernel, f::FieldNumberOrArray{D}...) where {T,D}
+  g = _to_fields(Val{D}(),f...)
+  AppliedField(T,k,g...)
+end
+
+#function _to_fields(f::FieldNumberOrArray{D}...) where D
+#  _to_fields(Val{D}(),f...)
+#end
+
 @inline function _to_fields(d::Val,a,b...)
   f = _to_field(d,a)
   g = _to_fields(d,b...)
@@ -137,10 +149,13 @@ end
 struct AppliedField{K,F,T,D} <: Field{T,D}
   k::K
   f::F
-  @inline function AppliedField(k,f::(Field{T,D} where T)...) where D
+  @inline function AppliedField(k,f::(Field{S,D} where S)...) where D
     Ts = map(valuetype,f)
     vs = testvalues(Ts...)
     T = kernel_return_type(k,vs...)
+    new{typeof(k),typeof(f),T,D}(k,f)
+  end
+  @inline function AppliedField(::Type{T},k,f::(Field{S,D} where S)...) where {T,D}
     new{typeof(k),typeof(f),T,D}(k,f)
   end
 end
