@@ -61,12 +61,26 @@ function bench3(n)
   @time repeat(n,apply_kernel_to_field,k,f,v)
 end
 
+function bench4(n)
+  np = 4
+  p = Point(1,2)
+  x = fill(p,np)
+  v = 3.0
+  ndof = 8
+  w = fill(v,ndof)
+  d = 2
+  f = MockBasis{d}(v,ndof)
+  k = elem(+)
+  @time repeat(n,apply_kernel_to_field,k,f,f)
+end
+
 for n in (1,1,10,1000,100000)
   @eval begin
     println("+++ runing suite for n = $($n) +++")
     bench1($n)
     bench2($n)
     bench3($n)
+    bench4($n)
   end
 end
 

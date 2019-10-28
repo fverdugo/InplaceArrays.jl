@@ -126,6 +126,7 @@ struct Valued{K}
   Valued(k) = new{typeof(k)}(k)
 end
 
+#TODO NumberOrArray versions needed??
 @inline function apply_kernel!(cache,k::Valued,x::NumberOrArray...)
   b = k.k
   apply_kernel!(cache,b,x...)
@@ -153,4 +154,10 @@ function kernel_return_type(k::Valued,x::FieldNumberOrArray...)
   typeof(apply_kernel(k,x...))
 end
 
+"""
+"""
+function lincomb(a::AbstractArray{<:Field},b::AbstractArray)
+  k = LinCom()
+  apply_to_field(k,a,b)
+end
 

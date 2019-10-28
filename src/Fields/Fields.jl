@@ -14,6 +14,7 @@ using InplaceArrays.Arrays
 using InplaceArrays.Arrays: Elem
 using InplaceArrays.Arrays: NumberOrArray
 using InplaceArrays.Arrays: AppliedArray
+using InplaceArrays.Arrays: Contracted
 
 using Test
 using DocStringExtensions
@@ -35,6 +36,7 @@ export apply_kernel_to_field
 export apply_to_field
 export test_array_of_fields
 export compose
+export lincomb
 
 import InplaceArrays.Arrays: kernel_cache
 import InplaceArrays.Arrays: apply_kernel!

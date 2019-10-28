@@ -27,20 +27,20 @@ end
   @unreachable "At least one input must be a Field"
 end
 
-function _to_fields(d::Val,a,b...)
+@inline function _to_fields(d::Val,a,b...)
   f = _to_field(d,a)
   g = _to_fields(d,b...)
   (f,g...)
 end
 
-function _to_fields(d::Val,a)
+@inline function _to_fields(d::Val,a)
   f = _to_field(d,a)
   (f,)
 end
 
-_to_field(::Val,a::Field) = a
+@inline _to_field(::Val,a::Field) = a
 
-_to_field(::Val{D},a::NumberOrArray) where D = ConstantField{D}(a)
+@inline _to_field(::Val{D},a::NumberOrArray) where D = ConstantField{D}(a)
 
 """
     gradient(k,f...)
@@ -61,6 +61,29 @@ for op in (:+,:-)
       apply_kernel_to_field(k,gradient(a),gradient(b))
     end
   end
+end
+
+"""
+"""
+function lincomb(a::Field,b::AbstractArray)
+  k = LinCom()
+  apply_kernel_to_field(k,a,b)
+end
+
+struct LinCom
+  k::Contracted{typeof(outer)}
+  @inline LinCom() = new(contract(outer))
+end
+
+@inline kernel_return_type(k::LinCom,a,b) = kernel_return_type(k.k,a,b)
+
+@inline kernel_cache(k::LinCom,a,b) = kernel_cache(k.k,a,b)
+
+@inline apply_kernel!(cache,k::LinCom,a,b) = apply_kernel!(cache,k.k,a,b)
+
+@inline function gradient(k::LinCom,a::Field,b::ConstantField)
+  g = gradient(a)
+  apply_kernel_to_field(k,g,b)
 end
 
 # Arithmetic operations on fields
