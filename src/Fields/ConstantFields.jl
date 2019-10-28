@@ -37,6 +37,7 @@ function gradient(f::AbstractArray{<:ConstantField})
   Fill(gi,size(f))
 end
 
+# TODO Perhaps not needed
 struct ToField{D} end
 
 kernel_cache(::ToField,::NumberOrArray) = nothing

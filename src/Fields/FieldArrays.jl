@@ -18,13 +18,24 @@ Numerically equivalent to
     map(gradient,a)
 """
 function gradient(a::AbstractArray{<:Field})
-  s = "You are calling a very memory inefficient default"
-  s *= " implementation of gradient for array of fields"
-  @warn s
-  map(gradient,a)
+  #s = "You are calling a very memory inefficient default"
+  #s *= " implementation of gradient for array of fields"
+  #@warn s
+  #map(gradient,a)
+  k = Grad()
+  apply(k,a)
 end
 #TODO to get rid of this warning, each kernel needs to define the global
 # version of the gradient
+
+struct Grad end
+
+# TODO a lot of kernels follow this pattern
+kernel_cache(::Grad,::Field) = nothing
+
+kernel_return_type(k::Grad,x::Field) = typeof(apply_kernel(k,x))
+
+@inline apply_kernel!(::Nothing,k::Grad,x::Field) = gradient(x)
 
 function evaluate(a::Fill{<:AppliedField},x::AbstractArray)
   ai = a.value
@@ -32,9 +43,11 @@ function evaluate(a::Fill{<:AppliedField},x::AbstractArray)
   apply(ai.k,fx...)
 end
 
+#TODO, perhaps not needed since apply func will take care.
 gradient(a::Fill) = Fill(gradient(a.value),a.axes)
 
 #TODO implement also gradient for compressed
+#EDIT, perhaps not needed since apply func will take care.
 
 """
     field_cache(a::AbstractArray{<:Field},x::AbstractArray) -> Tuple
