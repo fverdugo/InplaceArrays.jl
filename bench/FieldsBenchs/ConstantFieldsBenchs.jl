@@ -4,7 +4,6 @@ using InplaceArrays.Arrays
 using InplaceArrays.Fields
 using InplaceArrays.Fields: ConstantField
 using InplaceArrays.Fields: ToField
-using Traceur
 
 @inline function repeat(n,f,args...)
   for i in 1:n
@@ -77,17 +76,5 @@ for n in (1,1,10,1000,100000)
     bench4($n)
   end
 end
-
-#function trace(n)
-#  d = 2
-#  v = [1,2,3]
-#  av = fill(v,n)
-#  k = ToField{d}()
-#  af = apply(k,av)
-#  caf = array_cache(af)
-#  loop(af,caf)
-#end
-#
-#@trace trace(10)
 
 end # module
