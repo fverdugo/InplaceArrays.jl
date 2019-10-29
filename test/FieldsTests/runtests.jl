@@ -14,4 +14,6 @@ using Test
 
 @testset "Compose" begin include("ComposeTests.jl") end
 
+@testset "Lincomb" begin include("LincombTests.jl") end
+
 end # module

@@ -165,15 +165,4 @@ end
 #  typeof(apply_kernel(k,x...))
 #end
 
-"""
-    lincomb(a::AbstractArray{<:Field},b::AbstractArray)
-
-Returns an array of field numerically equivalent to
-
-    map(lincomb,a,b)
-"""
-function lincomb(a::AbstractArray{<:Field},b::AbstractArray)
-  k = LinCom()
-  apply_to_field(k,a,b)
-end
 

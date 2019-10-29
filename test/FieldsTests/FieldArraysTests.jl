@@ -124,13 +124,5 @@ agx = fill(r,l)
 a∇gx = fill(∇fx,l)
 test_array_of_fields(ag,ax,agx,grad=a∇gx)
 
-ag = lincomb(af,aw)
-fp = evaluate(f,p)
-∇fp = evaluate(∇(f),p)
-gx = fill(dot(fp,w),np)
-∇gx = fill(dot(∇fp,w),np)
-agx = fill(gx,l)
-a∇gx = fill(∇gx,l)
-test_array_of_fields(ag,ax,agx,grad=a∇gx)
 
 end # module
