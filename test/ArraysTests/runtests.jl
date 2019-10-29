@@ -10,4 +10,6 @@ using Test
 
 @testset "Apply" begin include("ApplyTests.jl") end
 
+@testset "TreeViz" begin include("TreeVizTests.jl") end
+
 end # module

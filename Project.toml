@@ -6,11 +6,15 @@ version = "0.1.0"
 [deps]
 DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 FillArrays = "1a297f60-69ca-5386-bcde-b61e274b549b"
+LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
+LightGraphs = "093fc24a-ae57-5d10-9952-331d41423f4d"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 TensorValues = "31c64edf-cdeb-50e4-845d-ed2334360c20"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+TikzGraphs = "b4f28e30-c73f-5eaf-a395-8a9db949a742"
+TikzPictures = "37f6aa50-8035-52d0-81c2-5a1d08754b2d"
 
 [compat]
 julia = "1"
