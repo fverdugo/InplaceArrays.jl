@@ -13,6 +13,16 @@ function evaluate(a::AbstractArray{<:Field},x::AbstractArray)
   apply(a,x)
 end
 
+function evaluate(
+  a::AppliedArray{<:Field,N,F,<:Fill} where {N,F},x::AbstractArray)
+  evaluate(a.g.value,x,a.f...)
+end
+
+function evaluate(k::Kernel,x::AbstractArray,f...)
+  a = apply(k,f...)
+  apply(a,x)
+end
+
 """
     gradient(a::AbstractArray{<:Field})
 
@@ -22,22 +32,22 @@ Numerically equivalent to
     map(gradient,a)
 """
 function gradient(a::AbstractArray{<:Field})
-  #s = "You are calling a very memory inefficient default"
-  #s *= " implementation of gradient for array of fields"
-  #@warn s
-  #map(gradient,a)
   k = Grad()
   apply(k,a)
 end
-#TODO to get rid of this warning, each kernel needs to define the global
-# version of the gradient
+
+function gradient(
+  a::AppliedArray{<:Field,N,F,<:Fill} where {N,F})
+  gradient(a.g.value,a.f...)
+end
+
+function gradient(k::Kernel,f::AbstractArray{<:FieldNumberOrArray}...)
+  a = apply(k,f...)
+  g = Grad()
+  apply(g,a)
+end
 
 struct Grad <: Kernel end
-
-## TODO a lot of kernels follow this pattern
-#kernel_cache(::Grad,::Field) = nothing
-
-#kernel_return_type(k::Grad,x::Field) = typeof(apply_kernel(k,x))
 
 @inline apply_kernel!(::Nothing,k::Grad,x::Field) = gradient(x)
 
@@ -127,7 +137,7 @@ function apply_to_field(
   g = _to_arrays_of_fields(Val{D}(),f...)
   fi = testitems(g...)
   v = Valued(k,fi...)
-  apply(v,f...)
+  apply(v,g...)
 end
 
 function apply_to_field(

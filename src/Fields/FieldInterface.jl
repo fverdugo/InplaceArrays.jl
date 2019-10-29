@@ -302,7 +302,12 @@ Equivalent to
     cache = field_cache(f,x)
     evaluate!(cache,f,x)
 """
-function evaluate(f::Field,x)
+function evaluate(f::Field,x::Point)
+  cache = field_cache(f,x)
+  evaluate!(cache,f,x)
+end
+
+function evaluate(f::Field,x::AbstractVector{<:Point})
   cache = field_cache(f,x)
   evaluate!(cache,f,x)
 end
