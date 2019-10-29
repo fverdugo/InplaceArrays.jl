@@ -1,61 +1,59 @@
 
 """
-    apply(f,a::AbstractArray...) -> AbstractArray
+    apply(f::Kernel,a::AbstractArray...) -> AbstractArray
 
-Applies the kernel `f` to all entries in the arrays in `a`.
+Applies the kernel `f` to the entries of the arrays in `a` (see the definition of [`Kernel`](@ref)).
 
-The resulting array has the same entries as the one obtained with (see function
-[`apply_kernel`](@ref)):
+The resulting array `r` is such that `r[i]` equals to `apply_kernel(f,ai...)` where `ai`
+is the tuple containing the `i`-th entry of the arrays in `a` (see function
+[`apply_kernel`](@ref) for more details).
+In other words, the resulting array is numerically equivalent to:
 
     map( (x...)->apply_kernel(f,x...), a...)
 
-# Examples
-
-```jldoctests
-using InplaceArrays.Arrays
-a = apply(+,[1,2,3],[4,5,6])
-println(a)
-# output
-[5, 7, 9]
-```
 """
-function apply(f,a::AbstractArray...)
+function apply(f::Kernel,a::AbstractArray...)
   s = common_size(a...)
   apply(Fill(f,s...),a...)
+end
+
+"""
+    apply(f::Function, a::AbstractArray...)
+
+Syntactic sugar for `apply(f2k(f),a...)`.  See the meaning of function [`f2k`](@ref) for more details.
+"""
+function apply(f::Function,a::AbstractArray...)
+  k = f2k(f)
+  apply(k,a...)
 end
 
 """
     apply(f::AbstractArray,a::AbstractArray...) -> AbstractArray
 Applies the kernels in the array of kernels `f` to the entries in the arrays in `a`.
 
-The resulting array has the same entries as the one obtained with (see function
-[`apply_kernel`](@ref)):
+The resulting array has the same entries as the one obtained with:
 
     map( apply_kernel, f, a...)
 
-# Examples
-```jldoctests
-using InplaceArrays.Arrays
-a = apply([+,-,mod],[1,2,3],[4,5,6])
-println(a)
-# output
-[5, -3, 3]
-```
 """
 function apply(f::AbstractArray,a::AbstractArray...)
   AppliedArray(f,a...)
 end
 
-function apply(f::AbstractArray{<:Number},a::AbstractArray...)
-  f
-end
-
-function apply(f::AbstractArray{<:AbstractArray},a::AbstractArray...)
-  f
-end
+#function apply(f::AbstractArray{<:Number},a::AbstractArray...)
+#  f
+#end
+#
+#function apply(f::AbstractArray{<:AbstractArray},a::AbstractArray...)
+#  f
+#end
 
 """
-    apply_all(f::Tuple,a::AbstractArray...)
+    apply_all(f::Tuple,a::AbstractArray...) -> Tuple
+
+Numerically equivalent to 
+
+    tuple( ( apply(fi, a...) for fi in f)... )
 """
 function apply_all(f::Tuple,a::AbstractArray...)
   _apply_several(a,f...)

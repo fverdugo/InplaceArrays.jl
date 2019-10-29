@@ -2,30 +2,49 @@
 const FieldNumberOrArray = Union{Field{T,D} where T,Number,AbstractArray} where D
 
 """
-    apply_kernel_to_field(k,f...) -> Field
+    apply_kernel_to_field(k::Kernel,f...) -> Field
 
 Returns a field obtained by applying the kernel `k` to the 
 values of the fields in `f`. That is, the returned field evaluated at
 a point `x` provides the value obtained by applying kernel `k` to the
-values of the fields `f` at point `x`.
+values of the fields `f` at point `x`. Formally, the resulting field at a point
+ `x` is defined as
 
-# Examples
+    fx = [ evaluate(fi,x) for fi in f]
+    apply_kernel(k,fx...)
 
-    #TODO
+
+if any of the inputs in `f` is a number or an array of numbers
+instead of a field it will be treated
+as a "constant field". That is a filed that evaluated at any point `x` returns always
+the underlying number or array.
+
 
 In order to be able to call the [`gradient`](@ref) function of the
 resulting field, one needs to define the gradient operator
-associated with the underlying kernel. This is done by adding a new method
-to the `gradient` function as detailed below.
+associated with the underlying kernel.
+This is done by adding a new method [`gradient(k::Kernel,f::Field...)`](@ref) for each kernel type.
 """
-@inline function apply_kernel_to_field(k,f::FieldNumberOrArray{D}...) where D
+@inline function apply_kernel_to_field(k::Kernel,f::FieldNumberOrArray{D}...) where D
   g = _to_fields(Val{D}(),f...)
   AppliedField(k,g...)
 end
 
-@inline function apply_kernel_to_field(k,f::NumberOrArray...)
+@inline function apply_kernel_to_field(k::Kernel,f::NumberOrArray...)
   @unreachable "At least one input must be a Field"
 end
+
+"""
+"""
+@inline function apply_kernel_to_field(
+  ::Type{T}, k::Kernel, f::FieldNumberOrArray{D}...) where {T,D}
+  g = _to_fields(Val{D}(),f...)
+  AppliedField(T,k,g...)
+end
+
+#function _to_fields(f::FieldNumberOrArray{D}...) where D
+#  _to_fields(Val{D}(),f...)
+#end
 
 @inline function _to_fields(d::Val,a,b...)
   f = _to_field(d,a)
@@ -43,9 +62,13 @@ end
 @inline _to_field(::Val{D},a::NumberOrArray) where D = ConstantField{D}(a)
 
 """
-    gradient(k,f...)
+    gradient(k::Kernel,f::Field...)
+
+Returns a field representing the gradient of the field obtained with
+
+    apply_kernel_to_field(k,f...)
 """
-function gradient(k,f...)
+function gradient(k::Kernel,f::Field...)
   @abstractmethod
 end
 
@@ -64,13 +87,29 @@ for op in (:+,:-)
 end
 
 """
+    lincomb(a::Basis,b::AbstractVector)
+
+Returns a field `f` with `valuetype(f) <: Number` obtained by the "linear combination" of
+the value of the basis `a` and the vector `b`. That is, the value of the resulting field `f`
+at a point `x` is defined as
+
+    k = contract(outer)
+    ax = evaluate(a,x)
+    apply_kernel(k,ax,b)
+
+On the other hand, the gradient of the resulting field is defined as
+
+    k = contract(outer)
+    ∇ax = evaluate(gradient(a),x)
+    apply_kernel(k,∇ax,b)
+
 """
-function lincomb(a::Field,b::AbstractArray)
+function lincomb(a::Basis,b::AbstractVector)
   k = LinCom()
   apply_kernel_to_field(k,a,b)
 end
 
-struct LinCom
+struct LinCom <: Kernel
   k::Contracted{typeof(outer)}
   @inline LinCom() = new(contract(outer))
 end
@@ -110,10 +149,13 @@ end
 struct AppliedField{K,F,T,D} <: Field{T,D}
   k::K
   f::F
-  @inline function AppliedField(k,f::(Field{T,D} where T)...) where D
+  @inline function AppliedField(k,f::(Field{S,D} where S)...) where D
     Ts = map(valuetype,f)
     vs = testvalues(Ts...)
     T = kernel_return_type(k,vs...)
+    new{typeof(k),typeof(f),T,D}(k,f)
+  end
+  @inline function AppliedField(::Type{T},k,f::(Field{S,D} where S)...) where {T,D}
     new{typeof(k),typeof(f),T,D}(k,f)
   end
 end

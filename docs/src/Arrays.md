@@ -10,13 +10,15 @@ Arrays
 
 ## Extended AbstractArray interface
 
-New methods added that can be overload by new types:
+When implementing new array types, it can be needed some scratch data (e.g., allocating the output), when recovering an item from an array (typically if the array elements are non-isbits objects). To circumvent this, the user could provide the scratch data needed when getting an item. However, the Julia array interface does not support this approach. When calling `a[i]`, in order to get the element with index `i` in array `a`, there is no extra argument for the scratch data. In order to solve this problem, we add new methods to the `AbstractArray` interface of Julia. We provide default implementations to the new methods, so that any `AbstractArray` can be used with the extended interface. New array implementations can overload these default implementations to improve performance. The most important among the new methods is [`getindex!`](@ref), which allows to recover an item in the array by passing some scratch data.
+
+The new methods are:
 - [`getindex!(cache,a::AbstractArray,i...)`](@ref)
 - [`array_cache(a::AbstractArray)`](@ref)
 - [`uses_hash(::Type{<:AbstractArray})`](@ref)
 - [`testitem(a::AbstractArray)`](@ref)
 
-The interface can be tested with the following function
+These methods can be stressed with the following function
 - [`test_array`](@ref)
 
 ```@docs
@@ -33,84 +35,33 @@ test_array
 ## Creting lazy operation trees
 
 ```@docs
-apply(f,a::AbstractArray...)
+apply(f::Kernel,a::AbstractArray...)
+apply(f::Function,a::AbstractArray...)
 apply(f::AbstractArray,a::AbstractArray...)
 apply_all
 ```
 
 ### Operation kernels
 
-The [`apply`](@ref) function provides a mechanism to construct lazy arrays
-obtained by applying some operations to other arrays. The operations are
-represented by objects (referred to as *kernels*). We rely in duck typing here.
-There is not an abstract type representing a kernel. Any type is
-referred to as a *kernel* if it implements the following interface:
-
-- [`apply_kernel!(cache,k,x...)`](@ref)
-- [`kernel_cache(k,x...)`](@ref)
-- [`kernel_return_type(k,x...)`](@ref)
-
-The kernel interface can be tested with the [`test_kernel`](@ref) function.
-
-We provide some default (obvious) implementations of this interface so that `Function`,
-`Number`, and `AbstractArray` objects behave like kernels.
-
-```jldoctests
-julia> using InplaceArrays.Arrays
-
-julia> cache = kernel_cache(+,0,0)
-
-julia> apply_kernel!(cache,+,1,2)
-3
-
-julia> apply_kernel!(cache,+,-1,10)
-9
-```
-
-`Number` and `AbstractArray` objects behave like "constant" kernels.
-
-```jldoctests
-julia> using InplaceArrays.Arrays
-
-julia> a = 2.0
-2.0
-
-julia> cache = kernel_cache(a,0)
-
-julia> apply_kernel!(cache,a,1)
-2.0
-
-julia> apply_kernel!(cache,a,2)
-2.0
-
-julia> apply_kernel!(cache,a,3)
-2.0
-```
-
 ```@docs
-apply_kernel!
-kernel_cache
-kernel_return_type
+Kernel
+apply_kernel!(cache,f::Kernel,x...)
+kernel_cache(f::Kernel,x...)
+kernel_return_type(f::Kernel,x...)
 test_kernel
-```
-
-### Build-in kernels
-
-```@docs
-bcast
-elem
-contract
-```
-
-### Other functions acting on kernels
-
-```@docs
 apply_kernel
 apply_kernels!
 kernel_caches
 kernel_return_types
 ```
+### Build-in kernels
 
+```@docs
+f2k
+bcast
+elem
+contract
+```
 ## Concrete array implementations
 
 ### CachedArray

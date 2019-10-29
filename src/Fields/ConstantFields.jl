@@ -1,7 +1,8 @@
 
 struct ConstantField{V,D} <: Field{V,D}
   value::V
-  @inline function ConstantField{D}(value::V) where {V<:NumberOrArray,D}
+  @inline function ConstantField{D}(value::NumberOrArray) where {D}
+    V = typeof(value)
     new{V,D}(value)
   end
 end
@@ -38,7 +39,7 @@ function gradient(f::AbstractArray{<:ConstantField})
 end
 
 # TODO Perhaps not needed
-struct ToField{D} end
+struct ToField{D} <: Kernel end
 
 kernel_cache(::ToField,::NumberOrArray) = nothing
 

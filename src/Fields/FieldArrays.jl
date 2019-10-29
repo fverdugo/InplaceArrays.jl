@@ -2,6 +2,9 @@
 """
     evaluate(a::AbstractArray{<:Field},x::AbstractArray)
 
+Evaluates the fields in the array `a` at the locations provided in the array `x`
+(which can be an array of points or an array of vectors of points).
+
 The result is numerically equivalent to 
 
     map(evaluate,a,x)
@@ -11,8 +14,9 @@ function evaluate(a::AbstractArray{<:Field},x::AbstractArray)
 end
 
 """
-    gradient(a::AbstractArray{<:Field},x::AbstractArray)
+    gradient(a::AbstractArray{<:Field})
 
+Returns an array containing the gradients of the fields in the array `a`.
 Numerically equivalent to 
 
     map(gradient,a)
@@ -28,12 +32,12 @@ end
 #TODO to get rid of this warning, each kernel needs to define the global
 # version of the gradient
 
-struct Grad end
+struct Grad <: Kernel end
 
-# TODO a lot of kernels follow this pattern
-kernel_cache(::Grad,::Field) = nothing
+## TODO a lot of kernels follow this pattern
+#kernel_cache(::Grad,::Field) = nothing
 
-kernel_return_type(k::Grad,x::Field) = typeof(apply_kernel(k,x))
+#kernel_return_type(k::Grad,x::Field) = typeof(apply_kernel(k,x))
 
 @inline apply_kernel!(::Nothing,k::Grad,x::Field) = gradient(x)
 
@@ -78,6 +82,8 @@ end
       v::AbstractArray,
       cmp::Function=(==);
       grad = nothing)
+
+Function to test an array of fields.
 """
 function test_array_of_fields(
   a::AbstractArray{<:Field},
@@ -110,20 +116,25 @@ function test_array_of_fields(
 end
 
 """
-    apply_to_field(k,f::AbstractArray...)
+    apply_to_field(k::Kernel,f::AbstractArray...)
 
-Numerically equivalent to
+Returns an array of fields numerically equivalent to
 
-    map( (x...) -> apply_to_field(k,x...), f )
+    map( (x...) -> apply_kernel_to_field(k,x...), f )
 """
-function apply_to_field(k,f::AbstractArray...)
-  v = Valued(k)
+function apply_to_field(k::Kernel,f::AbstractArray...)
+  fi = testitems(f...)
+  v = Valued(k,fi...)
   apply(v,f...)
 end
 
-struct Valued{K}
+struct Valued{T,K} <: Kernel
   k::K
-  Valued(k) = new{typeof(k)}(k)
+  function Valued(k,f...)
+    g = apply_kernel_to_field(k,f...)
+    T = valuetype(g)
+    new{T,typeof(k)}(k)
+  end
 end
 
 #TODO NumberOrArray versions needed??
@@ -142,19 +153,24 @@ function kernel_return_type(k::Valued,x::NumberOrArray...)
   kernel_return_type(b,x...)
 end
 
-@inline function apply_kernel!(cache,k::Valued,x::FieldNumberOrArray...)
-  apply_kernel_to_field(k.k,x...)
+@inline function apply_kernel!(cache,k::Valued{T},x::FieldNumberOrArray...) where T
+  apply_kernel_to_field(T,k.k,x...)
 end
 
-function kernel_cache(k::Valued,x::FieldNumberOrArray...)
-  nothing
-end
+#function kernel_cache(k::Valued,x::FieldNumberOrArray...)
+#  nothing
+#end
 
-function kernel_return_type(k::Valued,x::FieldNumberOrArray...)
-  typeof(apply_kernel(k,x...))
-end
+#function kernel_return_type(k::Valued,x::FieldNumberOrArray...)
+#  typeof(apply_kernel(k,x...))
+#end
 
 """
+    lincomb(a::AbstractArray{<:Field},b::AbstractArray)
+
+Returns an array of field numerically equivalent to
+
+    map(lincomb,a,b)
 """
 function lincomb(a::AbstractArray{<:Field},b::AbstractArray)
   k = LinCom()

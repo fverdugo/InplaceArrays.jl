@@ -11,6 +11,7 @@ Fields
 
 ```@docs
 Field
+Basis
 Point
 evaluate!(cache,f::Field,x::Point)
 field_cache(f::Field,x::Point)
@@ -27,14 +28,16 @@ test_field
 ```@docs
 evaluate(f::Field,x)
 valuetype(::Type{<:Field})
+pointdim(::Type{<:Field})
 compose(g::Function,f...)
+lincomb(a::Basis,b::AbstractVector)
 ```
 
 ## Applying kernels to fields
 
 ```@docs
-apply_kernel_to_field(k,f::FieldNumberOrArray...)
-gradient(k,f...)
+apply_kernel_to_field(k::Kernel,f::FieldNumberOrArray{D}...) where D
+gradient(k::Kernel,f::Field...)
 ```
 
 ## Working with arrays of fields
@@ -42,9 +45,10 @@ gradient(k,f...)
 ```@docs
 evaluate(::AbstractArray{<:Field},::AbstractArray)
 gradient(::AbstractArray{<:Field})
-apply_to_field(k,f::AbstractArray...)
+apply_to_field(k::Kernel,f::AbstractArray...)
 field_cache(::AbstractArray{<:Field},::AbstractArray)
 compose(g::Function,f::AbstractArray...)
+lincomb(a::AbstractArray{<:Field},b::AbstractArray)
 test_array_of_fields
 ```
 

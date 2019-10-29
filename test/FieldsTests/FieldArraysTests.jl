@@ -49,7 +49,6 @@ ag = apply_to_field(elem(+),af,af)
 r1 = evaluate(ag,ax)
 @test isa(r1,Fill)
 
-k = Valued(elem(-))
 
 np = 4
 p = Point(1,2)
@@ -60,6 +59,7 @@ f = MockField{d}(v)
 fx = evaluate(f,x)
 ∇fx = evaluate(∇(f),x)
 
+k = Valued(elem(-),f,f)
 test_kernel(k,(1,2),-1)
 test_kernel(k,(f,2),apply_kernel_to_field(elem(-),f,2))
 test_kernel(k,(2,f),apply_kernel_to_field(elem(-),2,f))
@@ -86,8 +86,8 @@ agx = fill(gx,l)
 a∇gx = fill(∇gx,l)
 test_array_of_fields(ag,ax,agx,grad=a∇gx)
 
-ag = apply_to_field(elem(-),ax)
-@test isa(testitem(testitem(ag)),Point)
+#ag = apply_to_field(elem(-),ax)
+#@test isa(testitem(testitem(ag)),Point)
 
 np = 4
 p = Point(1,2)

@@ -39,7 +39,9 @@ const CachedVector{T,A} = CachedArray{T,1,A}
 
 
 """
-$(SIGNATURES)
+    CachedArray(a::AbstractArray)
+
+Constructs a `CachedArray` from a given array.
 """
 CachedArray(a::AbstractArray) = CachedArray(a,size(a))
 
@@ -54,7 +56,9 @@ $(SIGNATURES)
 CachedMatrix(a::AbstractMatrix) = CachedArray(a,size(a))
 
 """
-$(SIGNATURES)
+    CachedArray(T,N)
+
+Constructs an empty `CachedArray` of element type `T` and `N` dimensions.
 """
 function CachedArray(T,N)
   s = tuple([0 for i in 1:N]...)
@@ -83,9 +87,7 @@ $(SIGNATURES)
 
 Changes the size of the `CachedArray` `a` to the size described the the tuple
 `s`.
-
-!!! warning
-    After calling `setsize!`, the array can store uninitialized values.
+After calling `setsize!`, the array can store uninitialized values.
 """
 function setsize!(a::CachedArray{T,N},s::NTuple{N,Int}) where {T,N}
   if s <= size(a.array)

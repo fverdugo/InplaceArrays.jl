@@ -1,5 +1,5 @@
 """
-$(TYPEDSIGNATURES)
+    getindex!(cache,a::AbstractArray,i...)
 
 Returns the item of the array `a` associated with index `i`
 by (possibly) using the scratch data passed in the `cache` object.
@@ -12,7 +12,7 @@ It defaults to
 getindex!(cache,a::AbstractArray,i...) = a[i...]
 
 """
-$(TYPEDSIGNATURES)
+    array_cache(a::AbstractArray)
 
 Returns a cache object to be used in the [`getindex!`](@ref) function.
 It defaults to 
@@ -153,7 +153,9 @@ function testitems(a::AbstractArray)
 end
 
 """
-$(SIGNATURES)
+    array_caches(a::AbstractArray...) -> Tuple
+
+Returns a tuple with the cache of each array in `a`.
 """
 function array_caches(a::AbstractArray,b::AbstractArray...)
   hash = Dict{UInt,Any}()
@@ -172,7 +174,10 @@ function array_caches(hash::Dict,a::AbstractArray)
 end
 
 """
-$(SIGNATURES)
+    getitems!(c::Tuple,a::Tuple,i...) -> Tuple
+
+Extracts the `i`-th entry of all arrays in the tuple `a` using the caches in the tuple
+`c`. The results is a tuple containing each one of the extracted entries.
 """
 @inline function getitems!(cf::Tuple,a::Tuple{Vararg{<:AbstractArray}},i...)
   _getitems!(cf,i,a...)
