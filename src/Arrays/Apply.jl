@@ -108,8 +108,15 @@ function array_cache(hash::Dict,a::AppliedArray)
     cache
 end
 
-@noinline function _get_stored_cache(cache::T,hash,id)::T where T
-  hash[id]
+@static if VERSION >= v"1.1"
+  @noinline function _get_stored_cache(cache::T,hash,id) where T
+    c::T = hash[id]
+    c
+  end
+else
+  @noinline function _get_stored_cache(cache::T,hash,id) where T
+    hash[id]
+  end
 end
 
 function _array_cache(hash,a::AppliedArray)
