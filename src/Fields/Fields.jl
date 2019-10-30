@@ -25,17 +25,20 @@ using TensorValues #TODO integrate here
 using FillArrays
 
 export Point
-export evaluate
-export evaluate!
+export field_gradient
+export evaluate_field!
+export evaluate_field
 export field_cache
 export field_return_type
+export evaluate
+export evaluate!
 export gradient
 export ∇
 export Field
-export Basis
+#export Basis
 export test_field
-export valuetype
-export pointdim
+#export valuetype
+#export pointdim
 export apply_kernel_to_field
 export apply_to_field
 export test_array_of_fields
@@ -53,12 +56,12 @@ include("MockFields.jl")
 
 include("ConstantFields.jl")
 
-include("FieldApply.jl")
-
-include("FieldArrays.jl")
-
-include("Lincomb.jl")
-
-include("Compose.jl")
+#include("FieldApply.jl")
+#
+#include("FieldArrays.jl")
+#
+#include("Lincomb.jl")
+#
+#include("Compose.jl")
 
 end # module

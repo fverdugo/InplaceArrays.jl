@@ -22,8 +22,8 @@ test_field(f,x,fx,grad=∇fx)
 
 ndof = 8
 b = MockBasis{d}(v,ndof)
-bx = fill(v,ndof,np)
-∇bx = fill(VectorValue(v,0.0),ndof,np)
+bx = fill(v,np,ndof)
+∇bx = fill(VectorValue(v,0.0),np,ndof)
 test_field(b,x,bx,grad=∇bx)
 
 end # module
