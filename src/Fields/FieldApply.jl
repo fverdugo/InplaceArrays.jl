@@ -28,23 +28,23 @@ This is done by adding a new method [`gradient(k::Kernel,f::Field...)`](@ref) fo
 end
 
 """
-    kernel_gradient(k::Kernel,f::Field...)
+    apply_kernel_gradient(k::Kernel,f::Field...)
 
 Returns a field representing the gradient of the field obtained with
 
     apply_kernel_to_field(k,f...)
 """
-function kernel_gradient(k,f...)
+function apply_kernel_gradient(k,f...)
   @abstractmethod
 end
 
-kernel_gradient(k::BCasted{typeof(+)},a) = field_gradient(a)
+apply_kernel_gradient(k::BCasted{typeof(+)},a) = field_gradient(a)
 
-kernel_gradient(k::BCasted{typeof(-)},a) = apply_kernel_to_field(k,field_gradient(a))
+apply_kernel_gradient(k::BCasted{typeof(-)},a) = apply_kernel_to_field(k,field_gradient(a))
 
 for op in (:+,:-)
   @eval begin
-    function kernel_gradient(k::BCasted{typeof($op)},f...)
+    function apply_kernel_gradient(k::BCasted{typeof($op)},f...)
       apply_kernel_to_field(k,field_gradients(f...)...)
     end
   end
@@ -98,6 +98,6 @@ end
 end
 
 function field_gradient(f::AppliedField)
-  kernel_gradient(f.k,f.f...)
+  apply_kernel_gradient(f.k,f.f...)
 end
 

@@ -63,8 +63,8 @@ include("ConstantFields.jl")
 
 include("FieldApply.jl")
 
-#include("FieldArrays.jl")
-#
+include("FieldArrays.jl")
+
 #include("Lincomb.jl")
 #
 #include("Compose.jl")

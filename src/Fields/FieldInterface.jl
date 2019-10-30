@@ -264,3 +264,35 @@ function field_gradients(a)
   (ga,)
 end
 
+"""
+"""
+function evaluate_all(f::Tuple,x)
+  _evaluate_all(x,f...)
+end
+
+function _evaluate_all(x,a,b...)
+  ax = evaluate(a,x)
+  bx = evaluate_all(b,x)
+  (ax, bx...)
+end
+
+function _evaluate_all(x,a)
+  ax = evaluate(a,x)
+  (ax,)
+end
+
+"""
+"""
+function gradient_all(a,b...)
+  ga = gradient(a)
+  gb = gradient_all(b...)
+  (ga,gb...)
+end
+
+"""
+"""
+function gradient_all(a)
+  ga = gradient(a)
+  (ga,)
+end
+
