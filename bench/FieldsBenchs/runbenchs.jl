@@ -8,7 +8,7 @@ include("FieldApplyBenchs.jl")
 
 include("FieldArraysBenchs.jl")
 
-include("ComposeBenchs.jl")
+#include("ComposeBenchs.jl")
 
 include("LincombBenchs.jl")
 
