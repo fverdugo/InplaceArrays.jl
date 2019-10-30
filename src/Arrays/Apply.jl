@@ -1,6 +1,6 @@
 
 """
-    apply(f::Kernel,a::AbstractArray...) -> AbstractArray
+    apply(f,a::AbstractArray...) -> AbstractArray
 
 Applies the kernel `f` to the entries of the arrays in `a` (see the definition of [`Kernel`](@ref)).
 
@@ -12,19 +12,9 @@ In other words, the resulting array is numerically equivalent to:
     map( (x...)->apply_kernel(f,x...), a...)
 
 """
-function apply(f::Kernel,a::AbstractArray...)
+function apply(f,a::AbstractArray...)
   s = common_size(a...)
   apply(Fill(f,s...),a...)
-end
-
-"""
-    apply(f::Function, a::AbstractArray...)
-
-Syntactic sugar for `apply(f2k(f),a...)`.  See the meaning of function [`f2k`](@ref) for more details.
-"""
-function apply(f::Function,a::AbstractArray...)
-  k = f2k(f)
-  apply(k,a...)
 end
 
 """
@@ -87,11 +77,6 @@ struct AppliedArray{T,N,F,G} <: AbstractArray{T,N}
   end
 end
 
-#function apply(f::AppliedArray, a::AbstractArray...)
-#  fa = apply_all(f.f,a...)
-#  apply(f.g,fa...)
-#end
-
 function uses_hash(::Type{<:AppliedArray})
   Val(true)
 end
@@ -108,6 +93,7 @@ function array_cache(hash::Dict,a::AppliedArray)
     cache
 end
 
+#TODO
 @static if VERSION >= v"1.1"
   @noinline function _get_stored_cache(cache::T,hash,id) where T
     c::T = hash[id]

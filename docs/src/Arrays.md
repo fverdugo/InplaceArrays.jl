@@ -35,8 +35,7 @@ test_array
 ## Creting lazy operation trees
 
 ```@docs
-apply(f::Kernel,a::AbstractArray...)
-apply(f::Function,a::AbstractArray...)
+apply(f,a::AbstractArray...)
 apply(f::AbstractArray,a::AbstractArray...)
 apply_all
 ```
@@ -45,9 +44,9 @@ apply_all
 
 ```@docs
 Kernel
-apply_kernel!(cache,f::Kernel,x...)
-kernel_cache(f::Kernel,x...)
-kernel_return_type(f::Kernel,x...)
+apply_kernel!(cache,f,x...)
+kernel_cache(f,x...)
+kernel_return_type(f,x...)
 test_kernel
 apply_kernel
 apply_kernels!
@@ -57,7 +56,6 @@ kernel_return_types
 ### Build-in kernels
 
 ```@docs
-f2k
 bcast
 elem
 contract

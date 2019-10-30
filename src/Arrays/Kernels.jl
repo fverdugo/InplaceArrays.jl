@@ -5,17 +5,24 @@ Abstract type representing operations to be used in the [`apply`](@ref) function
 
 Derived types must implement the following method:
 
-- [`apply_kernel!(cache,k::Kernel,x...)`](@ref)
+- [`apply_kernel!(cache,k,x...)`](@ref)
 
 and optionally these ones:
 
-- [`kernel_cache(k::Kernel,x...)`](@ref)
-- [`kernel_return_type(k::Kernel,x...)`](@ref)
+- [`kernel_cache(k,x...)`](@ref)
+- [`kernel_return_type(k,x...)`](@ref)
 
 The kernel interface can be tested with the [`test_kernel`](@ref) function.
+
+Note that most of the functionality implemented in terms of this interface
+relies in duck typing. That is, it is not strictly needed to work with types
+that inherit from `Kernel`. This is specially useful in order to accommodate
+existing types into this framework without the need to implement a wrapper type
+that inherits from `Kernel`. For instance, a default implementation is available
+for `Function` objects.  However, we recommend that new types inherit from `Kernel`.
+
 """
 abstract type Kernel end
-
 
 """
 $(SIGNATURES)
@@ -25,7 +32,7 @@ arguments of the types of the objects `x`.
 
 It defaults to `typeof(apply_kernel(f,x...))`
 """
-function kernel_return_type(f::Kernel,x...)
+function kernel_return_type(f,x...)
   typeof(apply_kernel(f,x...))
 end
 
@@ -36,7 +43,7 @@ Returns the `cache` needed to apply kernel `f` with arguments
 of the same type as the objects in `x...`.
 This function returns `nothing` by default.
 """
-kernel_cache(f::Kernel,x...) = nothing
+kernel_cache(f,x...) = nothing
 
 """
 $(SIGNATURES)
@@ -49,7 +56,7 @@ If the result of two or more invocations of this function need to be accessed si
 (e.g., in multi-threading), create and use various `cache` objects (e.g., one cache
 per thread).
 """
-function apply_kernel!(cache,f::Kernel,x...)
+function apply_kernel!(cache,f,x...)
   @abstractmethod
 end
 
@@ -64,7 +71,7 @@ of the kernel, and `y` is the expected result. Function `cmp` is used to compare
 the computed result with the expected one. The checks are done with the `@test`
 macro.
 """
-function test_kernel(f::Kernel,x::Tuple,y,cmp=(==))
+function test_kernel(f,x::Tuple,y,cmp=(==))
   z = apply_kernel(f,x...)
   @test cmp(z,y)
   @test typeof(z) == kernel_return_type(f,x...)
@@ -88,7 +95,7 @@ cache = kernel_cache(f,x...)
 apply_kernel!(cache,f,x...)
 ```
 """
-function apply_kernel(f::Kernel,x...)
+function apply_kernel(f,x...)
   cache = kernel_cache(f,x...)
   y = apply_kernel!(cache,f,x...)
   y
@@ -168,45 +175,12 @@ end
 
 # Include some well-known types in this interface
 
-"""
-    f2k(f::Function)
-
-Transforms function `f` to a kernel. Applying the resulting
-kernel object is numerically equivalent to evaluating the function.
-"""
-f2k(f::Function) = Func(f)
-
-struct Func{F} <: Kernel
-  f::F
-  @inline Func(f::Function) = new{typeof(f)}(f)
-end
-
-function kernel_return_type(f::Func,x...)
+function kernel_return_type(f::Function,x...)
   Ts = map(typeof,x)
-  return_type(f.f,Ts...)
+  return_type(f,Ts...)
 end
 
-#@inline kernel_cache(f::Func,args...) = nothing
-
-@inline apply_kernel!(::Nothing,f::Func,args...) = f.f(args...)
-
-#kernel_return_type(::Type{T},x...) where T = T
-#
-#@inline kernel_cache(::Type,args...) = nothing
-#
-#@inline apply_kernel!(::Nothing,::Type{T},args...) where T = T(args...)
-
-#kernel_return_type(a::Number,x...) = typeof(a)
-#
-#@inline kernel_cache(f::Number,args...) = nothing
-#
-#@inline apply_kernel!(::Nothing,f::Number,args...) = f
-#
-#kernel_return_type(a::AbstractArray,x...) = typeof(a)
-#
-#@inline kernel_cache(f::AbstractArray,args...) = nothing
-#
-#@inline apply_kernel!(::Nothing,f::AbstractArray,args...) = f
+@inline apply_kernel!(::Nothing,f::Function,args...) = f(args...)
 
 # Some particular cases
 
