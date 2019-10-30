@@ -25,10 +25,7 @@ function gradient(f::ConstantField{V,D}) where {V<:AbstractArray,D}
   p = zero(Point{D,T})
   v = zero(T)
   gi = outer(p,v)
-  g = similar(f.value,typeof(gi))
-  for i in eachindex(g)
-    @inbounds g[i] = gi
-  end
+  g = Fill(gi,size(f.value))
   ConstantField{D}(g)
 end
 

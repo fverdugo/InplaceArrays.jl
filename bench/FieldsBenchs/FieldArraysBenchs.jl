@@ -1,6 +1,5 @@
 module FieldArraysBenchs
 
-using Test
 using InplaceArrays.Arrays
 using InplaceArrays.Fields
 using InplaceArrays.Fields: MockField, MockBasis
@@ -72,6 +71,33 @@ function bench2(n)
   @time loop_and_evaluate(cag,cg,cax,ag,ax)
 end
 
+function bench2a(n)
+  np = 4
+  p = Point(1,2)
+  x = fill(p,np)
+  v = 3.0
+  d = 2
+  l = n
+  f = MockField{d}(v)
+  af = fill(f,l)
+  av = fill(v,l)
+  ax = fill(x,l)
+  afx = evaluate(af,ax)
+  cafx = array_cache(afx)
+  @time loop(afx,cafx)
+  _ag = apply_to_field(elem(+),af,av)
+  ag = gradient(_ag)
+  cag = array_cache(ag)
+  @time loop(ag,cag)
+  agx = evaluate(ag,ax)
+  cagx = array_cache(agx)
+  @time loop(agx,cagx)
+  g = testitem(ag)
+  cg = field_cache(g,x)
+  cax = array_cache(ax)
+  @time loop_and_evaluate(cag,cg,cax,ag,ax)
+end
+
 function bench3(n)
   np = 4
   p = Point(1,2)
@@ -101,42 +127,13 @@ function bench3(n)
   @time loop_and_evaluate(cag,cg,cax,ag,ax)
 end
 
-function bench4(n)
-  np = 4
-  p = Point(1,2)
-  x = fill(p,np)
-  v = 3.0
-  d = 2
-  ndof = 8
-  wi = 3.0
-  w = fill(wi,ndof)
-  l = n
-  f = MockBasis{d}(v,ndof)
-  af = Fill(f,l)
-  ax = fill(x,l)
-  aw = fill(w,l)
-  afx = evaluate(af,ax)
-  cafx = array_cache(afx)
-  @time loop(afx,cafx)
-  ag = lincomb(af,aw)
-  cag = array_cache(ag)
-  @time loop(ag,cag)
-  agx = evaluate(ag,ax)
-  cagx = array_cache(agx)
-  @time loop(agx,cagx)
-  g = testitem(ag)
-  cg = field_cache(g,x)
-  cax = array_cache(ax)
-  @time loop_and_evaluate(cag,cg,cax,ag,ax)
-end
-
 for n in (1,1,10,1000,100000)
   @eval begin
     println("+++ runing suite for n = $($n) +++")
     bench1($n)
     bench2($n)
-    bench3($n)
-    bench4($n)
+    bench2a($n)
+    #bench3($n)
   end
 end
 

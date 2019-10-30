@@ -12,6 +12,7 @@ $(EXPORTS)
 module Inference
 
 using DocStringExtensions
+using FillArrays
 
 export testvalue
 export testvalues
@@ -127,6 +128,10 @@ testvalue(::Type{T}) where T = zero(T)
 
 function testvalue(::Type{T}) where T<:AbstractArray{E,N} where {E,N}
    similar(T,fill(0,N)...)
+end
+
+function testvalue(::Type{T}) where T<:Fill{E,N} where {E,N}
+  Fill(zero(E),fill(0,N)...)
 end
 
 """
