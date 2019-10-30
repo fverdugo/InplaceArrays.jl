@@ -4,7 +4,7 @@ using InplaceArrays.Arrays
 using InplaceArrays.Fields
 using InplaceArrays.Fields: MockField, MockBasis
 
-@inline function repeat(n,f,args...)
+@noinline function repeat(n,f,args...)
   for i in 1:n
     f(args...)
   end
@@ -18,7 +18,7 @@ function bench1(n)
   v = 3.0
   d = 2
   f = MockField{d}(v)
-  g = apply_kernel_to_field(bcast(+),f,f)
+  g = apply_kernel_to_field(bcast(+),f,v)
   cg = field_cache(g,x)
   @time repeat(n,evaluate!,cg,g,x)
   ∇g = gradient(g)
