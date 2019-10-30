@@ -20,6 +20,8 @@ end
   end
 end
 
+using InplaceArrays.Fields: LinCom
+
 function bench1(n)
   np = 4
   p = Point(1,2)
@@ -34,9 +36,16 @@ function bench1(n)
   af = Fill(f,l)
   ax = fill(x,l)
   aw = fill(w,l)
+  az = fill(fill(1.0,np),l)
   afx = evaluate(af,ax)
   cafx = array_cache(afx)
   @time loop(afx,cafx)
+  #k = LinCom()
+  #agx = apply(k,afx,aw)
+  #cagx = array_cache(agx)
+  #@time loop(agx,cagx)
+
+
   ag = lincomb(af,aw)
   cag = array_cache(ag)
   @time loop(ag,cag)
@@ -47,6 +56,10 @@ function bench1(n)
   cg = field_cache(g,x)
   cax = array_cache(ax)
   @time loop_and_evaluate(cag,cg,cax,ag,ax)
+end
+
+function bench2()
+
 end
 
 for n in (1,1,10,1000,100000)

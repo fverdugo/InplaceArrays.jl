@@ -65,15 +65,14 @@ end
 struct AppliedArray{T,N,F,G} <: AbstractArray{T,N}
   g::G
   f::F
-  size::NTuple{N,Int}
   function AppliedArray(g::AbstractArray,f::AbstractArray...)
     G = typeof(g)
     F = typeof(f)
     gi = testitem(g) #Assumes that all kernels return the same type
     fi = testitems(f...)
     T = kernel_return_type(gi,fi...)
-    N, s = _prepare_shape(g,f...)
-    new{T,N,F,G}(g,f,s)
+    f1, = f
+    new{T,ndims(f1),F,G}(g,f)
   end
 end
 
@@ -160,13 +159,16 @@ function Base.IndexStyle(
   common_index_style(F)
 end
 
-Base.size(a::AppliedArray) = a.size
-
-function _prepare_shape(a...)
-  s = common_size(a...)
-  N = length(s)
-  (N,s)
+function Base.size(a::AppliedArray)
+  f, = a.f
+  size(f)
 end
+
+#function _prepare_shape(a...)
+#  s = common_size(a...)
+#  N = length(s)
+#  (N,s)
+#end
 
 function common_size(a::AbstractArray...)
   a1, = a

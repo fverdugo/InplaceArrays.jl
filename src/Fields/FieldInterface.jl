@@ -85,7 +85,7 @@ function field_return_type(f,x)
   typeof(evaluate_field(f,x))
 end
 
-# Implement kernel interface (no duck typing here)
+# Implement kernel interface
 
 function kernel_return_type(f::Field,x)
   field_return_type(f,x)
