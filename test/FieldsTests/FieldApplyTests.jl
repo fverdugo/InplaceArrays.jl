@@ -8,14 +8,14 @@ using TensorValues
 
 using InplaceArrays.Fields: MockField, MockBasis
 
-k = elem(-)
+k = bcast(-)
 
 v = 3.0
 d = 2
 f = MockField{d}(v)
 g = apply_kernel_to_field(k,f)
 
-np = 4
+p = 4
 p1 = Point(1,2)
 p2 = Point(2,1)
 p3 = Point(4,3)
@@ -28,47 +28,34 @@ gx = apply_kernel(k,fx)
 ∇gx = apply_kernel(k,∇fx)
 test_field(g,x,gx,grad=∇gx)
 
-@test g == apply_kernel_to_field(k,f)
-
 fi = 3.0
 gi = 4.5
 d = 2
 f = MockField{d}(fi)
 g = MockField{d}(gi)
 h = apply_kernel_to_field(k,f,g)
-hp1 = apply_kernel(k,evaluate(f,p1),evaluate(g,p1))
-∇hp1 = apply_kernel(k,evaluate(∇(f),p1),evaluate(∇(g),p1))
-test_field(h,[p1,],[hp1,],grad=[∇hp1,])
+hx = apply_kernel(k,evaluate(f,x),evaluate(g,x))
+∇hx = apply_kernel(k,evaluate(∇(f),x),evaluate(∇(g),x))
+test_field(h,x,hx,grad=∇hx)
 
 fi = 3.0
-gi = 4.5
+gi = VectorValue(4,5)
 d = 2
 f = MockField{d}(fi)
 g = gi
 h = apply_kernel_to_field(k,f,g)
-hp1 = apply_kernel(k,evaluate(f,p1),gi)
-∇hp1 = apply_kernel(k,evaluate(∇(f),p1),0.0)
-test_field(h,[p1,],[hp1,],grad=[∇hp1,])
+hx = apply_kernel(k,evaluate(f,x),evaluate_field(g,x))
+∇hx = apply_kernel(k,evaluate(∇(f),x),evaluate_field(field_gradient(g),x))
+test_field(h,x,hx,grad=∇hx)
 
 fi = 3.0
-gi = 4.5
+gi = [1,2,3,4,5]
 d = 2
 f = MockField{d}(fi)
 g = gi
-h = apply_kernel_to_field(k,g,f)
-hp1 = apply_kernel(k,gi,evaluate(f,p1))
-∇hp1 = apply_kernel(k,0.0,evaluate(∇(f),p1))
-test_field(h,[p1,],[hp1,],grad=[∇hp1,])
-
-fi = 3.0
-gi = [1,2,3]
-d = 2
-f = MockField{d}(fi)
-g = MockField{d}(gi)
 h = apply_kernel_to_field(k,f,g)
-hp1 = apply_kernel(k,evaluate(f,p1),evaluate(g,p1))
-hp1 = reshape(hp1,(3,1))
-test_field(h,[p1,],hp1)
-
+hx = apply_kernel(k,evaluate(f,x),evaluate_field(g,x))
+∇hx = apply_kernel(k,evaluate(∇(f),x),evaluate_field(field_gradient(g),x))
+test_field(h,x,hx,grad=∇hx)
 
 end # module

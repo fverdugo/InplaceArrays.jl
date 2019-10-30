@@ -14,7 +14,7 @@ module Fields
 using InplaceArrays.Helpers
 using InplaceArrays.Inference
 using InplaceArrays.Arrays
-using InplaceArrays.Arrays: Elem
+using InplaceArrays.Arrays: BCasted
 using InplaceArrays.Arrays: NumberOrArray
 using InplaceArrays.Arrays: AppliedArray
 using InplaceArrays.Arrays: Contracted
@@ -44,6 +44,11 @@ export apply_to_field
 export test_array_of_fields
 export compose
 export lincomb
+export field_caches
+export field_return_types
+export evaluate_fields
+export evaluate_fields!
+export field_gradients
 
 import InplaceArrays.Arrays: kernel_cache
 import InplaceArrays.Arrays: apply_kernel!
@@ -56,8 +61,8 @@ include("MockFields.jl")
 
 include("ConstantFields.jl")
 
-#include("FieldApply.jl")
-#
+include("FieldApply.jl")
+
 #include("FieldArrays.jl")
 #
 #include("Lincomb.jl")

@@ -187,4 +187,80 @@ A fancy alias for the `gradient` function.
 """
 const ∇ = gradient
 
+"""
+"""
+function field_return_types(f::Tuple,x)
+  _field_return_types(x,f...)
+end
+
+function _field_return_types(x,a,b...)
+  Ta = field_return_type(a,x)
+  Tb = field_return_types(b,x)
+  (Ta,Tb...)
+end
+
+function _field_return_types(x,a)
+  Ta = field_return_type(a,x)
+  (Ta,)
+end
+
+"""
+"""
+function field_caches(f::Tuple,x)
+  _field_caches(x,f...)
+end
+
+function _field_caches(x,a,b...)
+  ca = field_cache(a,x)
+  cb = field_caches(b,x)
+  (ca,cb...)
+end
+
+function _field_caches(x,a)
+  ca = field_cache(a,x)
+  (ca,)
+end
+
+"""
+"""
+function evaluate_fields(f::Tuple,x)
+  cf = field_caches(f,x)
+  evaluate_fields!(cf,f,x)
+end
+
+"""
+"""
+@inline function evaluate_fields!(cf::Tuple,f::Tuple,x)
+  _evaluate_fields!(cf,x,f...)
+end
+
+function _evaluate_fields!(c,x,a,b...)
+  ca, cb = _split(c...)
+  ax = evaluate_field!(ca,a,x)
+  bx = evaluate_fields!(cb,b,x)
+  (ax,bx...)
+end
+
+function _evaluate_fields!(c,x,a)
+  ca, = c
+  ax = evaluate_field!(ca,a,x)
+  (ax,)
+end
+
+@inline function _split(a,b...)
+  (a,b)
+end
+
+"""
+"""
+function field_gradients(a,b...)
+  ga = field_gradient(a)
+  gb = field_gradients(b...)
+  (ga,gb...)
+end
+
+function field_gradients(a)
+  ga = field_gradient(a)
+  (ga,)
+end
 

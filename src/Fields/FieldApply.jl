@@ -1,6 +1,4 @@
 
-const FieldNumberOrArray = Union{Field{T,D} where T,Number,AbstractArray} where D
-
 """
     apply_kernel_to_field(k::Kernel,f...) -> Field
 
@@ -25,63 +23,29 @@ resulting field, one needs to define the gradient operator
 associated with the underlying kernel.
 This is done by adding a new method [`gradient(k::Kernel,f::Field...)`](@ref) for each kernel type.
 """
-@inline function apply_kernel_to_field(k::Kernel,f::FieldNumberOrArray{D}...) where D
-  g = _to_fields(Val{D}(),f...)
-  AppliedField(k,g...)
-end
-
-@inline function apply_kernel_to_field(k::Kernel,f::NumberOrArray...)
-  @unreachable "At least one input must be a Field"
+@inline function apply_kernel_to_field(k,f...)
+  AppliedField(k,f...)
 end
 
 """
-"""
-@inline function apply_kernel_to_field(
-  ::Type{T}, k::Kernel, f::FieldNumberOrArray{D}...) where {T,D}
-  g = _to_fields(Val{D}(),f...)
-  AppliedField(T,k,g...)
-end
-
-#function _to_fields(f::FieldNumberOrArray{D}...) where D
-#  _to_fields(Val{D}(),f...)
-#end
-
-@inline function _to_fields(d::Val,a,b...)
-  f = _to_field(d,a)
-  g = _to_fields(d,b...)
-  (f,g...)
-end
-
-@inline function _to_fields(d::Val,a)
-  f = _to_field(d,a)
-  (f,)
-end
-
-@inline _to_field(::Val,a::Field) = a
-
-@inline _to_field(::Val{D},a::NumberOrArray) where D = ConstantField{D}(a)
-
-"""
-    gradient(k::Kernel,f::Field...)
+    kernel_gradient(k::Kernel,f::Field...)
 
 Returns a field representing the gradient of the field obtained with
 
     apply_kernel_to_field(k,f...)
 """
-function gradient(k::Kernel,f::Field...)
+function kernel_gradient(k,f...)
   @abstractmethod
 end
 
-#TODO also for broad cast?
+kernel_gradient(k::BCasted{typeof(+)},a) = field_gradient(a)
 
-gradient(k::Elem{typeof(+)},a::Field) = gradient(a)
-
-gradient(k::Elem{typeof(-)},a::Field) = apply_kernel_to_field(k,gradient(a))
+kernel_gradient(k::BCasted{typeof(-)},a) = apply_kernel_to_field(k,field_gradient(a))
 
 for op in (:+,:-)
   @eval begin
-    function gradient(k::Elem{typeof($op)},a::Field,b::Field)
-      apply_kernel_to_field(k,gradient(a),gradient(b))
+    function kernel_gradient(k::BCasted{typeof($op)},f...)
+      apply_kernel_to_field(k,field_gradients(f...)...)
     end
   end
 end
@@ -92,7 +56,7 @@ end
 for op in (:+,:-)
   @eval begin
     function ($op)(a::Field)
-      apply_kernel_to_field(elem($op),a)
+      apply_kernel_to_field(bcast($op),a)
     end
   end
 end
@@ -100,63 +64,40 @@ end
 for op in (:+,:-,:*)
   @eval begin
     function ($op)(a::Field,b::Field)
-      apply_kernel_to_field(elem($op),a,b)
+      apply_kernel_to_field(bcast($op),a,b)
     end
   end
 end
 
 # Result of applying a kernel to the value of some fields
 
-struct AppliedField{K,F,T,D} <: Field{T,D}
+struct AppliedField{K,F} <: Field
   k::K
   f::F
-  @inline function AppliedField(k,f::(Field{S,D} where S)...) where D
-    Ts = map(valuetype,f)
-    vs = testvalues(Ts...)
-    T = kernel_return_type(k,vs...)
-    new{typeof(k),typeof(f),T,D}(k,f)
-  end
-  @inline function AppliedField(::Type{T},k,f::(Field{S,D} where S)...) where {T,D}
-    new{typeof(k),typeof(f),T,D}(k,f)
+  @inline function AppliedField(k,f...)
+    new{typeof(k),typeof(f)}(k,f)
   end
 end
 
-function field_return_type(f::AppliedField,x::Point)
-  Ts = kernel_return_types(f.f,x)
-  kernel_return_type(f.k, map(testvalue,Ts)...)
+function field_return_type(f::AppliedField,x)
+  Ts = field_return_types(f.f,x)
+  kernel_return_type(f.k, testvalues(Ts...)...)
 end
 
-function field_cache(f::AppliedField,x::Point)
-  cf = kernel_caches(f.f,x)
-  fx = apply_kernels!(cf,f.f,x)
+function field_cache(f::AppliedField,x)
+  cf = field_caches(f.f,x)
+  fx = evaluate_fields!(cf,f.f,x)
   ck = kernel_cache(f.k,fx...)
   (ck,cf)
 end
 
-@inline function evaluate!(cache,f::AppliedField,x::Point)
+@inline function evaluate_field!(cache,f::AppliedField,x)
   ck, cf = cache
-  fx = apply_kernels!(cf,f.f,x)
+  fx = evaluate_fields!(cf,f.f,x)
   apply_kernel!(ck,f.k,fx...)
 end
 
-function gradient(f::AppliedField)
-  gradient(f.k,f.f...)
+function field_gradient(f::AppliedField)
+  kernel_gradient(f.k,f.f...)
 end
-
-#gradient(a::T) where T<:Number = zero(T)
-
-#function gradient(a::AbstractArray{T}) where T <:Number
-#  z = similar(a)
-#  zi = zero(T)
-#  for i in eachindex(z)
-#    z[i] = zi
-#  end
-#  z
-#end
-
-#function gradient(a::AbstractArray{<:Number})
-#  T = eltype(a)
-#  Fill(zero(T),size(a))
-#end
-
 
