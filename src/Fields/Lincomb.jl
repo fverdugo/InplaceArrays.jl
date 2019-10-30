@@ -54,7 +54,7 @@ end
   r
 end
 
-struct LinComField{A,B} <: Field
+mutable struct LinComField{A,B} <: Field
   basis::A
   coefs::B
   @inline function LinComField(basis,coefs) 
@@ -88,8 +88,14 @@ end
 
 struct LinComValued <: Kernel end
 
-@inline function apply_kernel!(::Nothing,k::LinComValued,a,b)
+@inline function kernel_cache(k::LinComValued,a,b)
   LinComField(a,b)
+end
+
+@inline function apply_kernel!(f,k::LinComValued,a,b)
+  f.basis = a
+  f.coefs = b
+  f
 end
 
 function apply_gradient(k::LinComValued,a,b)
