@@ -212,16 +212,16 @@ end
 end
 
 function kernel_return_type(f::BCasted,x::NumberOrArray...)
-  Ts = map(typeof,x)
-  T = return_type_broadcast(f.f,Ts...)
-  c = CachedArray(testvalue(T))
-  typeof(c)
+  typeof(kernel_cache(f,x...))
 end
 
 function kernel_cache(f::BCasted,x::NumberOrArray...)
+  s = _sizes(x...)
+  bs = Base.Broadcast.broadcast_shape(s...)
   Ts = map(typeof,x)
-  args = testargs_broadcast(f.f,Ts...)
-  r = broadcast(f.f,args...)
+  Te = map(eltype,Ts)
+  T = return_type(f.f,Te...)
+  r = zeros(T,bs...)
   cache = CachedArray(r)
    _prepare_cache(cache,x...)
 end

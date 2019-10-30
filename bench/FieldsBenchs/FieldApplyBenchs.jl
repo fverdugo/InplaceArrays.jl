@@ -4,7 +4,7 @@ using InplaceArrays.Arrays
 using InplaceArrays.Fields
 using InplaceArrays.Fields: MockField, MockBasis
 
-@noinline function repeat(n,f,args...)
+@inline function repeat(n,f,args...)
   for i in 1:n
     f(args...)
   end

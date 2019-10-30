@@ -1,4 +1,4 @@
-module InferenceTests
+module FieldInterfaceTests
 
 using Test
 using InplaceArrays.Fields

@@ -63,6 +63,10 @@ function return_type_broadcast(f::Function,Ts...)
   typeof(r)
 end
 
+function return_type_broadcast(f::Function,Ts::Type{<:Number}...)
+  return_type(f,Ts...)
+end
+
 """
 $(SIGNATURES)
 """
