@@ -38,13 +38,13 @@ function apply_kernel_gradient(k,f...)
   @abstractmethod
 end
 
-apply_kernel_gradient(k::BCasted{typeof(+)},a) = field_gradient(a)
+@inline apply_kernel_gradient(k::BCasted{typeof(+)},a) = field_gradient(a)
 
-apply_kernel_gradient(k::BCasted{typeof(-)},a) = apply_kernel_to_field(k,field_gradient(a))
+@inline apply_kernel_gradient(k::BCasted{typeof(-)},a) = apply_kernel_to_field(k,field_gradient(a))
 
 for op in (:+,:-)
   @eval begin
-    function apply_kernel_gradient(k::BCasted{typeof($op)},f...)
+    @inline function apply_kernel_gradient(k::BCasted{typeof($op)},f...)
       apply_kernel_to_field(k,field_gradients(f...)...)
     end
   end
@@ -97,7 +97,7 @@ end
   apply_kernel!(ck,f.k,fx...)
 end
 
-function field_gradient(f::AppliedField)
+@inline function field_gradient(f::AppliedField)
   apply_kernel_gradient(f.k,f.f...)
 end
 

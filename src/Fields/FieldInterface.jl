@@ -253,13 +253,13 @@ end
 
 """
 """
-function field_gradients(a,b...)
+@inline function field_gradients(a,b...)
   ga = field_gradient(a)
   gb = field_gradients(b...)
   (ga,gb...)
 end
 
-function field_gradients(a)
+@inline function field_gradients(a)
   ga = field_gradient(a)
   (ga,)
 end

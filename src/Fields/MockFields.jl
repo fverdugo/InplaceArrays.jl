@@ -22,7 +22,7 @@ function evaluate_field!(c,f::MockField,x)
   c
 end
 
-function field_gradient(f::MockField{T,D}) where {T,D}
+@inline function field_gradient(f::MockField{T,D}) where {T,D}
   E = eltype(T)
   P = Point{D,E}
   _p = zero(mutable(P))
@@ -60,7 +60,7 @@ function evaluate_field!(v,f::MockBasis,x)
   v
 end
 
-function field_gradient(f::MockBasis{T,D}) where {T,D}
+@inline function field_gradient(f::MockBasis{T,D}) where {T,D}
   E = eltype(T)
   P = Point{D,E}
   _p = zero(mutable(P))
