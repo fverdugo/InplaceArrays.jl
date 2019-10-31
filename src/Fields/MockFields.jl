@@ -69,3 +69,39 @@ end
   vg = outer(p,f.v)
   MockBasis{D}(vg,f.ndofs)
 end
+
+struct OtherMockBasis{D} <: Field
+  ndofs::Int
+  function OtherMockBasis{D}(ndofs::Int) where D
+    new{D}(ndofs)
+  end
+end
+
+function field_cache(f::OtherMockBasis,x)
+  np = length(x)
+  s = (np, f.ndofs)
+  c = zeros(eltype(x),s)
+  CachedArray(c)
+end
+
+function evaluate_field!(v,f::OtherMockBasis,x)
+  np = length(x)
+  s = (np, f.ndofs)
+  setsize!(v,s)
+  for i in 1:np
+    @inbounds xi = x[i]
+    for j in 1:f.ndofs
+      @inbounds v[i,j] = 2*xi
+    end
+  end
+  v
+end
+
+@inline function field_gradient(f::OtherMockBasis{D}) where D
+  E = Float64
+  P = Point{D,E}
+  p = zero(P)
+  vg = 2*one(outer(p,p))
+  MockBasis{D}(vg,f.ndofs)
+end
+

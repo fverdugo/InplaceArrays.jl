@@ -45,6 +45,7 @@ export test_array_of_fields
 export compose
 export lincomb
 export varinner
+export attachmap
 export field_caches
 export field_return_types
 export evaluate_fields
@@ -72,5 +73,7 @@ include("Lincomb.jl")
 include("Compose.jl")
 
 include("Varinner.jl")
+
+include("Attachmap.jl")
 
 end # module

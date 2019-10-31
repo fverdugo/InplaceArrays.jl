@@ -18,4 +18,6 @@ using Test
 
 @testset "Varinner" begin include("VarinnerTests.jl") end
 
+@testset "Attachmap" begin include("AttachmapTests.jl") end
+
 end # module

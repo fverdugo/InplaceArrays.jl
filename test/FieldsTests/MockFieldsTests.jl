@@ -1,7 +1,7 @@
 module MockFieldsTests
 
 using InplaceArrays.Fields
-using InplaceArrays.Fields: MockField, MockBasis
+using InplaceArrays.Fields: MockField, MockBasis, OtherMockBasis
 using TensorValues
 
 np = 4
@@ -24,6 +24,11 @@ ndof = 8
 b = MockBasis{d}(v,ndof)
 bx = fill(v,np,ndof)
 ∇bx = fill(VectorValue(v,0.0),np,ndof)
+test_field(b,x,bx,grad=∇bx)
+
+b = OtherMockBasis{d}(ndof)
+bx = fill(2*p,np,ndof)
+∇bx = fill(TensorValue(2.0,0.0,0.0,2.0),np,ndof)
 test_field(b,x,bx,grad=∇bx)
 
 end # module

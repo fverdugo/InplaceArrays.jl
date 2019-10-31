@@ -4,7 +4,6 @@ using Test
 using InplaceArrays.Arrays
 using InplaceArrays.Fields
 using InplaceArrays.Fields: MockField, MockBasis
-using InplaceArrays.Fields: Valued
 using FillArrays
 using TensorValues # TODO
 
