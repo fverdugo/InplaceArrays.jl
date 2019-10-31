@@ -12,8 +12,10 @@ using Test
 
 @testset "FieldArrays" begin include("FieldArraysTests.jl") end
 
-#@testset "Compose" begin include("ComposeTests.jl") end
+@testset "Compose" begin include("ComposeTests.jl") end
 
 @testset "Lincomb" begin include("LincombTests.jl") end
+
+@testset "Varinner" begin include("VarinnerTests.jl") end
 
 end # module

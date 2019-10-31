@@ -12,4 +12,6 @@ include("LincombBenchs.jl")
 
 include("ComposeBenchs.jl")
 
+include("VarinnerBenchs.jl")
+
 end # module
