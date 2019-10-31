@@ -44,6 +44,11 @@ end
 
 for op in (:+,:-)
   @eval begin
+    @inline function apply_kernel_gradient(k::BCasted{typeof($op)},a,b)
+      ga = field_gradient(a)
+      gb = field_gradient(b)
+      apply_kernel_to_field(k,ga,gb)
+    end
     @inline function apply_kernel_gradient(k::BCasted{typeof($op)},f...)
       apply_kernel_to_field(k,field_gradients(f...)...)
     end

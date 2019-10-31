@@ -49,6 +49,7 @@ export field_return_types
 export evaluate_fields
 export evaluate_fields!
 export field_gradients
+export field_array_cache
 
 import InplaceArrays.Arrays: kernel_cache
 import InplaceArrays.Arrays: apply_kernel!
@@ -67,6 +68,6 @@ include("FieldArrays.jl")
 
 include("Lincomb.jl")
 
-#include("Compose.jl")
+include("Compose.jl")
 
 end # module

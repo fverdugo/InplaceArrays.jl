@@ -6,12 +6,12 @@ Returns a new field obtained by composition of function `g` and the fields
 `f`. The value of the resulting field at point `x` is numerically equivalent to
 
     fx = [ evaluate(fi,x) for fi in f]
-    apply_kernel(elem(g), fx...)
+    apply_kernel(bcast(g), fx...)
 
 The gradient of the resulting field evaluated at point `x` is equivalent to
 
     fx = [ evaluate(fi,x) for fi in f]
-    apply_kernel(elem(gradient(g)), fx...)
+    apply_kernel(bcast(gradient(g)), fx...)
 
 Note that it is needed to overload `gradient(::typeof(g))` for the given function `g`
 in order to be able to compute the gradient.
@@ -26,8 +26,8 @@ function compose(g::Function,f...)
 end
 
 struct Comp{F} <: Kernel
-  e::Elem{F}
-  @inline Comp(f::Function) = new{typeof(f)}(Elem(f))
+  e::BCasted{F}
+  @inline Comp(f::Function) = new{typeof(f)}(BCasted(f))
 end
 
 @inline apply_kernel!(cache,k::Comp,x...) = apply_kernel!(cache,k.e,x...)
@@ -36,7 +36,7 @@ kernel_cache(k::Comp,x...) = kernel_cache(k.e,x...)
 
 kernel_return_type(k::Comp,x...) = kernel_return_type(k.e,x...)
 
-function gradient(k::Comp,f::Field...)
+function apply_kernel_gradient(k::Comp,f...)
   g = gradient(k.e.f)
   compose(g,f...)
 end

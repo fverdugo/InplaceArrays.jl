@@ -170,8 +170,15 @@ struct Valued{K} <: Kernel
   end
 end
 
+#@inline function kernel_cache(k::Valued,x...)
+#  apply_kernel_to_field(k.k,x...)
+#end
+
 @inline function apply_kernel!(cache,k::Valued,x...)
   apply_kernel_to_field(k.k,x...)
+  #cache.k = k.k
+  #cache.f = x
+  #cache
 end
 
 function kernel_evaluate(k::Valued,x,f...)

@@ -89,13 +89,13 @@ function bench3(n)
   av = Fill(v,n)
   ax = fill(x,n)
   ag = compose(fun2,af,av)
-  cag, cgi, cax = field_cache(ag,ax)
+  cag, cgi, cax = field_array_cache(ag,ax)
   @time loop_and_evaluate(cag,cgi,cax,ag,ax)
   ah = compose(fun2,af,ab)
-  cah, chi, _ = field_cache(ah,ax)
+  cah, chi, _ = field_array_cache(ah,ax)
   @time loop_and_evaluate(cah,chi,cax,ah,ax)
   aj = compose(fun2,av,ab)
-  caj, cji, _ = field_cache(aj,ax)
+  caj, cji, _ = field_array_cache(aj,ax)
   @time loop_and_evaluate(caj,cji,cax,aj,ax)
 end
 
@@ -114,16 +114,49 @@ function bench4(n)
   ax = fill(x,n)
   _ag = compose(fun2,af,av)
   ag = gradient(_ag)
-  cag, cgi, cax = field_cache(ag,ax)
+  cag, cgi, cax = field_array_cache(ag,ax)
   @time loop_and_evaluate(cag,cgi,cax,ag,ax)
   _ah = compose(fun2,af,ab)
   ah = gradient(_ah)
-  cah, chi, _ = field_cache(ah,ax)
+  cah, chi, _ = field_array_cache(ah,ax)
   @time loop_and_evaluate(cah,chi,cax,ah,ax)
   _aj = compose(fun2,av,ab)
   aj = gradient(_aj)
-  caj, cji, _ = field_cache(aj,ax)
+  caj, cji, _ = field_array_cache(aj,ax)
   @time loop_and_evaluate(caj,cji,cax,aj,ax)
+end
+
+foo(x) = 2*x[1]
+∇foo(x) = VectorValue(2.0,0.0)
+∇(::typeof(foo)) = ∇foo
+
+function bench5(n)
+  np = 4
+  p = Point(1,2)
+  x = fill(p,np)
+  v = 3.0
+  d = 2
+  ndof = 8
+  wi = 3.0
+  w = fill(wi,ndof)
+  l = n
+  f = MockBasis{d}(v,ndof)
+  af = Fill(f,l)
+  ax = fill(x,l)
+  aw = fill(w,l)
+  _ag = lincomb(af,aw)
+  ag = compose(foo,_ag)
+  cag = array_cache(ag)
+  #TODO
+  #@time loop(ag,cag)
+  agx = evaluate(ag,ax)
+  cagx = array_cache(agx)
+  @time loop(agx,cagx)
+  g = testitem(ag)
+  cg = field_cache(g,x)
+  cax = array_cache(ax)
+  #TODO
+  #@time loop_and_evaluate(cag,cg,cax,ag,ax)
 end
 
 for n in (1,1,10,1000,100000)
@@ -133,6 +166,7 @@ for n in (1,1,10,1000,100000)
     bench2($n)
     bench3($n)
     bench4($n)
+    bench5($n)
   end
 end
 
