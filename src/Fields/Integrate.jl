@@ -22,15 +22,15 @@ struct IntKernel <: Kernel end
 
 function kernel_cache(k::IntKernel,f::AbstractVector,w,j)
   _integrate_checks(f,w,j)
-  _integrate_rt(f,w,j)
+  T = _integrate_rt(f,w,j)
+  zero(T)
 end
 
-@inline function apply_kernel!(T,k::IntKernel,f::AbstractVector,w,j)
+@noinline function apply_kernel!(z,k::IntKernel,f::AbstractVector,w,j)
   _integrate_checks(f,w,j)
-  r = zero(T)
-  np = length(f)
-  for p in 1:np
-    @inbounds r += f[p]*w[p]*meas(j[p])
+  r = z
+  for p in eachindex(f)
+    @inbounds r = r + f[p]*w[p]*meas(j[p])
   end
   r
 end
@@ -48,6 +48,10 @@ end
   np, s = _split(size(f)...)
   cis = CartesianIndices(s)
   setsize!(c,s)
+  z = zero(eltype(c))
+  for i in cis
+    @inbounds c[i] = z
+  end
   for p in 1:np
     @inbounds dV = w[p]*meas(j[p])
     for i in cis
