@@ -2,7 +2,7 @@
 This module provides:
 
 - An interface for physical fields and basis of physical fields.
-- Helpers functions to work with fields and basis.
+- Helpers functions to work with fields and arrays of fields.
 - Helpers functions to create lazy operation trees from fields and arrays of fields
 
 The exported names are:
@@ -35,10 +35,7 @@ export evaluate!
 export gradient
 export ∇
 export Field
-#export Basis
 export test_field
-#export valuetype
-#export pointdim
 export apply_kernel_to_field
 export apply_to_field
 export test_array_of_fields

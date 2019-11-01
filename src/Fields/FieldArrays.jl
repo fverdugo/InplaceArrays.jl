@@ -1,4 +1,8 @@
 
+function evaluate(a::AbstractArray{<:Field},x::AbstractArray)
+  apply(a,x)
+end
+
 """
     evaluate(a::AbstractArray{<:Field},x::AbstractArray)
 
@@ -9,10 +13,6 @@ The result is numerically equivalent to
 
     map(evaluate,a,x)
 """
-function evaluate(a::AbstractArray{<:Field},x::AbstractArray)
-  apply(a,x)
-end
-
 function evaluate(a::AbstractArray,x::AbstractArray)
   k = Eval()
   apply(k,a,x)
@@ -47,7 +47,7 @@ function kernel_evaluate(k,x,f...)
 end
 
 """
-    gradient(a::AbstractArray{<:Field})
+    gradient(a::AbstractArray)
 
 Returns an array containing the gradients of the fields in the array `a`.
 Numerically equivalent to 
@@ -89,7 +89,7 @@ function apply_gradient(k,f...)
 end
 
 """
-    field_array_cache(a::AbstractArray{<:Field},x::AbstractArray) -> Tuple
+    field_array_cache(a::AbstractArray,x::AbstractArray) -> Tuple
 
 Returns the caches needed to perform the following iteration
 
@@ -158,7 +158,7 @@ Returns an array of fields numerically equivalent to
     map( (x...) -> apply_kernel_to_field(k,x...), f )
 """
 function apply_to_field(
-  k::Kernel,f::AbstractArray...)
+  k,f::AbstractArray...)
   v = Valued(k)
   apply(v,f...)
 end

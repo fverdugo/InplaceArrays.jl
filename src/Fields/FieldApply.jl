@@ -28,7 +28,7 @@ This is done by adding a new method [`gradient(k::Kernel,f::Field...)`](@ref) fo
 end
 
 """
-    apply_kernel_gradient(k::Kernel,f::Field...)
+    apply_kernel_gradient(k,f...)
 
 Returns a field representing the gradient of the field obtained with
 

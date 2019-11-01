@@ -45,10 +45,11 @@ abstract type Field <: Kernel end
 # D needed in order to define gradients
 # V first to facilitate dispatching
 # EDIT: If we adopt the vectorized version, type params are not needed
+# FINAL EDIT: Nor V neither D are needed. D can always be taken when evaluating the gradient.
 
 
 """
-    field_cache(f,x)
+$(SIGNATURES)
 
 Returns the cache object needed to evaluate field `f` at the vector of points `x`.
 """
@@ -57,7 +58,7 @@ function field_cache(f,x)
 end
 
 """
-    evaluate!(cache,f::Field,x)
+$(SIGNATURES)
 
 Returns an array, the length of the first axis is `length(x)`.
 """
@@ -66,7 +67,7 @@ function evaluate_field!(cache,f,x)
 end
 
 """
-    field_gradient(f) -> Field
+$(SIGNATURES)
 
 Returns another field that represents the gradient of the given one
 """
@@ -77,7 +78,7 @@ end
 # Default return type
 
 """
-    field_return_type(f,x)
+$(SIGNATURES)
 
 Computes the type obtained when evaluating field `f` at point `x`.
 """
@@ -175,16 +176,16 @@ end
     gradient(f::Field)
 
 Like [`field_gradient(f)`](@ref) but only for types `<:Field`.
+
+The following fancy alias for the `gradient` function is also defined and exported.
+
+   const ∇ = gradient
+
 """
 function gradient(f::Field)
   field_gradient(f)
 end
 
-"""
-   const ∇ = gradient
-
-A fancy alias for the `gradient` function.
-"""
 const ∇ = gradient
 
 """
@@ -289,8 +290,6 @@ function gradient_all(a,b...)
   (ga,gb...)
 end
 
-"""
-"""
 function gradient_all(a)
   ga = gradient(a)
   (ga,)
