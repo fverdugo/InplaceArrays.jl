@@ -1,16 +1,28 @@
 
-struct MockField{T,D} <: Field{T,D}
+struct MockField{T,D} <: Field
   v::T
-  function MockField{D}(v::T) where {T,D}
-    new{T,D}(v)
+  function MockField{D}(v::Number) where {T,D}
+    new{typeof(v),D}(v)
   end
 end
 
-field_cache(f::MockField,x::Point) = nothing
+function field_cache(f::MockField,x)
+  nx = length(x)
+  c = zeros(typeof(f.v),nx)
+  CachedArray(c)
+end
 
-evaluate!(::Nothing,f::MockField,x::Point) = f.v*x[1]
+function evaluate_field!(c,f::MockField,x)
+  nx = length(x)
+  setsize!(c,(nx,))
+  for i in eachindex(x)
+    @inbounds xi = x[i]
+    @inbounds c[i] = f.v*xi[1]
+  end
+  c
+end
 
-function gradient(f::MockField{T,D}) where {T,D}
+@inline function field_gradient(f::MockField{T,D}) where {T,D}
   E = eltype(T)
   P = Point{D,E}
   _p = zero(mutable(P))
@@ -20,26 +32,35 @@ function gradient(f::MockField{T,D}) where {T,D}
   MockField{D}(vg)
 end
 
-struct MockBasis{V,D} <: Field{Vector{V},D}
+struct MockBasis{V,D} <: Field
   v::V
   ndofs::Int
-  function MockBasis{D}(v::V,ndofs::Int) where {V,D}
-    new{V,D}(v,ndofs)
+  function MockBasis{D}(v::Number,ndofs::Int) where D
+    new{typeof(v),D}(v,ndofs)
   end
 end
 
-function field_cache(f::MockBasis{T,D},x::Point) where {T,D}
-  zeros(T,f.ndofs)
+function field_cache(f::MockBasis,x)
+  np = length(x)
+  s = (np, f.ndofs)
+  c = zeros(typeof(f.v),s)
+  CachedArray(c)
 end
 
-function evaluate!(v,f::MockBasis,x::Point)
-  for j in 1:f.ndofs
-    @inbounds v[j] = f.v*x[1]
+function evaluate_field!(v,f::MockBasis,x)
+  np = length(x)
+  s = (np, f.ndofs)
+  setsize!(v,s)
+  for i in 1:np
+    @inbounds xi = x[i]
+    for j in 1:f.ndofs
+      @inbounds v[i,j] = f.v*xi[1]
+    end
   end
   v
 end
 
-function gradient(f::MockBasis{T,D}) where {T,D}
+@inline function field_gradient(f::MockBasis{T,D}) where {T,D}
   E = eltype(T)
   P = Point{D,E}
   _p = zero(mutable(P))
@@ -48,3 +69,39 @@ function gradient(f::MockBasis{T,D}) where {T,D}
   vg = outer(p,f.v)
   MockBasis{D}(vg,f.ndofs)
 end
+
+struct OtherMockBasis{D} <: Field
+  ndofs::Int
+  function OtherMockBasis{D}(ndofs::Int) where D
+    new{D}(ndofs)
+  end
+end
+
+function field_cache(f::OtherMockBasis,x)
+  np = length(x)
+  s = (np, f.ndofs)
+  c = zeros(eltype(x),s)
+  CachedArray(c)
+end
+
+function evaluate_field!(v,f::OtherMockBasis,x)
+  np = length(x)
+  s = (np, f.ndofs)
+  setsize!(v,s)
+  for i in 1:np
+    @inbounds xi = x[i]
+    for j in 1:f.ndofs
+      @inbounds v[i,j] = 2*xi
+    end
+  end
+  v
+end
+
+@inline function field_gradient(f::OtherMockBasis{D}) where D
+  E = Float64
+  P = Point{D,E}
+  p = zero(P)
+  vg = 2*one(outer(p,p))
+  MockBasis{D}(vg,f.ndofs)
+end
+

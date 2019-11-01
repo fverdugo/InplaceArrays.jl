@@ -63,26 +63,20 @@ function return_type_broadcast(f::Function,Ts...)
   typeof(r)
 end
 
+function return_type_broadcast(f::Function,Ts::Type{<:Number}...)
+  return_type(f,Ts...)
+end
+
 """
 $(SIGNATURES)
 """
 function testargs_broadcast(f::Function,Ts...)
-  v = testvalues(Ts...)
-  Ys = map(eltype,Ts)
-  y = testargs(f,Ys...)
-  args = (_new_arg(vi,yi) for (vi,yi) in zip(v,y))
-  tuple(args...)
+  testvalues(Ts...)
 end
 
-function _new_arg(vi::AbstractArray,yi)
-  dest = similar(vi)
-  for i in eachindex(dest)
-    dest[i] = yi
-  end
-  dest
+function testargs_broadcast(f::Function,Ts::Type{<:Number}...)
+  testargs(f,Ts...)
 end
-
-_new_arg(vi,yi) = yi
 
 """
     testargs(f::Function,Ts::DataType...) -> Tuple

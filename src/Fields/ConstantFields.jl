@@ -1,53 +1,52 @@
 
-struct ConstantField{V,D} <: Field{V,D}
-  value::V
-  @inline function ConstantField{D}(value::NumberOrArray) where {D}
-    V = typeof(value)
-    new{V,D}(value)
+function field_cache(v::Number,x)
+  nx = length(x)
+  c = zeros(typeof(v),nx)
+  CachedArray(c)
+end
+
+function evaluate_field!(c,v::Number,x)
+  nx = length(x)
+  setsize!(c,(nx,))
+  for i in eachindex(x)
+    @inbounds c[i] = v
   end
+  c
 end
 
-field_return_type(f::ConstantField,x::Point) = valuetype(f)
-
-field_cache(f::ConstantField,x::Point) = nothing
-
-@inline evaluate!(cache,f::ConstantField,x::Point) = f.value
-
-function gradient(f::ConstantField{T,D}) where {T<:Number,D}
-  p = zero(Point{D,T})
-  v = zero(T)
-  g = outer(p,v)
-  ConstantField{D}(g)
+function field_gradient(v::Number)
+  T = typeof(v)
+  E = eltype(T)
+  zero(E)
 end
 
-function gradient(f::ConstantField{V,D}) where {V<:AbstractArray,D}
-  T = eltype(V)
-  p = zero(Point{D,T})
-  v = zero(T)
-  gi = outer(p,v)
-  g = Fill(gi,size(f.value))
-  ConstantField{D}(g)
+function field_cache(v::AbstractArray{<:Number},x)
+  nx = length(x)
+  sv = size(v)
+  s = (nx,sv...)
+  c = zeros(eltype(v),s)
+  CachedArray(c)
 end
 
-function gradient(f::AbstractArray{<:ConstantField})
-  fi = testitem(f)
-  gi = gradient(fi)
-  Fill(gi,size(f))
+function evaluate_field!(c,v::AbstractArray{<:Number},x)
+  nx = length(x)
+  sv = size(v)
+  s = (nx,sv...)
+  setsize!(c,s)
+  cis = CartesianIndices(v)
+  for i in eachindex(x)
+    for ci in cis
+      @inbounds c[i,ci] = v[ci]
+    end
+  end
+  c
 end
 
-# TODO Perhaps not needed
-struct ToField{D} <: Kernel end
-
-kernel_cache(::ToField,::NumberOrArray) = nothing
-
-function kernel_return_type(k::ToField,x::NumberOrArray)
-  typeof(apply_kernel(k,x))
+function field_gradient(v::AbstractArray{<:Number})
+  T = eltype(v)
+  E = eltype(T)
+  Fill(zero(E),size(v))
 end
-
-function apply_kernel!(::Nothing,::ToField{D},x::NumberOrArray) where D
-  ConstantField{D}(x)
-end
-
 
 
 

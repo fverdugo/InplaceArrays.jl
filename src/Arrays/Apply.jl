@@ -1,6 +1,6 @@
 
 """
-    apply(f::Kernel,a::AbstractArray...) -> AbstractArray
+    apply(f,a::AbstractArray...) -> AbstractArray
 
 Applies the kernel `f` to the entries of the arrays in `a` (see the definition of [`Kernel`](@ref)).
 
@@ -12,19 +12,9 @@ In other words, the resulting array is numerically equivalent to:
     map( (x...)->apply_kernel(f,x...), a...)
 
 """
-function apply(f::Kernel,a::AbstractArray...)
+function apply(f,a::AbstractArray...)
   s = common_size(a...)
   apply(Fill(f,s...),a...)
-end
-
-"""
-    apply(f::Function, a::AbstractArray...)
-
-Syntactic sugar for `apply(f2k(f),a...)`.  See the meaning of function [`f2k`](@ref) for more details.
-"""
-function apply(f::Function,a::AbstractArray...)
-  k = f2k(f)
-  apply(k,a...)
 end
 
 """
@@ -75,22 +65,16 @@ end
 struct AppliedArray{T,N,F,G} <: AbstractArray{T,N}
   g::G
   f::F
-  size::NTuple{N,Int}
   function AppliedArray(g::AbstractArray,f::AbstractArray...)
     G = typeof(g)
     F = typeof(f)
     gi = testitem(g) #Assumes that all kernels return the same type
     fi = testitems(f...)
     T = kernel_return_type(gi,fi...)
-    N, s = _prepare_shape(g,f...)
-    new{T,N,F,G}(g,f,s)
+    f1, = f
+    new{T,ndims(f1),F,G}(g,f)
   end
 end
-
-#function apply(f::AppliedArray, a::AbstractArray...)
-#  fa = apply_all(f.f,a...)
-#  apply(f.g,fa...)
-#end
 
 function uses_hash(::Type{<:AppliedArray})
   Val(true)
@@ -108,6 +92,7 @@ function array_cache(hash::Dict,a::AppliedArray)
     cache
 end
 
+#TODO
 @static if VERSION >= v"1.1"
   @noinline function _get_stored_cache(cache::T,hash,id) where T
     c::T = hash[id]
@@ -174,13 +159,16 @@ function Base.IndexStyle(
   common_index_style(F)
 end
 
-Base.size(a::AppliedArray) = a.size
-
-function _prepare_shape(a...)
-  s = common_size(a...)
-  N = length(s)
-  (N,s)
+function Base.size(a::AppliedArray)
+  f, = a.f
+  size(f)
 end
+
+#function _prepare_shape(a...)
+#  s = common_size(a...)
+#  N = length(s)
+#  (N,s)
+#end
 
 function common_size(a::AbstractArray...)
   a1, = a

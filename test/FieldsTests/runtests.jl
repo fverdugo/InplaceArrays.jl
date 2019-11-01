@@ -16,4 +16,8 @@ using Test
 
 @testset "Lincomb" begin include("LincombTests.jl") end
 
+@testset "Varinner" begin include("VarinnerTests.jl") end
+
+@testset "Attachmap" begin include("AttachmapTests.jl") end
+
 end # module

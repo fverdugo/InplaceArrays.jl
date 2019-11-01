@@ -38,7 +38,6 @@ export apply_kernels!
 export apply_kernel!
 export apply_kernel
 export test_kernel
-export f2k
 export bcast
 export elem
 export contract

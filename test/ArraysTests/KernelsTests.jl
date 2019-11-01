@@ -3,9 +3,9 @@ module KernelsTests
 using Test
 using InplaceArrays.Arrays
 
-test_kernel(f2k(+),(3,2),5)
+test_kernel(+,(3,2),5)
 
-@test kernel_return_types((f2k(+),f2k(/)),1,1) == (Int,Float64)
+@test kernel_return_types((+,/),1,1) == (Int,Float64)
 
 f = bcast(+)
 a = rand(3,2)

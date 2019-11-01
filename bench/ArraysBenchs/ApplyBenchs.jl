@@ -19,7 +19,7 @@ end
 
 function bench1(n)
   a = rand(n)
-  k = f2k(-)
+  k = -
   c = apply(k,a)
   cache = array_cache(c)
   @time loop(c,cache)
@@ -28,7 +28,7 @@ end
 function bench2(n)
   a = rand(n)
   b = rand(n)
-  k = f2k(-)
+  k = -
   c = apply(k,a,b)
   cache = array_cache(c)
   @time loop(c,cache)
@@ -53,7 +53,7 @@ function bench4(n)
 end
 
 function bench7(n)
-  k = f2k(+)
+  k = +
   a = fill(k,n)
   x = rand(n)
   y = rand(n)
