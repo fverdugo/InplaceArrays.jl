@@ -16,4 +16,6 @@ include("VarinnerBenchs.jl")
 
 include("AttachmapBenchs.jl")
 
+include("IntegrateBenchs.jl")
+
 end # module

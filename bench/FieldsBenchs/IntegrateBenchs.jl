@@ -8,7 +8,7 @@ using InplaceArrays.Fields: OtherMockBasis, MockBasis, MockField
 using FillArrays
 using TensorValues # TODO
 
-@inline function loop(a,cache)
+@noinline function loop(a,cache)
   for i in eachindex(a)
     ai = getindex!(cache,a,i)
   end
@@ -79,7 +79,9 @@ function bench3(n)
   ar = Fill(r,l)
   ab = attachmap(ar,aϕ)
 
-  s = integrate(ab,ax,aw,aj)
+  a = varinner(ab,ab)
+
+  s = integrate(a,ax,aw,aj)
 
   cs = array_cache(s)
   @time loop(s,cs)
