@@ -8,6 +8,7 @@ The module is structured in the following sub-modules:
 
 - [`InplaceArrays.Helpers`](@ref)
 - [`InplaceArrays.Inference`](@ref)
+- [`InplaceArrays.TensorValues`](@ref)
 - [`InplaceArrays.Arrays`](@ref)
 - [`InplaceArrays.Fields`](@ref)
 

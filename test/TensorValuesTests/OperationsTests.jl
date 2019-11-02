@@ -2,6 +2,7 @@ module OperationsTests
 
 using Test
 using InplaceArrays.TensorValues
+using LinearAlgebra
 
 a = VectorValue(1,2,3)
 b = VectorValue(2,1,6)

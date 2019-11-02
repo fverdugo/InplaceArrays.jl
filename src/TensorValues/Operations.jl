@@ -69,6 +69,8 @@ end
 
 inner(a::Real,b::Real) = a*b
 
+"""
+"""
 @generated function inner(a::MultiValue{S,T,N,L}, b::MultiValue{S,W,N,L}) where {S,T,N,L,W}
   str = join([" a.array.data[$i]*b.array.data[$i] +" for i in 1:L ])
   Meta.parse(str[1:(end-1)])
@@ -84,6 +86,8 @@ end
 
 # Outer product (aka dyadic product)
 
+"""
+"""
 outer(a::Real,b::Real) = a*b
 
 outer(a::MultiValue,b::Real) = a*b
@@ -103,6 +107,8 @@ inv(a::TensorValue) = MultiValue(inv(a.array))
 
 # Measure
 
+"""
+"""
 meas(a::VectorValue) = sqrt(inner(a,a))
 
 meas(a::TensorValue) = abs(det(a))
@@ -115,6 +121,8 @@ conj(a::MultiValue) = MultiValue(conj(a.array))
 
 # Trace
 
+"""
+"""
 @generated function trace(v::TensorValue{D}) where D
   str = join([" v.array.data[$i+$((i-1)*D)] +" for i in 1:D ])
   Meta.parse(str[1:(end-1)])
@@ -131,6 +139,8 @@ end
 
 # Symmetric part
 
+"""
+"""
 @generated function symmetic_part(v::TensorValue{D}) where D
   str = "("
   for j in 1:D
