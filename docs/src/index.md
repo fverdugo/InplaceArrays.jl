@@ -1,7 +1,7 @@
 
 # Home
 
-Documentation for InplaceArrays.jl
+Documentation for Gridap.jl
 
 ```@contents
 Pages = [
@@ -9,6 +9,7 @@ Pages = [
   "Gridap.md",
   "Helpers.md",
   "Inference.md",
+  "TensorValues.md",
   "Arrays.md",
   "Fields.md",
   ]

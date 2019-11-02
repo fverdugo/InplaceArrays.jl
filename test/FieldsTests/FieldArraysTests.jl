@@ -6,7 +6,7 @@ using InplaceArrays.Fields
 using InplaceArrays.Fields: MockField, MockBasis
 using InplaceArrays.Fields: Valued
 using FillArrays
-using TensorValues # TODO
+using InplaceArrays.TensorValues
 
 np = 4
 p = Point(1,2)

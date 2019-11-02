@@ -6,6 +6,7 @@ pages = [
   "Gridap" => "Gridap.md",
   "Gridap.Helpers" => "Helpers.md",
   "Gridap.Inference" => "Inference.md",
+  "Gridap.TensorValues" => "TensorValues.md",
   "Gridap.Arrays" => "Arrays.md",
   "Gridap.Fields" => "Fields.md",
  ]

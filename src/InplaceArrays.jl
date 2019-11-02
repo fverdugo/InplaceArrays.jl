@@ -22,7 +22,10 @@ include("Helpers/Helpers.jl")
 
 include("Inference/Inference.jl")
 
+include("TensorValues/TensorValues.jl")
+
 include("Arrays/Arrays.jl")
+
 using InplaceArrays.Arrays
 export array_cache
 export getindex!

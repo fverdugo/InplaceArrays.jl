@@ -2,7 +2,7 @@ module MockFieldsTests
 
 using InplaceArrays.Fields
 using InplaceArrays.Fields: MockField, MockBasis, OtherMockBasis
-using TensorValues
+using InplaceArrays.TensorValues
 
 np = 4
 p = Point(1,2)

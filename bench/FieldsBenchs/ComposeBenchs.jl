@@ -4,7 +4,7 @@ using InplaceArrays.Arrays
 using InplaceArrays.Fields
 import InplaceArrays.Fields: ∇
 using InplaceArrays.Fields: MockField, MockBasis
-using TensorValues 
+using InplaceArrays.TensorValues 
 using FillArrays
 
 @inline function repeat(n,f,args...)

@@ -20,4 +20,6 @@ using Test
 
 @testset "Attachmap" begin include("AttachmapTests.jl") end
 
+@testset "Integrate" begin include("IntegrateTests.jl") end
+
 end # module

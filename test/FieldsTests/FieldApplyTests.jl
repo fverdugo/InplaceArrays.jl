@@ -4,7 +4,7 @@ using Test
 using InplaceArrays.Arrays
 using InplaceArrays.Fields
 using FillArrays
-using TensorValues
+using InplaceArrays.TensorValues
 
 using InplaceArrays.Fields: MockField, MockBasis
 

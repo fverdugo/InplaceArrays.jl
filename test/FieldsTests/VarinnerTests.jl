@@ -3,7 +3,7 @@ module VarinnerTests
 using InplaceArrays.Arrays
 using InplaceArrays.Fields
 using InplaceArrays.Fields: MockField, MockBasis
-using TensorValues
+using InplaceArrays.TensorValues
 using FillArrays
 
 p1 = Point(2,2)
