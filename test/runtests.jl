@@ -6,6 +6,8 @@ using Test
 
 @time @testset "Inference" begin include("InferenceTests/runtests.jl") end
 
+@time @testset "TensorValues" begin include("TensorValuesTests/runtests.jl") end
+
 @time @testset "Arrays" begin include("ArraysTests/runtests.jl") end
 
 @time @testset "Fields" begin include("FieldsTests/runtests.jl") end

@@ -1,10 +1,10 @@
 module ComposeTests
 
+using InplaceArrays.TensorValues
 using InplaceArrays.Arrays
 using InplaceArrays.Fields
 using InplaceArrays.Fields: MockField
 using InplaceArrays.Fields: Comp
-using TensorValues
 using FillArrays
 
 import InplaceArrays.Fields: ∇

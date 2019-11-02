@@ -8,6 +8,7 @@ The module is structured in the following sub-modules:
 
 - [`InplaceArrays.Helpers`](@ref)
 - [`InplaceArrays.Inference`](@ref)
+- [`InplaceArrays.TensorValues`](@ref)
 - [`InplaceArrays.Arrays`](@ref)
 - [`InplaceArrays.Fields`](@ref)
 
@@ -22,7 +23,10 @@ include("Helpers/Helpers.jl")
 
 include("Inference/Inference.jl")
 
+include("TensorValues/TensorValues.jl")
+
 include("Arrays/Arrays.jl")
+
 using InplaceArrays.Arrays
 export array_cache
 export getindex!

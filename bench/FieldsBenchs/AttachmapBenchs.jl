@@ -5,7 +5,7 @@ using InplaceArrays.Arrays
 using InplaceArrays.Fields
 using InplaceArrays.Fields: OtherMockBasis, MockBasis
 using FillArrays
-using TensorValues # TODO
+using InplaceArrays.TensorValues
 
 @inline function loop(a,cache)
   for i in eachindex(a)

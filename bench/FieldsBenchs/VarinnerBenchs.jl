@@ -3,7 +3,7 @@ module VarinnerBenchs
 using InplaceArrays.Arrays
 using InplaceArrays.Fields
 using InplaceArrays.Fields: MockField, MockBasis
-using TensorValues
+using InplaceArrays.TensorValues
 using FillArrays
 
 @inline function loop(a,cache)

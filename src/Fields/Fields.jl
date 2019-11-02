@@ -13,6 +13,7 @@ module Fields
 
 using InplaceArrays.Helpers
 using InplaceArrays.Inference
+using InplaceArrays.TensorValues
 using InplaceArrays.Arrays
 using InplaceArrays.Arrays: BCasted
 using InplaceArrays.Arrays: NumberOrArray
@@ -21,7 +22,6 @@ using InplaceArrays.Arrays: Contracted
 
 using Test
 using DocStringExtensions
-using TensorValues #TODO integrate here
 using FillArrays
 
 export Point

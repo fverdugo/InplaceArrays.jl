@@ -1,8 +1,8 @@
 module ConstantFieldsTests
 
+using InplaceArrays.TensorValues
 using InplaceArrays.Arrays
 using InplaceArrays.Fields
-using TensorValues # TODO
 
 for v in (3.0,VectorValue(1,2))
   f = v

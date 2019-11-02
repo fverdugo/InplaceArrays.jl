@@ -5,7 +5,7 @@ using InplaceArrays.Arrays
 using InplaceArrays.Fields
 using InplaceArrays.Fields: OtherMockBasis, MockBasis, MockField
 using FillArrays
-using TensorValues # TODO
+using InplaceArrays.TensorValues
 
 p1 = Point(2,2)
 p2 = Point(4,2)
