@@ -70,21 +70,26 @@ function bench3(n)
   f = OtherMockBasis{d}(ndof)
   
   l = n
-  ac = Fill(c,l)
+  ac = fill(c,l)
   af = Fill(f,l)
   aϕ = lincomb(af,ac)
   aj = ∇(aϕ)
   aw = Fill(w,l)
-  ax = fill(x,l)
+  ax = Fill(x,l)
   ar = Fill(r,l)
   ab = attachmap(ar,aϕ)
 
-  a = varinner(ab,ab)
+  fmass = varinner(ab,ab)
+  mmass = integrate(fmass,ax,aw,aj)
 
-  s = integrate(a,ax,aw,aj)
+  cmmass = array_cache(mmass)
+  @time loop(mmass,cmmass)
 
-  cs = array_cache(s)
-  @time loop(s,cs)
+  fstif = varinner(∇(ab),∇(ab))
+  mstif = integrate(fstif,ax,aw,aj)
+
+  cmstif = array_cache(mstif)
+  @time loop(mstif,cmstif)
 
 end
 
