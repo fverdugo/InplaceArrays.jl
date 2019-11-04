@@ -17,7 +17,6 @@ field_cache(f,x)
 field_gradient(f)
 field_return_type(f,x)
 test_field
-∇(::Field)
 ```
 ## Helper functions using fields
 
@@ -26,6 +25,12 @@ evaluate_field(f,x)
 evaluate(f::Field,x)
 evaluate!(cache,f::Field,x)
 gradient(f::Field)
+∇
+```
+
+## Working with several fields at once
+
+```@docs
 field_return_types(f::Tuple,x)
 field_caches(f::Tuple,x)
 evaluate_fields(f::Tuple,x)

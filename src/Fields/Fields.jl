@@ -1,7 +1,7 @@
 """
 This module provides:
 
-- An interface for physical fields and basis of physical fields.
+- An interface for physical fields, basis of physical fields and related objects.
 - Helpers functions to work with fields and arrays of fields.
 - Helpers functions to create lazy operation trees from fields and arrays of fields
 

@@ -1,7 +1,8 @@
 """
     const Point{D,T} = VectorValue{D,T}
 
-Type representing a point of D dimensions with coordinates of type T
+Type representing a point of D dimensions with coordinates of type T.
+Fields are evaluated at vectors of `Point` objects.
 """
 const Point{D,T} = VectorValue{D,T}
 
@@ -9,6 +10,9 @@ const Point{D,T} = VectorValue{D,T}
     abstract type Field <: Kernel
 
 Abstract type representing physical fields, bases of fields, and other related objects. 
+These different cases are distinguished by the return value obtained when evaluating them. E.g.,
+a physical field returns a vector of values when evaluated at a vector of points, and a basis of `nf` fields
+returns a 2d matrix (`np` x `nf`) when evaluated at a vector of `np` points.
 
 The following functions need to be overloaded:
 
@@ -27,26 +31,12 @@ The interface can be tested with
 Most of the functionality implemented in terms of this interface relies in duck typing (this is why all functions in the interface
 have the word "field").  Thus, it is not strictly needed to work with types
 that inherit from `Field`. This is specially useful in order to accommodate
-existing types into this framework without the need to implement a wrapper type that inherits from `Field`. For instance, a default implementation is available for numbers, which behave like "constant" fields.  However, we recommend that new types inherit from `Field`.
+existing types into this framework without the need to implement a wrapper type that inherits from `Field`.
+For instance, a default implementation is available for numbers, which behave like "constant" fields, or arrays of numbers, which behave like
+"constant" bases of fields.  However, we recommend that new types inherit from `Field`.
 
 """
 abstract type Field <: Kernel end
-#TODO not sure if we need Field{D,T}
-# Even if we adopt this, T will be a number for a field
-# and a vector for a basis
-# The advantage is that we could dispatch on field or basis
-# The disadvantage is that implementing concrete types resulting
-# from operation trees is more difficult
-# TODO valuetype and field_return_type kind of duplicated, even though
-# the last one allows to dispatch for vectorized and non-vectorized versions
-# Any decision here has consequences in AppliedField
-# EDIT:
-# V needed to dispatch by either number or AbstractArray
-# D needed in order to define gradients
-# V first to facilitate dispatching
-# EDIT: If we adopt the vectorized version, type params are not needed
-# FINAL EDIT: Nor V neither D are needed. D can always be taken when evaluating the gradient.
-
 
 """
 $(SIGNATURES)
@@ -60,7 +50,22 @@ end
 """
 $(SIGNATURES)
 
-Returns an array, the length of the first axis is `length(x)`.
+Returns an array containing the values of evaluating the field `f` at the vector of points
+`x` by (possibly) using the scratch data in the `cache` object.  The returned value is 
+an array,  for which the length of the first axis is `length(x)`, i.e., the number of points where the field has
+been evaluated.E.g.,
+a physical field returns a vector of `np` values when evaluated at a vector of `np` points, and a basis of `nf` fields
+returns a 2d matrix (`np` x `nf`) when evaluated at a vector of `np` points.
+
+This choice is made
+
+- for performance reasons when integrating fields (i.e., adding contributions at different points) since the added values are closer in memory with this layout.
+- In order to simplify operations between field objects. E.g., the result of evaluating a physical field and a basis of `nf`fields at a vector of `np` points (which leads to a vector and a matrix of size `(np,)` and `(np,nf)` respectively)  can be conveniently added with the broadcasted sum `.+` operator.
+
+
+The `cache` object is computed
+with the [`field_cache`](@ref) function.
+
 """
 function evaluate_field!(cache,f,x)
   @abstractmethod
@@ -81,6 +86,7 @@ end
 $(SIGNATURES)
 
 Computes the type obtained when evaluating field `f` at point `x`.
+It returns `typeof(evaluate_field(f,x))` by default.
 """
 function field_return_type(f,x)
   typeof(evaluate_field(f,x))
@@ -109,7 +115,11 @@ end
       v::AbstractArray,cmp=(==);
       grad=nothing)
 
-Function used to test the field interface.
+Function used to test the field interface. `v` is an array containing the expected
+result of evaluating the field `f` at the vector of points `x`. The comparison is performed using 
+the `cmp` function. For fields objects that support the `field_gradient` function, the key-word
+argument `grad` can be used. It should contain the result of evaluating `field_gradient(f)` at x.
+The checks are performed with the `@test` macro.
 """
 function test_field(
   f,
@@ -151,44 +161,79 @@ end
 
 Equivalent to 
 
-    cache = field_cache(f,x)
-    evaluate!(cache,f,x)
+    evaluate_field(f,x)
+
+But only for types that inherit from `Field`. Types that implement
+the field interface but not inherit from `Field` (e.g., numbers and arrays of numbers)
+cannot use this function. Use `evaluate_field` instead.
 """
 function evaluate(f::Field,x)
-  cache = field_cache(f,x)
-  evaluate!(cache,f,x)
+  evaluate_field(f,x)
 end
 
 """
+    evaluate!(cache,f::Field,x)
+
+Equivalent to 
+
+    evaluate_field!(cache,f,x)
+
+But only for types that inherit from `Field`. Types that implement
+the field interface but not inherit from `Field` (e.g., numbers and arrays of numbers)
+cannot use this function. Use `evaluate_field!` instead.
 """
 @inline function evaluate!(cache,f::Field,x)
   evaluate_field!(cache,f,x)
 end
 
 """
+$(SIGNATURES)
+
+Evaluates the field `f` at the vector of points `x` by creating a temporary cache internally.
+Equivalent to 
+
+    c = field_cache(f,x)
+    evaluate_field!(c,f,x)
 """
 function evaluate_field(f,x)
   c = field_cache(f,x)
   evaluate_field!(c,f,x)
 end
 
+function gradient end
+
+"""
+    const ∇ = gradient
+
+Alias for the `gradient` function.
+"""
+const ∇ = gradient
+
 """
     gradient(f::Field)
 
-Like [`field_gradient(f)`](@ref) but only for types `<:Field`.
+Equivalent to
 
-The following fancy alias for the `gradient` function is also defined and exported.
+    field_gradient(f)
 
-   const ∇ = gradient
-
+But only for types that inherit from `Field`. Types that implement
+the field interface but not inherit from `Field` (e.g., numbers and arrays of numbers)
+cannot use this function. Use `field_gradient` instead.
 """
 function gradient(f::Field)
   field_gradient(f)
 end
 
-const ∇ = gradient
 
 """
+    field_return_types(f::Tuple,x) -> Tuple
+
+Computes a tuple with the return types of the fields in the tuple `f` when evaluated at the vector
+of points `x`
+
+Equivalent to
+
+    tuple(( field_return_type(fi,x) for fi in f)...)
 """
 function field_return_types(f::Tuple,x)
   _field_return_types(x,f...)
@@ -206,6 +251,11 @@ function _field_return_types(x,a)
 end
 
 """
+    field_caches(f::Tuple,x) -> Tuple
+
+Equivalent to
+
+    tuple((field_cache(fi,x) for fi in f)...)
 """
 function field_caches(f::Tuple,x)
   _field_caches(x,f...)
@@ -223,6 +273,11 @@ function _field_caches(x,a)
 end
 
 """
+    evaluate_fields(f::Tuple,x) -> Tuple
+
+Equivalent to
+
+    tuple((evaluate_fields(fi,x) for fi in f)...)
 """
 function evaluate_fields(f::Tuple,x)
   cf = field_caches(f,x)
@@ -230,6 +285,11 @@ function evaluate_fields(f::Tuple,x)
 end
 
 """
+    evaluate_fields!(cf::Tuple,f::Tuple,x) -> Tuple
+
+Equivalent to
+
+    tuple((evaluate_fields!(ci,fi,x) for (ci,fi) in zip(c,f))...)
 """
 @inline function evaluate_fields!(cf::Tuple,f::Tuple,x)
   _evaluate_fields!(cf,x,f...)
@@ -253,6 +313,11 @@ end
 end
 
 """
+    field_gradients(b...) -> Tuple
+
+Equivalent to
+
+    map(field_gradient,b)
 """
 @inline function field_gradients(a,b...)
   ga = field_gradient(a)
@@ -266,6 +331,11 @@ end
 end
 
 """
+    evaluate_all(f::Tuple,x) -> Tuple
+
+Equivalent to
+
+    tuple((evaluate(fi,x) for fi in f)...)
 """
 function evaluate_all(f::Tuple,x)
   _evaluate_all(x,f...)
@@ -283,6 +353,11 @@ function _evaluate_all(x,a)
 end
 
 """
+    gradient_all(b...) -> Tuple
+
+Equivalent to
+
+    map(gradient,b)
 """
 function gradient_all(a,b...)
   ga = gradient(a)

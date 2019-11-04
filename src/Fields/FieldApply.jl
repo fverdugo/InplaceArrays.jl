@@ -1,27 +1,21 @@
 
 """
-    apply_kernel_to_field(k::Kernel,f...) -> Field
+    apply_kernel_to_field(k,f...) -> Field
 
 Returns a field obtained by applying the kernel `k` to the 
 values of the fields in `f`. That is, the returned field evaluated at
-a point `x` provides the value obtained by applying kernel `k` to the
-values of the fields `f` at point `x`. Formally, the resulting field at a point
+a vector of points `x` provides the value obtained by applying kernel `k` to the
+values of the fields `f` at the vector of points `x`. Formally, the resulting field at a 
+vector of points
  `x` is defined as
 
-    fx = [ evaluate(fi,x) for fi in f]
+    fx = evaluate_fields(f,x)
     apply_kernel(k,fx...)
 
-
-if any of the inputs in `f` is a number or an array of numbers
-instead of a field it will be treated
-as a "constant field". That is a filed that evaluated at any point `x` returns always
-the underlying number or array.
-
-
-In order to be able to call the [`gradient`](@ref) function of the
+In order to be able to call the [`field_gradient`](@ref) function of the
 resulting field, one needs to define the gradient operator
 associated with the underlying kernel.
-This is done by adding a new method [`gradient(k::Kernel,f::Field...)`](@ref) for each kernel type.
+This is done by adding a new method to [`apply_kernel_gradient(k,f...)`](@ref) for each kernel type.
 """
 @inline function apply_kernel_to_field(k,f...)
   AppliedField(k,f...)
