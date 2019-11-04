@@ -1,5 +1,6 @@
 
 """
+    integrate(f,x,w,j)
 """
 function integrate(f,x,w,j)
   fx = evaluate_field(f,x)
@@ -9,6 +10,7 @@ function integrate(f,x,w,j)
 end
 
 """
+    integrate(f::AbstractArray,x,w,j)
 """
 function integrate(
   f::AbstractArray,x,w,j)

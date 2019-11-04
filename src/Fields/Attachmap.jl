@@ -1,5 +1,6 @@
 
 """
+    attachmap(f,phi)
 """
 function attachmap(f,phi)
   k = MapGrad()
@@ -7,6 +8,7 @@ function attachmap(f,phi)
 end
 
 """
+    attachmap(f::AbstractArray,phi::AbstractArray)
 """
 function attachmap(f::AbstractArray,phi::AbstractArray)
   k = AddMap()

@@ -3,22 +3,21 @@
     compose(g::Function,f...)
 
 Returns a new field obtained by composition of function `g` and the fields
-`f`. The value of the resulting field at point `x` is numerically equivalent to
+`f`. The value of the resulting field at a vector of points `x` is numerically equivalent to
 
-    fx = [ evaluate(fi,x) for fi in f]
+    fx = evaluate_fields(f,x)
     apply_kernel(bcast(g), fx...)
 
-The gradient of the resulting field evaluated at point `x` is equivalent to
+The gradient of the resulting field evaluated at a vector of points `x` is equivalent to
 
-    fx = [ evaluate(fi,x) for fi in f]
+    fx = evaluate_fields(f,x)
     apply_kernel(bcast(gradient(g)), fx...)
 
 Note that it is needed to overload `gradient(::typeof(g))` for the given function `g`
 in order to be able to compute the gradient.
 
 As in function [`apply_kernel_to_field`](@ref) if any of the inputs in `f` is a number or an array
-instead of a field it will be treated
-as a "constant field".
+instead of a field it will be treated as a "constant field".
 """
 function compose(g::Function,f...)
   k = Comp(g)

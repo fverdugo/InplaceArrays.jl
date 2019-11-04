@@ -2,19 +2,17 @@
 """
     lincomb(a::Field,b::AbstractVector)
 
-Returns a field `f` with `valuetype(f) <: Number` obtained by the "linear combination" of
-the value of the basis `a` and the vector `b`. That is, the value of the resulting field `f`
-at a point `x` is defined as
+Returns a field obtained by the "linear combination" of
+the value of the field basis `a` and the coefficient vector `b`.  The value of the resulting field
+evaluated at a vector of points `x` is defined as
 
-    k = contract(outer)
     ax = evaluate(a,x)
-    apply_kernel(k,ax,b)
+    ax*b
 
 On the other hand, the gradient of the resulting field is defined as
 
-    k = contract(outer)
     ∇ax = evaluate(gradient(a),x)
-    apply_kernel(k,∇ax,b)
+    ∇ax*b
 
 """
 function lincomb(a::Field,b::AbstractVector)
@@ -112,7 +110,7 @@ end
 """
     lincomb(a::AbstractArray{<:Field},b::AbstractArray)
 
-Returns an array of field numerically equivalent to
+Returns an array of fields numerically equivalent to
 
     map(lincomb,a,b)
 """

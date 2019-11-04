@@ -1,5 +1,6 @@
 
 """
+    varinner(a,b)
 """
 function varinner(a,b)
   k = Varinner()
@@ -7,6 +8,7 @@ function varinner(a,b)
 end
 
 """
+    varinner(a::AbstractArray,b::AbstractArray)
 """
 function varinner(a::AbstractArray,b::AbstractArray)
   k = Varinner()
