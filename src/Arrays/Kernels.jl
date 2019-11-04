@@ -1,7 +1,7 @@
 # Define kernel interface
 
 """
-Abstract type representing operations to be used in the [`apply`](@ref) function.
+Abstract type representing the operations to be used in the [`apply`](@ref) function.
 
 Derived types must implement the following method:
 
@@ -25,7 +25,7 @@ for `Function` objects.  However, we recommend that new types inherit from `Kern
 abstract type Kernel end
 
 """
-$(SIGNATURES)
+    kernel_return_type(f,x...)
 
 Returns the type of the result of calling kernel `f` with
 arguments of the types of the objects `x`.
@@ -37,20 +37,20 @@ function kernel_return_type(f,x...)
 end
 
 """
-$(SIGNATURES)
+    kernel_cache(f,x...)
 
 Returns the `cache` needed to apply kernel `f` with arguments
-of the same type as the objects in `x...`.
+of the same type as the objects in `x`.
 This function returns `nothing` by default.
 """
 kernel_cache(f,x...) = nothing
 
 """
-$(SIGNATURES)
+    apply_kernel!(cache,f,x...)
 
-applies the kernel `f` at the arguments `x...` using
+Applies the kernel `f` at the arguments `x...` using
 the scratch data provided in the given `cache` object. The `cache` object
-is built with the [`kernel_cache`](@ref) function using arguments of the same type as in `x...`
+is built with the [`kernel_cache`](@ref) function using arguments of the same type as in `x`.
 In general, the returned value `y` can share some part of its state with the `cache` object.
 If the result of two or more invocations of this function need to be accessed simultaneously
 (e.g., in multi-threading), create and use various `cache` objects (e.g., one cache
@@ -63,10 +63,10 @@ end
 # Testing the interface
 
 """
-$(SIGNATURES)
+    test_kernel(f,x::Tuple,y,cmp=(==))
 
 Function used to test if the kernel `f` has been
-implemented correctly. `f` is a kernel object, `x` is the input
+implemented correctly. `f` is a kernel object, `x` is a tuple containing the arguments 
 of the kernel, and `y` is the expected result. Function `cmp` is used to compare
 the computed result with the expected one. The checks are done with the `@test`
 macro.
@@ -88,7 +88,7 @@ end
 """
     apply_kernel(f,x...)
 
-apply the fuctor `f` at the arguments `x...` by creating a temporary cache
+apply the kernel `f` at the arguments in `x` by creating a temporary cache
 internally. This functions is equivalent to
 ```jl
 cache = kernel_cache(f,x...)
@@ -257,6 +257,9 @@ Returns a kernel that represents the element-wise
 version of the operation `f`
 It does not broadcast in singleton axes. Thus, allows some
 performance optimizations with respect to broadcast.
+
+!!! warning
+    not needed any more, to be deleted
 """
 elem(f::Function) = Elem(f)
 
@@ -402,6 +405,9 @@ end
 
 Like the dot product between to vectors, but using operation `f` instead
 of `*` between components.
+
+!!! warning
+    not needed any more, to be deleted
 
 # Examples
 

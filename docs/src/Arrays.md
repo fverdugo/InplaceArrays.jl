@@ -23,13 +23,18 @@ These methods can be stressed with the following function
 
 ```@docs
 getindex!(cache,a::AbstractArray,i...)
-getitems!
 array_cache(a::AbstractArray)
-array_caches
 uses_hash(::Type{<:AbstractArray})
 testitem(a::AbstractArray)
-testitems
 test_array
+```
+
+## Working with several arrays at once
+
+```@docs
+getitems!
+array_caches
+testitems
 ```
 
 ## Creting lazy operation trees
@@ -48,11 +53,17 @@ apply_kernel!(cache,f,x...)
 kernel_cache(f,x...)
 kernel_return_type(f,x...)
 test_kernel
+```
+
+### Other functions using kernels
+
+```@docs
 apply_kernel
 apply_kernels!
 kernel_caches
 kernel_return_types
 ```
+
 ### Build-in kernels
 
 ```@docs

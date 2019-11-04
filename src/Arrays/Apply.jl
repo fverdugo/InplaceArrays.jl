@@ -11,6 +11,8 @@ In other words, the resulting array is numerically equivalent to:
 
     map( (x...)->apply_kernel(f,x...), a...)
 
+
+See the [`apply_kernel`](@ref) function for details.
 """
 function apply(f,a::AbstractArray...)
   s = common_size(a...)
@@ -25,6 +27,7 @@ The resulting array has the same entries as the one obtained with:
 
     map( apply_kernel, f, a...)
 
+See the [`apply_kernel`](@ref) function for details.
 """
 function apply(f::AbstractArray,a::AbstractArray...)
   AppliedArray(f,a...)
