@@ -2,8 +2,8 @@
 """
     evaluate_field_array(f::AbstractArray,x::AbstractArray) -> AbstractArray
 
-Evaluates arr the fields in the array `f` at all the vector of points in the 
-array `x` and returns the results in a lazy array.
+Evaluates the fields in the array `f` at all the vector of points in the 
+array of vector of points `x` and returns the result as a lazy array.
 
 The result is numerically equivalent to 
 
@@ -65,7 +65,7 @@ Equivalent to
 
     evaluate_field_array(a,x)
 
-But only for arrays `a` that store objects that inherit from `Field`. If this is not the case,
+But only for arrays `a` whose element type inherits from `Field`. If this is not the case,
 use `evaluate_field_array(a,x)` instead.
 """
 function evaluate(a::AbstractArray{<:Field},x::AbstractArray)
@@ -80,6 +80,16 @@ function evaluate_field_array(
 end
 
 """
+    kernel_evaluate(k,x,f...)
+
+This function returns by default the array obtained with
+
+    g = apply_to_field(k,f...)
+    evaluate_field_array(g,x)
+
+However, it can be rewritten for specific kernels in order to improve performance and simplify
+the underlying operation tree associated in the returned object.
+
 """
 function kernel_evaluate(k,x,f...)
   a = apply(k,f...)
@@ -114,6 +124,16 @@ function field_array_gradient(
 end
 
 """
+    apply_gradient(k,f...)
+
+By default, it returns the array obtained as
+
+    a = apply(k,f...)
+    field_array_gradient(a)
+
+However, it can be rewritten for specific kernels in order to improve performance and simplify
+the underlying operation tree associated in the returned object.
+
 """
 function apply_gradient(k,f...)
   a = apply(k,f...)
@@ -121,12 +141,24 @@ function apply_gradient(k,f...)
 end
 
 """
+    gradient(f::AbstractArray{<:Field})
+
+Equivalent to 
+
+    field_array_gradient(f)
+
+but only for arrays whose element type is `<:Field`. Use function `field_array_gradient` otherwise.
 """
 function gradient(f::AbstractArray{<:Field})
   field_array_gradient(f)
 end
 
 """
+    field_array_gradients(f...)
+
+Equivalent to 
+
+    map(field_array_gradient,f)
 """
 function field_array_gradients(f...)
   map(field_array_gradient,f)
@@ -156,13 +188,19 @@ end
 
 """
     function test_array_of_fields(
-      a::AbstractArray{<:Field},
+      a::AbstractArray,
       x::AbstractArray,
       v::AbstractArray,
       cmp::Function=(==);
       grad = nothing)
 
-Function to test an array of fields.
+Function to test an array of fields `a`. The array `v` is the expected result when calling 
+`evaluate_field_array(a,x)`. The entries in the computed array and the expected one are compared
+with the `cmp` function. The key-word argument `grad` is optional. If present, it should contain
+the expected result of
+
+    ∇a = field_array_gradient(a)
+    evaluate_field_array(∇a,x)
 """
 function test_array_of_fields(
   a::AbstractArray,
@@ -195,11 +233,16 @@ function test_array_of_fields(
 end
 
 """
-    apply_to_field(k::Kernel,f::AbstractArray...)
+    apply_to_field(k,f::AbstractArray...)
 
 Returns an array of fields numerically equivalent to
 
     map( (x...) -> apply_kernel_to_field(k,x...), f )
+
+The evaluation and the computation of the gradient of the resulting arrays
+can be optimized for particular kernels by
+adding new methods to the [`kernel_evaluate`](@ref) and  [`apply_gradient`](@ref) functions
+respectively.
 """
 function apply_to_field(
   k,f::AbstractArray...)
