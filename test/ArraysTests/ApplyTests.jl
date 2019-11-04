@@ -25,6 +25,9 @@ b = rand(12)
 c = apply(-,a,b)
 test_array(c,a.-b)
 
+c = apply(Float64,-,a,b)
+test_array(c,a.-b)
+
 a = rand(0)
 b = rand(0)
 c = apply(-,a,b)
@@ -76,6 +79,8 @@ x = rand(10)
 y = rand(10)
 v = apply(a,x,y)
 r = [(xi+yi) for (xi,yi) in zip(x,y)]
+test_array(v,r)
+v = apply(Float64,a,x,y)
 test_array(v,r)
 
 a = Fill(bcast(+),10)

@@ -20,6 +20,17 @@ function apply(f,a::AbstractArray...)
 end
 
 """
+    apply(::Type{T},f,a::AbstractArray...) where T
+
+Like [`apply(f,a::AbstractArray...)`](@ref), but the user provides the element type
+of the resulting array in order to circumvent type inference.
+"""
+function apply(::Type{T},f,a::AbstractArray...) where T
+  s = common_size(a...)
+  apply(T,Fill(f,s...),a...)
+end
+
+"""
     apply(f::AbstractArray,a::AbstractArray...) -> AbstractArray
 Applies the kernels in the array of kernels `f` to the entries in the arrays in `a`.
 
@@ -33,13 +44,15 @@ function apply(f::AbstractArray,a::AbstractArray...)
   AppliedArray(f,a...)
 end
 
-#function apply(f::AbstractArray{<:Number},a::AbstractArray...)
-#  f
-#end
-#
-#function apply(f::AbstractArray{<:AbstractArray},a::AbstractArray...)
-#  f
-#end
+"""
+    apply(::Type{T},f::AbstractArray,a::AbstractArray...) where T
+
+Like [`apply(f::AbstractArray,a::AbstractArray...)`](@ref), but the user provides the element type
+of the resulting array in order to circumvent type inference.
+"""
+function apply(::Type{T},f::AbstractArray,a::AbstractArray...) where T
+  AppliedArray(T,f,a...)
+end
 
 """
     apply_all(f::Tuple,a::AbstractArray...) -> Tuple
@@ -68,15 +81,19 @@ end
 struct AppliedArray{T,N,F,G} <: AbstractArray{T,N}
   g::G
   f::F
-  function AppliedArray(g::AbstractArray,f::AbstractArray...)
+  function AppliedArray(::Type{T},g::AbstractArray,f::AbstractArray...) where T
     G = typeof(g)
     F = typeof(f)
-    gi = testitem(g) #Assumes that all kernels return the same type
-    fi = testitems(f...)
-    T = kernel_return_type(gi,fi...)
     f1, = f
     new{T,ndims(f1),F,G}(g,f)
   end
+end
+
+function AppliedArray(g::AbstractArray,f::AbstractArray...)
+  gi = testitem(g) #Assumes that all kernels return the same type
+  fi = testitems(f...)
+  T = kernel_return_type(gi,fi...)
+  AppliedArray(T,g,f...)
 end
 
 function uses_hash(::Type{<:AppliedArray})

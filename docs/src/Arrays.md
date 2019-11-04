@@ -41,7 +41,9 @@ testitems
 
 ```@docs
 apply(f,a::AbstractArray...)
+apply(::Type{T},f,a::AbstractArray...) where T
 apply(f::AbstractArray,a::AbstractArray...)
+apply(::Type{T},f::AbstractArray,a::AbstractArray...) where T
 apply_all
 ```
 
