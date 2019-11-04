@@ -84,7 +84,7 @@ end
 
 This function returns by default the array obtained with
 
-    g = apply_to_field(k,f...)
+    g = apply_to_field_array(k,f...)
     evaluate_field_array(g,x)
 
 However, it can be rewritten for specific kernels in order to improve performance and simplify
@@ -233,7 +233,7 @@ function test_array_of_fields(
 end
 
 """
-    apply_to_field(k,f::AbstractArray...)
+    apply_to_field_array(k,f::AbstractArray...)
 
 Returns an array of fields numerically equivalent to
 
@@ -244,7 +244,7 @@ can be optimized for particular kernels by
 adding new methods to the [`kernel_evaluate`](@ref) and  [`apply_gradient`](@ref) functions
 respectively.
 """
-function apply_to_field(
+function apply_to_field_array(
   k,f::AbstractArray...)
   v = Valued(k)
   apply(v,f...)

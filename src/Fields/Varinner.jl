@@ -12,7 +12,7 @@ end
 """
 function varinner(a::AbstractArray,b::AbstractArray)
   k = Varinner()
-  apply_to_field(k,a,b)
+  apply_to_field_array(k,a,b)
 end
 
 struct Varinner <: Kernel end

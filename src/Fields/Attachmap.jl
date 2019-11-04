@@ -68,7 +68,7 @@ function apply_gradient(k::AddMap,f,phi)
   g = gradient(f)
   jac = gradient(phi)
   k = PhysGrad()
-  apply_to_field(k,g,jac)
+  apply_to_field_array(k,g,jac)
 end
 
 function kernel_evaluate(k::AddMap,x,f,phi)

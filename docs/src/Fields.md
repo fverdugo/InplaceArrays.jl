@@ -67,7 +67,7 @@ field_array_gradients(f...)
 ## Applying kernels to arrays of fields
 
 ```@docs
-apply_to_field(k,f::AbstractArray...)
+apply_to_field_array(k,f::AbstractArray...)
 kernel_evaluate(k,x,f...)
 apply_gradient(k,f...)
 ```

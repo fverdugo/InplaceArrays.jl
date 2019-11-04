@@ -50,6 +50,6 @@ Returns an array of fields numerically equivalent to
 """
 function compose(g::Function,f::AbstractArray...)
   k = Comp(g)
-  apply_to_field(k,f...)
+  apply_to_field_array(k,f...)
 end
 

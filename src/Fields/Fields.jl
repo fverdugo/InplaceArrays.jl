@@ -37,7 +37,7 @@ export ∇
 export Field
 export test_field
 export apply_kernel_to_field
-export apply_to_field
+export apply_to_field_array
 export test_array_of_fields
 export compose
 export lincomb
