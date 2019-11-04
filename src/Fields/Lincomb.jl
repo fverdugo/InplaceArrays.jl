@@ -1,6 +1,6 @@
 
 """
-    lincomb(a::Basis,b::AbstractVector)
+    lincomb(a::Field,b::AbstractVector)
 
 Returns a field `f` with `valuetype(f) <: Number` obtained by the "linear combination" of
 the value of the basis `a` and the vector `b`. That is, the value of the resulting field `f`
@@ -99,12 +99,12 @@ end
 end
 
 function apply_gradient(k::LinComValued,a,b)
-  g = gradient(a)
+  g = field_array_gradient(a)
   lincomb(g,b)
 end
 
 function kernel_evaluate(k::LinComValued,x,a,b)
-  ax = evaluate(a,x)
+  ax = evaluate_field_array(a,x)
   k = LinCom()
   apply(k,ax,b)
 end

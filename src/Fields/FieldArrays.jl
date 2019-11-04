@@ -1,19 +1,19 @@
 
-function evaluate(a::AbstractArray{<:Field},x::AbstractArray)
-  apply(a,x)
-end
-
 """
-    evaluate(a::AbstractArray{<:Field},x::AbstractArray)
+    evaluate_field_array(f::AbstractArray,x::AbstractArray) -> AbstractArray
 
-Evaluates the fields in the array `a` at the locations provided in the array `x`
-(which can be an array of points or an array of vectors of points).
+Evaluates arr the fields in the array `f` at all the vector of points in the 
+array `x` and returns the results in a lazy array.
 
 The result is numerically equivalent to 
 
-    map(evaluate,a,x)
+    map(evaluate_field,a,x)
 """
-function evaluate(a::AbstractArray,x::AbstractArray)
+function evaluate_field_array(a::AbstractArray,x::AbstractArray)
+  _evaluate_field_array(a,x)
+end
+
+function _evaluate_field_array(a::AbstractArray,x::AbstractArray)
   k = Eval()
   apply(k,a,x)
 end
@@ -32,10 +32,50 @@ function kernel_return_type(k::Eval,a,x)
   field_return_type(a,x)
 end
 
+function _evaluate_field_array(a::AbstractArray{<:Field},x::AbstractArray)
+  apply(a,x)
+end
+
+"""
+    evaluate_field_arrays(f::Tuple,x::AbstractArray) -> Tuple
+
+Equivalent to
+
+    tuple((evaluate_field_array(fi,x) for fi in f)...)
+"""
+function evaluate_field_arrays(f::Tuple,x::AbstractArray)
+  _evaluate_field_arrays(x,f...)
+end
+
+function _evaluate_field_arrays(x,a,b...)
+  ax = evaluate_field_array(a,x)
+  bx = evaluate_field_arrays(b,x)
+  (ax,bx...)
+end
+
+function _evaluate_field_arrays(x,a)
+  ax = evaluate_field_array(a,x)
+  (ax,)
+end
+
+"""
+    evaluate(a::AbstractArray{<:Field},x::AbstractArray)
+
+Equivalent to 
+
+    evaluate_field_array(a,x)
+
+But only for arrays `a` that store objects that inherit from `Field`. If this is not the case,
+use `evaluate_field_array(a,x)` instead.
+"""
+function evaluate(a::AbstractArray{<:Field},x::AbstractArray)
+  evaluate_field_array(a,x)
+end
+
 # Optimized version for arrays of fields obtained from a kernel
 # and other arrays
-function evaluate(
-  a::AppliedArray{<:Field,N,F,<:Fill} where {N,F},x::AbstractArray)
+function evaluate_field_array(
+  a::AppliedArray{T,N,F,<:Fill} where {T,N,F},x::AbstractArray)
   kernel_evaluate(a.g.value,x,a.f...)
 end
 
@@ -43,40 +83,33 @@ end
 """
 function kernel_evaluate(k,x,f...)
   a = apply(k,f...)
-  apply(a,x)
+  _evaluate_field_array(a,x)
 end
 
 """
-    gradient(a::AbstractArray)
+    field_array_gradient(a::AbstractArray)
 
 Returns an array containing the gradients of the fields in the array `a`.
 Numerically equivalent to 
 
-    map(gradient,a)
+    map(field_gradient,a)
 """
-function gradient(a::AbstractArray)
+function field_array_gradient(a::AbstractArray)
+  _field_array_gradient(a)
+end
+
+function _field_array_gradient(a::AbstractArray)
   k = Grad()
   apply(k,a)
 end
+
 
 struct Grad <: Kernel end
 
 @inline apply_kernel!(::Nothing,k::Grad,x) = field_gradient(x)
 
-#function evaluate(a::Fill{<:AppliedField},x::AbstractArray)
-#  ai = a.value
-#  fx = apply_all(ai.f,x)
-#  apply(ai.k,fx...)
-#end
-#
-##TODO, perhaps not needed since apply func will take care.
-#gradient(a::Fill) = Fill(gradient(a.value),a.axes)
-#
-##TODO implement also gradient for compressed
-##EDIT, perhaps not needed since apply func will take care.
-
-function gradient(
-  a::AppliedArray{<:Field,N,F,<:Fill} where {N,F})
+function field_array_gradient(
+  a::AppliedArray{T,N,F,<:Fill} where {T,N,F})
   apply_gradient(a.g.value,a.f...)
 end
 
@@ -84,8 +117,19 @@ end
 """
 function apply_gradient(k,f...)
   a = apply(k,f...)
-  g = Grad()
-  apply(g,a)
+  _field_array_gradient(a)
+end
+
+"""
+"""
+function gradient(f::AbstractArray{<:Field})
+  field_array_gradient(f)
+end
+
+"""
+"""
+function field_array_gradients(f...)
+  map(field_array_gradient,f)
 end
 
 """
@@ -127,7 +171,7 @@ function test_array_of_fields(
   cmp::Function=(==);
   grad = nothing)
   
-  ax = evaluate(a,x)
+  ax = evaluate_field_array(a,x)
   test_array(ax,v,cmp)
 
   ca, cfi, cx = field_array_cache(a,x)
@@ -136,7 +180,7 @@ function test_array_of_fields(
   for i in 1:length(a)
     fi = getindex!(ca,a,i)
     xi = getindex!(cx,x,i)
-    fxi = evaluate!(cfi,fi,xi)
+    fxi = evaluate_field!(cfi,fi,xi)
     vi = v[i]
     ti = cmp(fxi,vi)
     t = t && ti
@@ -144,7 +188,7 @@ function test_array_of_fields(
   @test t
 
   if grad != nothing
-    g = gradient(a)
+    g = field_array_gradient(a)
     test_array_of_fields(g,x,grad,cmp)
   end
 
@@ -170,26 +214,19 @@ struct Valued{K} <: Kernel
   end
 end
 
-#@inline function kernel_cache(k::Valued,x...)
-#  apply_kernel_to_field(k.k,x...)
-#end
-
 @inline function apply_kernel!(cache,k::Valued,x...)
   apply_kernel_to_field(k.k,x...)
-  #cache.k = k.k
-  #cache.f = x
-  #cache
 end
 
 function kernel_evaluate(k::Valued,x,f...)
-  fx = evaluate_all(f,x)
+  fx = evaluate_field_arrays(f,x)
   a = apply(k.k,fx...)
 end
 
 for op in (:+,:-)
   @eval begin
     function apply_gradient(k::Valued{BCasted{typeof($op)}},f...)
-      g = gradient_all(f...)
+      g = field_array_gradients(f...)
       apply(k,g...)
     end
   end

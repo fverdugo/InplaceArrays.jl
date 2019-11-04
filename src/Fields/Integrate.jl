@@ -12,8 +12,8 @@ end
 """
 function integrate(
   f::AbstractArray,x,w,j)
-  fx = evaluate(f,x)
-  jx = evaluate(j,x)
+  fx = evaluate_field_array(f,x)
+  jx = evaluate_field_array(j,x)
   k = IntKernel()
   apply(k,fx,w,jx)
 end

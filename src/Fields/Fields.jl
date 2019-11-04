@@ -50,6 +50,8 @@ export evaluate_fields
 export evaluate_fields!
 export field_gradients
 export field_array_cache
+export evaluate_field_array
+export field_array_gradient
 
 import InplaceArrays.Arrays: kernel_cache
 import InplaceArrays.Arrays: apply_kernel!
