@@ -22,7 +22,6 @@ The following functions need to be overloaded:
 The following functions can be also provided optionally
 
 - [`field_gradient(f)`](@ref)
-- [`field_hessian(f)`](@ref)
 - [`field_return_type(f,x)`](@ref)
 
 Moreover, if the [`field_gradient(f)`](@ref) is not provided, a default implementation that uses the following
@@ -42,9 +41,6 @@ cannot be assumed that they are available for an arbitrary field. For this reaso
 exported. The general way of evaluating a gradient of a field is to
 build the gradient with [`field_gradient(f)`](@ref) and evaluating the resulting object. For evaluating
 the hessian, use two times `field_gradient`.
-
-Analogously, if [`field_hessian(f)`](@ref) is not provided, a default implementation that uses the following
-functions will be used.
 
 The interface can be tested with
 
