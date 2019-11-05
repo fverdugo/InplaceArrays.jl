@@ -12,6 +12,7 @@ Pages = [
   "TensorValues.md",
   "Arrays.md",
   "Fields.md",
+  "Polynomials.md",
   ]
 ```
 

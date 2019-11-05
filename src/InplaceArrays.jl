@@ -11,6 +11,7 @@ The module is structured in the following sub-modules:
 - [`InplaceArrays.TensorValues`](@ref)
 - [`InplaceArrays.Arrays`](@ref)
 - [`InplaceArrays.Fields`](@ref)
+- [`InplaceArrays.Polynomials`](@ref)
 
 The exported names are:
 $(EXPORTS)

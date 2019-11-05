@@ -28,6 +28,7 @@ evaluate(f::Field,x)
 evaluate!(cache,f::Field,x)
 gradient(f::Field)
 ∇
+gradient_type
 ```
 
 ## Working with several fields at once

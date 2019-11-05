@@ -9,6 +9,7 @@ pages = [
   "Gridap.TensorValues" => "TensorValues.md",
   "Gridap.Arrays" => "Arrays.md",
   "Gridap.Fields" => "Fields.md",
+  "Gridap.Polynomials" => "Polynomials.md",
  ]
 
 makedocs(
