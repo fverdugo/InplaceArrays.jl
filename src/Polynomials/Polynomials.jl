@@ -16,6 +16,8 @@ import InplaceArrays.Fields: evaluate_field!
 import InplaceArrays.Fields: field_cache
 import InplaceArrays.Fields: evaluate_gradient!
 import InplaceArrays.Fields: gradient_cache
+import InplaceArrays.Fields: evaluate_hessian!
+import InplaceArrays.Fields: hessian_cache
 
 export MonomialBasis
 

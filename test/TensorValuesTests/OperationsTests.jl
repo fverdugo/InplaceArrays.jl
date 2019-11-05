@@ -143,6 +143,13 @@ c = outer(a,e)
 r = MultiValue{Tuple{3,2},Int}(2,4,6,5,10,15)
 @test c == r
 
+e = VectorValue(10,20)
+k = TensorValue(1,2,3,4)
+c = outer(e,k)
+@test c == MultiValue{Tuple{2,2,2}}(10, 20, 20, 40, 30, 60, 40, 80)
+
+@test trace(c) == VectorValue(50,110)
+
 # Linear Algebra
 
 t = TensorValue(10,2,30,4,5,6,70,8,9)

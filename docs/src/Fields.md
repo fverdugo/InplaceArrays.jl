@@ -18,6 +18,8 @@ field_gradient(f)
 field_return_type(f,x)
 evaluate_gradient!(cache,f,x)
 gradient_cache(f,x)
+evaluate_hessian!(cache,f,x)
+hessian_cache(f,x)
 test_field
 ```
 ## Helper functions using fields

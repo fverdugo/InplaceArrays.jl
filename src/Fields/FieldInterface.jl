@@ -22,6 +22,7 @@ The following functions need to be overloaded:
 The following functions can be also provided optionally
 
 - [`field_gradient(f)`](@ref)
+- [`field_hessian(f)`](@ref)
 - [`field_return_type(f,x)`](@ref)
 
 Moreover, if the [`field_gradient(f)`](@ref) is not provided, a default implementation that uses the following
@@ -30,10 +31,20 @@ functions will be used.
 - [`evaluate_gradient!(cache,f,x)`](@ref)
 - [`gradient_cache(f,x)`](@ref)
 
-These two methods are only designed to be called by the default implementation of [`field_gradient(f)`](@ref) and thus
-cannot be assumed that they are available for an arbitrary field. For this reason, these two functions are not
-exported. The general way of evaluating a gradient is to
-build the gradient with [`field_gradient(f)`](@ref) and evaluating the resulting object.
+In order to be able to call `field_gradient` again on the resulting object the following methods have to be
+provided
+
+- [`evaluate_hessian!(cache,f,x)`](@ref)
+- [`hessian_cache(f,x)`](@ref)
+
+These four methods are only designed to be called by the default implementation of [`field_gradient(f)`](@ref) and thus
+cannot be assumed that they are available for an arbitrary field. For this reason, these functions are not
+exported. The general way of evaluating a gradient of a field is to
+build the gradient with [`field_gradient(f)`](@ref) and evaluating the resulting object. For evaluating
+the hessian, use two times `field_gradient`.
+
+Analogously, if [`field_hessian(f)`](@ref) is not provided, a default implementation that uses the following
+functions will be used.
 
 The interface can be tested with
 
@@ -95,7 +106,7 @@ function field_return_type(f,x)
   typeof(evaluate_field(f,x))
 end
 
-# Default gradient implementation
+# Default gradient and hessian implementation
 
 """
 $(SIGNATURES)
@@ -119,6 +130,27 @@ end
   gradient_cache(f.field,x)
 end
 
+@inline function field_gradient(f::FieldGrad)
+  FieldHessian(f.field)
+end
+
+struct FieldHessian{F} <: Field
+  field::F
+  FieldHessian(f) = new{typeof(f)}(f)
+end
+
+@inline function evaluate_field!(cache,f::FieldHessian,x)
+  evaluate_hessian!(cache,f.field,x)
+end
+
+@inline function field_cache(f::FieldHessian,x)
+  hessian_cache(f.field,x)
+end
+
+@inline function field_gradient(f::FieldHessian)
+  @unreachable "Default implementation of 3rt order derivatives not available"
+end
+
 """
 $(SIGNATURES)
 """
@@ -130,6 +162,20 @@ end
 $(SIGNATURES)
 """
 function gradient_cache(cache,x)
+  @abstractmethod
+end
+
+"""
+$(SIGNATURES)
+"""
+function evaluate_hessian!(cache,f,x)
+  @abstractmethod
+end
+
+"""
+$(SIGNATURES)
+"""
+function hessian_cache(cache,x)
   @abstractmethod
 end
 
@@ -154,19 +200,22 @@ end
       f,
       x::AbstractVector{<:Point},
       v::AbstractArray,cmp=(==);
-      grad=nothing)
+      grad=nothing,
+      hessian=nothing)
 
 Function used to test the field interface. `v` is an array containing the expected
 result of evaluating the field `f` at the vector of points `x`. The comparison is performed using 
 the `cmp` function. For fields objects that support the `field_gradient` function, the key-word
 argument `grad` can be used. It should contain the result of evaluating `field_gradient(f)` at x.
+Idem for `hessian`.
 The checks are performed with the `@test` macro.
 """
 function test_field(
   f,
   x::AbstractVector{<:Point},
   v::AbstractArray,cmp=(==);
-  grad=nothing)
+  grad=nothing,
+  hessian=nothing)
 
   w = evaluate_field(f,x)
 
@@ -190,7 +239,7 @@ function test_field(
 
   if grad != nothing
     g = field_gradient(f)
-    test_field(g,x,grad,cmp)
+    test_field(g,x,grad,cmp,grad=hessian)
   end
 
 end

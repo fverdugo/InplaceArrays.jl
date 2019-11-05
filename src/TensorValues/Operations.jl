@@ -99,6 +99,11 @@ outer(a::Real,b::MultiValue) = a*b
   Meta.parse("MultiValue(SMatrix{$D,$Z}($str))")
 end
 
+@generated function outer(a::VectorValue{D},b::MultiValue{Tuple{A,B}}) where {D,A,B}
+  str = join(["a.array[$i]*b.array[$j,$k], "  for k in 1:B for j in 1:A for i in 1:D])
+  Meta.parse("MultiValue(SArray{Tuple{$D,$A,$B}}($str))")
+end
+
 # Linear Algebra
 
 det(a::TensorValue) = det(a.array)
@@ -128,7 +133,21 @@ conj(a::MultiValue) = MultiValue(conj(a.array))
   Meta.parse(str[1:(end-1)])
 end
 
-@inline tr(v::TensorValue) = trace(v)
+@generated function trace(v::MultiValue{Tuple{A,A,B}}) where {A,B}
+  str = ""
+  for k in 1:B
+    for i in 1:A
+      if i !=1
+        str *= " + "
+      end
+      str *= " v.array[$i,$i,$k]"
+    end
+    str *= ", "
+  end
+  Meta.parse("VectorValue($str)")
+end
+
+@inline tr(v::MultiValue) = trace(v)
 
 # Adjoint
 

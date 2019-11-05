@@ -88,6 +88,41 @@ function evaluate_gradient!(cache,f::MonomialBasis{D,T},x) where {D,T}
   r
 end
 
+function hessian_cache(f::MonomialBasis{D,V},x) where {D,V}
+  @assert D == length(eltype(x)) "Incorrect number of point components"
+  np = length(x)
+  ndof = length(f.terms)*n_components(V)
+  xi = testitem(x)
+  T = gradient_type(gradient_type(V,xi),xi)
+  n = 1 + maximum(f.orders)
+  r = CachedArray(zeros(T,(np,ndof)))
+  v = CachedArray(zeros(T,(ndof,)))
+  c = CachedArray(zeros(eltype(T),(D,n)))
+  g = CachedArray(zeros(eltype(T),(D,n)))
+  h = CachedArray(zeros(eltype(T),(D,n)))
+  (r, v, c, g, h)
+end
+
+function evaluate_hessian!(cache,f::MonomialBasis{D,T},x) where {D,T}
+  r, v, c, g, h = cache
+  np = length(x)
+  ndof = length(f.terms) * n_components(T)
+  n = 1 + maximum(f.orders)
+  setsize!(r,(np,ndof))
+  setsize!(v,(ndof,))
+  setsize!(c,(D,n))
+  setsize!(g,(D,n))
+  setsize!(h,(D,n))
+  for i in 1:np
+    @inbounds xi = x[i]
+    _hessian_nd!(v,xi,f.orders,f.terms,c,g,h,T)
+    for j in 1:ndof
+      @inbounds r[i,j] = v[j]
+    end
+  end
+  r
+end
+
 # Helpers
 
 _q_filter(e,o) = true
@@ -234,16 +269,63 @@ end
   m = zero(mutable(G))
   w = zero(V)
   z = zero(T)
-  for j in eachindex(w)
-    for i in eachindex(m)
+  for j in CartesianIndices(w)
+    for i in CartesianIndices(m)
      @inbounds m[i] = z
     end
-    for i in eachindex(s)
+    for i in CartesianIndices(s)
       @inbounds m[i,j] = s[i]
     end
     @inbounds v[k] = m
     k += 1
   end
   k
+end
+
+function _hessian_nd!(
+  v::AbstractVector{G},
+  x,
+  orders,
+  terms::AbstractVector{CartesianIndex{D}},
+  c::AbstractMatrix{T},
+  g::AbstractMatrix{T},
+  h::AbstractMatrix{T},
+  ::Type{V}) where {G,T,D,V}
+
+  dim = D
+  for d in 1:dim
+    _evaluate_1d!(c,x,orders[d],d)
+    _gradient_1d!(g,x,orders[d],d)
+    _hessian_1d!(h,x,orders[d],d)
+  end
+
+  z = zero(mutable(TensorValue{D,T,D*D}))
+  o = one(T)
+  k = 1
+
+  for ci in terms
+
+    s = z
+    for i in eachindex(s)
+      @inbounds s[i] = o
+    end
+    for r in 1:dim
+      for q in 1:dim
+        for d in 1:dim
+          if d != q && d != r
+            @inbounds s[r,q] *= c[d,ci[d]]
+          elseif d == q && d ==r
+            @inbounds s[r,q] *= h[d,ci[d]]
+          else
+            @inbounds s[r,q] *= g[d,ci[d]]
+          end
+        end
+      end
+    end
+
+    k = _set_gradient!(v,s,k,V)
+
+  end
+
 end
 

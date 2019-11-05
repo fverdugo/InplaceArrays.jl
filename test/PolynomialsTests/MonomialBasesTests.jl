@@ -14,28 +14,34 @@ x = fill(xi,np)
 order = 0
 V = Float64
 G = gradient_type(V,xi)
+H = gradient_type(G,xi)
 b = MonomialBasis{2}(V,order)
 
 v = V[1.0,]
 g = G[(0.0, 0.0),]
+h = H[(0.0, 0.0, 0.0, 0.0),]
 
 bx = repeat(permutedims(v),np)
 ∇bx = repeat(permutedims(g),np)
-test_field(b,x,bx,grad=∇bx)
+Hbx = repeat(permutedims(h),np)
+test_field(b,x,bx,grad=∇bx,hessian=Hbx)
 
 # Real-valued Q space with isotropic order
 
 order = 1
 V = Float64
 G = gradient_type(V,xi)
+H = gradient_type(G,xi)
 b = MonomialBasis{2}(V,order)
 
 v = V[1.0, 2.0, 3.0, 6.0]
 g = G[(0.0, 0.0), (1.0, 0.0), (0.0, 1.0), (3.0, 2.0)]
+h = H[(0.0, 0.0, 0.0, 0.0), (0.0, 0.0, 0.0, 0.0), (0.0, 0.0, 0.0, 0.0), (0.0, 1.0, 1.0, 0.0)]
 
 bx = repeat(permutedims(v),np)
 ∇bx = repeat(permutedims(g),np)
-test_field(b,x,bx,grad=∇bx)
+Hbx = repeat(permutedims(h),np)
+test_field(b,x,bx,grad=∇bx,hessian=Hbx)
 
 # Real-valued Q space with an isotropic order
 
@@ -51,17 +57,12 @@ bx = repeat(permutedims(v),np)
 ∇bx = repeat(permutedims(g),np)
 test_field(b,x,bx,grad=∇bx)
 
-#v = V[1.0, 2.0, 3.0, 6.0]
-#g = G[(0.0, 0.0), (1.0, 0.0), (0.0, 1.0), (3.0, 2.0)]
-#bx = repeat(permutedims(v),np)
-#∇bx = repeat(permutedims(g),np)
-#test_field(b,x,bx,grad=∇bx)
-
 # Vector-valued Q space with isotropic order
 
 order = 1
 V = VectorValue{3,Float64}
 G = gradient_type(V,xi)
+H = gradient_type(G,xi)
 b = MonomialBasis{2}(V,order)
 
 v = V[[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0],
@@ -76,9 +77,24 @@ g = G[[0.0 0.0 0.0; 0.0 0.0 0.0], [0.0 0.0 0.0; 0.0 0.0 0.0],
       [0.0 0.0 0.0; 0.0 0.0 1.0], [3.0 0.0 0.0; 2.0 0.0 0.0],
       [0.0 3.0 0.0; 0.0 2.0 0.0], [0.0 0.0 3.0; 0.0 0.0 2.0]]
 
+h = H[
+      (0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0),
+      (0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0),
+      (0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0),
+      (0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0),
+      (0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0),
+      (0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0),
+      (0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0),
+      (0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0),
+      (0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0),
+      (0.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0),
+      (0.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0),
+      (0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,1.0,0.0)]
+
 bx = repeat(permutedims(v),np)
 ∇bx = repeat(permutedims(g),np)
-test_field(b,x,bx,grad=∇bx)
+Hbx = repeat(permutedims(h),np)
+test_field(b,x,bx,grad=∇bx,hessian=Hbx)
 
 # Vector-valued Q space with an-isotropic order
 
