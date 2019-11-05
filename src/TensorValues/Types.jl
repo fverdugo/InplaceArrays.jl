@@ -198,6 +198,20 @@ end
 
 @pure _s(s::Size{T}) where T = T
 
+"""
+    n_components(::Type)
+
+Returns the number of components stored in the given type.
+Implemented for types `<:Real` and `<:MultiValue`.
+Also available for instances of these types.
+"""
+n_components(::Type{<: MultiValue{S,T,N,L} where {S,T,N}}  ) where L = L
+n_components(a::T) where T<:MultiValue = n_components(T)
+
+n_components(::Type{<:Real}) = 1
+n_components(a::T) where T<:Real = 1
+
+
 # Custom type printing
 
 function show(io::IO,v::MultiValue)

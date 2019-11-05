@@ -42,6 +42,7 @@ export inner, outer, meas
 export mutable
 export trace
 export symmetic_part
+export n_components
 
 import Base: show
 import Base: zero, one

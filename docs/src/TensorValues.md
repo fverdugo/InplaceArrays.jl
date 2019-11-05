@@ -20,6 +20,11 @@ TensorValue
 ```@docs
 mutable
 ```
+## Info getters
+
+```@docs
+n_components
+```
 
 ## Operations
 

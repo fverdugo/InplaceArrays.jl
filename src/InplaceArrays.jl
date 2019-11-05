@@ -35,4 +35,6 @@ export bcast
 
 include("Fields/Fields.jl")
 
+include("Polynomials/Polynomials.jl")
+
 end # module

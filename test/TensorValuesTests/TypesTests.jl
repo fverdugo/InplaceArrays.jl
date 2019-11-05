@@ -253,4 +253,11 @@ m = zero(M)
 v = VectorValue(m)
 @test isa(v,VectorValue{3,Int})
 
+@test n_components(Int) == 1
+@test n_components(Float64) == 1
+@test n_components(1.0) == 1
+@test n_components(1) == 1
+@test n_components(VectorValue{3,Float64}) == 3
+@test n_components(VectorValue(1,2,3)) == 3
+
 end # module TypesTests
