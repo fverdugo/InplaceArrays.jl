@@ -1,6 +1,7 @@
 module FieldInterfaceTests
 
 using Test
+using InplaceArrays.TensorValues
 using InplaceArrays.Fields
 using InplaceArrays.Fields: MockField
 
@@ -32,5 +33,10 @@ Tfg = field_return_types((f,g),x)
 ∇g = field_gradient(g)
 ∇fg = field_gradients(f,g)
 @test (∇f,∇g) == ∇fg
+
+x = Point(1,2)
+@test gradient_type(Float64,x) == VectorValue{2,Float64}
+@test gradient_type(VectorValue{2,Float64},x) == TensorValue{2,Float64,4}
+@test gradient_type(VectorValue{3,Float64},x) == MultiValue{Tuple{2,3},Float64,2,6}
 
 end # module

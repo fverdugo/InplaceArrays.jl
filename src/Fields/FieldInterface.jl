@@ -24,6 +24,17 @@ The following functions can be also provided optionally
 - [`field_gradient(f)`](@ref)
 - [`field_return_type(f,x)`](@ref)
 
+Moreover, if the [`field_gradient(f)`](@ref) is not provided, a default implementation that uses the following
+functions will be used.
+
+- [`evaluate_gradient!(cache,f,x)`](@ref)
+- [`gradient_cache(f,x)`](@ref)
+
+These two methods are only designed to be called by the default implementation of [`field_gradient(f)`](@ref) and thus
+cannot be assumed that they are available for an arbitrary field. For this reason, these two functions are not
+exported. The general way of evaluating a gradient is to
+build the gradient with [`field_gradient(f)`](@ref) and evaluating the resulting object.
+
 The interface can be tested with
 
 - [`test_field`](@ref)
@@ -71,14 +82,6 @@ function evaluate_field!(cache,f,x)
   @abstractmethod
 end
 
-"""
-$(SIGNATURES)
-
-Returns another field that represents the gradient of the given one
-"""
-function field_gradient(f)
-  @abstractmethod
-end
 
 # Default return type
 
@@ -90,6 +93,44 @@ It returns `typeof(evaluate_field(f,x))` by default.
 """
 function field_return_type(f,x)
   typeof(evaluate_field(f,x))
+end
+
+# Default gradient implementation
+
+"""
+$(SIGNATURES)
+
+Returns another field that represents the gradient of the given one
+"""
+function field_gradient(f)
+  FieldGrad(f)
+end
+
+struct FieldGrad{F} <: Field
+  field::F
+  FieldGrad(f) = new{typeof(f)}(f)
+end
+
+@inline function evaluate_field!(cache,f::FieldGrad,x)
+  evaluate_gradient!(cache,f.field,x)
+end
+
+@inline function field_cache(f::FieldGrad,x)
+  gradient_cache(f.field,x)
+end
+
+"""
+$(SIGNATURES)
+"""
+function evaluate_gradient!(cache,f,x)
+  @abstractmethod
+end
+
+"""
+$(SIGNATURES)
+"""
+function gradient_cache(cache,x)
+  @abstractmethod
 end
 
 # Implement kernel interface
@@ -155,6 +196,14 @@ function test_field(
 end
 
 # Some API
+
+"""
+    gradient_type(::Type{T},x::Point) where T
+"""
+function gradient_type(::Type{T},x::Point) where T
+  typeof(outer(zero(x),zero(T)))
+end
+
 
 """
     evaluate(f::Field,x)

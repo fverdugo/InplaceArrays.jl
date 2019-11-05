@@ -27,6 +27,7 @@ function MonomialBasis{D}(
 end
 
 function field_cache(f::MonomialBasis{D,T},x) where {D,T}
+  @assert D == length(eltype(x)) "Incorrect number of point components"
   np = length(x)
   ndof = length(f.terms)*n_components(T)
   n = 1 + maximum(f.orders)
@@ -45,7 +46,8 @@ function evaluate_field!(cache,f::MonomialBasis{D,T},x) where {D,T}
   setsize!(v,(ndof,))
   setsize!(c,(D,n))
   for i in 1:np
-    _evaluate_nd!(v,x[i],f.orders,f.terms,c)
+    @inbounds xi = x[i]
+    _evaluate_nd!(v,xi,f.orders,f.terms,c)
     for j in 1:ndof
       @inbounds r[i,j] = v[j]
     end
@@ -53,24 +55,38 @@ function evaluate_field!(cache,f::MonomialBasis{D,T},x) where {D,T}
   r
 end
 
-#function evaluate_field!(cache,f::MonomialBasisGrad{D,T},x) where {D,T}
-#  r, v, c, g = cache
-#  np = length(x)
-#  ndof = length(f.terms)
-#  n = 1 + maximum(f.orders)
-#  setsize!(r,(np,nodf))
-#  setsize!(v,(nodf,))
-#  setsize!(c,(D,n))
-#  setsize!(g,(D,n))
-#  for i in 1:np
-#    _gradient_nd!(v,x[i],f.orders,f.terms,c,g,V)
-#    for j in 1:ndof
-#      @inbounds r[i,j] = v[j]
-#    end
-#  end
-#  r
-#end
+function gradient_cache(f::MonomialBasis{D,V},x) where {D,V}
+  @assert D == length(eltype(x)) "Incorrect number of point components"
+  np = length(x)
+  ndof = length(f.terms)*n_components(V)
+  xi = testitem(x)
+  T = gradient_type(V,xi)
+  n = 1 + maximum(f.orders)
+  r = CachedArray(zeros(T,(np,ndof)))
+  v = CachedArray(zeros(T,(ndof,)))
+  c = CachedArray(zeros(eltype(T),(D,n)))
+  g = CachedArray(zeros(eltype(T),(D,n)))
+  (r, v, c, g)
+end
 
+function evaluate_gradient!(cache,f::MonomialBasis{D,T},x) where {D,T}
+  r, v, c, g = cache
+  np = length(x)
+  ndof = length(f.terms) * n_components(T)
+  n = 1 + maximum(f.orders)
+  setsize!(r,(np,ndof))
+  setsize!(v,(ndof,))
+  setsize!(c,(D,n))
+  setsize!(g,(D,n))
+  for i in 1:np
+    @inbounds xi = x[i]
+    _gradient_nd!(v,xi,f.orders,f.terms,c,g,T)
+    for j in 1:ndof
+      @inbounds r[i,j] = v[j]
+    end
+  end
+  r
+end
 
 # Helpers
 

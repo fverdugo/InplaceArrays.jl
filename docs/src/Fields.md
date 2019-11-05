@@ -16,6 +16,8 @@ evaluate_field!(cache,f,x)
 field_cache(f,x)
 field_gradient(f)
 field_return_type(f,x)
+evaluate_gradient!(cache,f,x)
+gradient_cache(f,x)
 test_field
 ```
 ## Helper functions using fields
