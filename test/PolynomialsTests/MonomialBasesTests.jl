@@ -9,6 +9,20 @@ xi = Point(2,3)
 np = 5
 x = fill(xi,np)
 
+# order 0 degenerated case
+
+order = 0
+V = Float64
+G = gradient_type(V,xi)
+b = MonomialBasis{2}(V,order)
+
+v = V[1.0,]
+g = G[(0.0, 0.0),]
+
+bx = repeat(permutedims(v),np)
+∇bx = repeat(permutedims(g),np)
+test_field(b,x,bx,grad=∇bx)
+
 # Real-valued Q space with isotropic order
 
 order = 1

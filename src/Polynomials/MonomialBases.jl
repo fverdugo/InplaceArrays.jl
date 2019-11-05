@@ -119,6 +119,18 @@ function _gradient_1d!(v::AbstractMatrix{T},x,order,d) where T
   end
 end
 
+function _hessian_1d!(v::AbstractMatrix{T},x,order,d) where T
+  n = order + 1
+  z = zero(T)
+  @inbounds v[d,1] = z
+  if n>1
+    @inbounds v[d,2] = z
+  end
+  for i in 3:n
+    @inbounds v[d,i] = (i-1)*(i-2)*x[d]^(i-3)
+  end
+end
+
 function _evaluate_nd!(
   v::AbstractVector{V},
   x,
