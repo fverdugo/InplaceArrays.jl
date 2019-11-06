@@ -1,4 +1,6 @@
 """
+This module provides a collection of multivariate polynomial bases.
+
 The exported names are:
 
 $(EXPORTS)

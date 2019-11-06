@@ -1,5 +1,12 @@
 
 """
+    struct MonomialBasis{...} <: Field
+
+Type representing a basis of multivariate scalar-valued, vector-valued, or
+tensor-valued, iso- or aniso-tropic monomials. The type parameters and fields of this `struct` are not public, they are 
+private implementation details.  
+This type fully implements the [`Field`](@ref) interface, with up to second order
+derivatives.
 """
 struct MonomialBasis{D,T} <: Field
   orders::NTuple{D,Int}
@@ -11,6 +18,11 @@ struct MonomialBasis{D,T} <: Field
 end
 
 """
+    MonomialBasis{D}(::Type{T}, orders::Tuple [, filter::Function]) where {D,T}
+
+This version of the constructor allows to pass a tuple `orders` containing the
+polynomial order to be used in each of the `D` dimensions in order to  construct
+and anisotropic tensor-product space.
 """
 function MonomialBasis{D}(
   ::Type{T}, orders::NTuple{D,Int}, filter::Function=_q_filter) where {D,T}
@@ -20,6 +32,29 @@ function MonomialBasis{D}(
 end
 
 """
+    MonomialBasis{D}(::Type{T}, order::Int [, filter::Function]) where {D,T}
+
+Returns an instance of `MonomialBasis` representing a multivariate polynomial basis
+in `D` dimensions, of polynomial degree `order`, whose value is represented by the type `T`.
+The type `T` is typically `<:Number`, e.g., `Float64` for scalar-valued functions and `VectorValue{D,Float64}`
+for vector-valued ones.
+
+# Filter function
+
+The `filter` function is used to select which terms of the tensor product space
+of order `order` in `D` dimensions are to be used. If the filter is not provided, the full tensor-product
+space is used by default leading to a multivariate polynomial space of type Q.
+The signature of the filter function is
+
+    (e,order) -> Bool
+
+where `e` is a tuple of `D` integers containing the exponents of a multivariate monomial. The following filters
+are used to select well known polynomial spaces
+
+- Q space: `(e,order) -> true`
+- P space: `(e,order) -> sum(e) <= order`
+- "Serendipity" space: `(e,order) -> sum( ( i for i in e if i>1 ) ) <= order`
+
 """
 function MonomialBasis{D}(
   ::Type{T}, order::Int, filter::Function=_q_filter) where {D,T}
