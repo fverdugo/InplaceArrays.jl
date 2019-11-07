@@ -23,9 +23,12 @@ import InplaceArrays.Fields: hessian_cache
 
 export MonomialBasis
 export QGradMonomialBasis
+export QCurlGradMonomialBasis
 
 include("MonomialBases.jl")
 
 include("QGradMonomialBases.jl")
+
+include("QCurlGradMonomialBases.jl")
 
 end # module

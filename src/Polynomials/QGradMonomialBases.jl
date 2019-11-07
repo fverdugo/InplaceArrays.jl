@@ -1,6 +1,6 @@
 
 """
-    QGradMonomialBasis{...} <: Field
+    struct QGradMonomialBasis{...} <: Field
 
 This type implements a multivariate vector-valued polynomial basis
 spanning the space needed for Nedelec reference elements on n-cubes.
@@ -99,7 +99,9 @@ end
 
 # Helpers
 
-_ndofs_qgrad(f::QGradMonomialBasis{D}) where D = D*f.order*(f.order+1)^(D-1)
+#_ndofs_qgrad(f::QGradMonomialBasis{D}) where D = D*f.order*(f.order+1)^(D-1)
+
+_ndofs_qgrad(f::QGradMonomialBasis{D}) where D = D*(length(f.terms))
 
 function _prepare_perms(D)
   perms = zeros(Int,D,D)
