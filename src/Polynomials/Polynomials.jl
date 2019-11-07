@@ -22,7 +22,10 @@ import InplaceArrays.Fields: evaluate_hessian!
 import InplaceArrays.Fields: hessian_cache
 
 export MonomialBasis
+export QGradMonomialBasis
 
 include("MonomialBases.jl")
+
+include("QGradMonomialBases.jl")
 
 end # module
