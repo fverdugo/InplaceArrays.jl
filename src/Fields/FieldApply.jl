@@ -32,42 +32,6 @@ function apply_kernel_gradient(k,f...)
   @abstractmethod
 end
 
-@inline apply_kernel_gradient(k::BCasted{typeof(+)},a) = field_gradient(a)
-
-@inline apply_kernel_gradient(k::BCasted{typeof(-)},a) = apply_kernel_to_field(k,field_gradient(a))
-
-for op in (:+,:-)
-  @eval begin
-    @inline function apply_kernel_gradient(k::BCasted{typeof($op)},a,b)
-      ga = field_gradient(a)
-      gb = field_gradient(b)
-      apply_kernel_to_field(k,ga,gb)
-    end
-    @inline function apply_kernel_gradient(k::BCasted{typeof($op)},f...)
-      apply_kernel_to_field(k,field_gradients(f...)...)
-    end
-  end
-end
-
-# Arithmetic operations on fields
-
-# TODO: test these ones
-for op in (:+,:-)
-  @eval begin
-    function ($op)(a::Field)
-      apply_kernel_to_field(bcast($op),a)
-    end
-  end
-end
-
-for op in (:+,:-,:*)
-  @eval begin
-    function ($op)(a::Field,b::Field)
-      apply_kernel_to_field(bcast($op),a,b)
-    end
-  end
-end
-
 # Result of applying a kernel to the value of some fields
 
 struct AppliedField{K,F} <: Field

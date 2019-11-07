@@ -84,25 +84,6 @@ Equivalent to
 """
 cross(::typeof(∇),f) = curl(f)
 
-# Operations
-
-# TODO perhaps move to another file
-
-for op in (:tr, :transpose, :adjoint, :symmetic_part)
-  @eval begin
-
-    function ($op)(f::Field)
-      apply_kernel_to_field(bcast($op),f)
-    end
-
-    function ($op)(f::AbstractArray{<:Field})
-      apply_to_field_array(bcast($op),f)
-    end
-
-  end
-
-end
-
 # Helpers
 
 grad2curl(f::Field) = apply_kernel_to_field(bcast(_curl_kernel),f)

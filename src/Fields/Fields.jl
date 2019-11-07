@@ -64,6 +64,7 @@ import InplaceArrays.Arrays: kernel_cache
 import InplaceArrays.Arrays: apply_kernel!
 import InplaceArrays.Arrays: kernel_return_type
 import InplaceArrays.TensorValues: outer
+import InplaceArrays.TensorValues: inner
 import InplaceArrays.TensorValues: symmetic_part
 import Base: +, - , *
 import LinearAlgebra: cross
@@ -90,6 +91,8 @@ include("Varinner.jl")
 include("Attachmap.jl")
 
 include("Integrate.jl")
+
+include("FieldOperations.jl")
 
 include("DiffOperators.jl")
 

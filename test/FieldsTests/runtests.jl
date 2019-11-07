@@ -22,6 +22,8 @@ using Test
 
 @testset "Integrate" begin include("IntegrateTests.jl") end
 
+@testset "FieldOperations" begin include("FieldOperationsTests.jl") end
+
 @testset "DiffOperators" begin include("DiffOperatorsTests.jl") end
 
 end # module
