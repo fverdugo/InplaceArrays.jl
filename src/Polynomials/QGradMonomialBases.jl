@@ -1,6 +1,12 @@
 
 """
-    QGradMonomialBasis{D,T} <: Field
+    QGradMonomialBasis{...} <: Field
+
+This type implements a multivariate vector-valued polynomial basis
+spanning the space needed for Nedelec reference elements on n-cubes.
+The type parameters and fields of this `struct` are not public.  
+This type fully implements the [`Field`](@ref) interface, with up to first order
+derivatives.
 """
 struct QGradMonomialBasis{D,T} <: Field
   order::Int
@@ -13,8 +19,12 @@ end
 
 """
     QGradMonomialBasis{D}(::Type{T},order::Int) where {D,T}
+
+Returns a `QGradMonomialBasis` object. `D` is the dimension
+of the coordinate space and `T` is the type of the components in the vector-value.
 """
 function QGradMonomialBasis{D}(::Type{T},order::Int) where {D,T}
+  @assert T<:Real "T needs to be <:Real since represents the type of the components of the vector value"
   _t = tfill(order+1,Val{D-1}())
   t = (order,_t...)
   terms = CartesianIndices(t)
