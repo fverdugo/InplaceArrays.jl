@@ -93,4 +93,27 @@ integrate(f,x,w,j)
 integrate(f::AbstractArray,x,w,j)
 ```
 
+## Differential operators
+
+In addition to the `gradient` function already discussed, the following differential operators
+are defined.
+
+```@docs
+divergence(f)
+symmetric_gradient(f)
+ε
+curl(f)
+grad2curl(f)
+laplacian(f)
+Δ
+```
+
+A fancy way of typing the differential operators is via the nabla object defined in the library.
+
+```@docs
+(*)(::typeof(∇),f)
+outer(::typeof(∇),f)
+outer(f,::typeof(∇))
+cross(::typeof(∇),f)
+```
 

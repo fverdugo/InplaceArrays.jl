@@ -126,14 +126,12 @@ conj(a::MultiValue) = MultiValue(conj(a.array))
 
 # Trace
 
-"""
-"""
-@generated function trace(v::TensorValue{D}) where D
+@generated function tr(v::TensorValue{D}) where D
   str = join([" v.array.data[$i+$((i-1)*D)] +" for i in 1:D ])
   Meta.parse(str[1:(end-1)])
 end
 
-@generated function trace(v::MultiValue{Tuple{A,A,B}}) where {A,B}
+@generated function tr(v::MultiValue{Tuple{A,A,B}}) where {A,B}
   str = ""
   for k in 1:B
     for i in 1:A
@@ -147,12 +145,15 @@ end
   Meta.parse("VectorValue($str)")
 end
 
-@inline tr(v::MultiValue) = trace(v)
-
-# Adjoint
+# Adjoint and transpose
 
 function adjoint(v::TensorValue)
   t = adjoint(v.array)
+  TensorValue(t)
+end
+
+function transpose(v::TensorValue)
+  t = transpose(v.array)
   TensorValue(t)
 end
 

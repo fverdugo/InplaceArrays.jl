@@ -33,6 +33,5 @@ inner
 outer
 meas
 symmetic_part
-trace
 ```
 

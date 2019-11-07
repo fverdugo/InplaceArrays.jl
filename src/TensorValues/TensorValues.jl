@@ -40,7 +40,6 @@ export VectorValue
 export inner, outer, meas
 #export det, inv, tr, dot, norm
 export mutable
-export trace
 export symmetic_part
 export n_components
 
@@ -56,6 +55,7 @@ import Base: convert
 import Base: CartesianIndices
 import Base: LinearIndices
 import Base: adjoint
+import Base: transpose
 
 import LinearAlgebra: det, inv, tr, dot, norm
 

@@ -53,11 +53,23 @@ export field_array_cache
 export evaluate_field_array
 export field_array_gradient
 export gradient_type
+export curl
+export grad2curl
+export laplacian
+export divergence
+export Δ
+export ε
 
 import InplaceArrays.Arrays: kernel_cache
 import InplaceArrays.Arrays: apply_kernel!
 import InplaceArrays.Arrays: kernel_return_type
+import InplaceArrays.TensorValues: outer
+import InplaceArrays.TensorValues: symmetic_part
 import Base: +, - , *
+import LinearAlgebra: cross
+import LinearAlgebra: tr
+import Base: transpose
+import Base: adjoint
 
 include("FieldInterface.jl")
 
@@ -78,5 +90,7 @@ include("Varinner.jl")
 include("Attachmap.jl")
 
 include("Integrate.jl")
+
+include("DiffOperators.jl")
 
 end # module

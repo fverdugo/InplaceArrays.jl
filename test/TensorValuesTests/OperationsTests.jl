@@ -148,7 +148,7 @@ k = TensorValue(1,2,3,4)
 c = outer(e,k)
 @test c == MultiValue{Tuple{2,2,2}}(10, 20, 20, 40, 30, 60, 40, 80)
 
-@test trace(c) == VectorValue(50,110)
+@test tr(c) == VectorValue(50,110)
 
 # Linear Algebra
 
@@ -206,11 +206,11 @@ v = VectorValue(1,0)
 @test conj(v) == v'
 
 t = TensorValue(1,2,3,4)
-@test trace(t) == 5
+@test tr(t) == 5
 @test tr(t) == 5
 
 t = TensorValue(1,2,3,4,5,6,7,8,9)
-@test trace(t) == 15
+@test tr(t) == 15
 @test tr(t) == 15
 
 @test symmetic_part(t) == TensorValue(1.0, 3.0, 5.0, 3.0, 5.0, 7.0, 5.0, 7.0, 9.0)
@@ -218,6 +218,12 @@ t = TensorValue(1,2,3,4,5,6,7,8,9)
 a = TensorValue(1,2,3,4)
 b = a'
 @test adjoint(a) == b
+@test b == TensorValue(1,3,2,4)
+@test a*b == TensorValue(10,14,14,20)
+
+a = TensorValue(1,2,3,4)
+b = a'
+@test transpose(a) == b
 @test b == TensorValue(1,3,2,4)
 @test a*b == TensorValue(10,14,14,20)
 
