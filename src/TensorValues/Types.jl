@@ -229,3 +229,15 @@ end
 """
 mutable(::Type{MultiValue{S,T,N,L}}) where {S,T,N,L} = MArray{S,T,N,L}
 
+"""
+"""
+function change_eltype(::Type{MultiValue{S,T,N,L}},::Type{E}) where {S,T,N,L,E}
+  MultiValue{S,E,N,L}
+end
+
+change_eltype(a::T,::Type{E}) where {T<:MultiValue,E} = change_eltype(T,E)
+
+change_eltype(::Type{<:Real},::Type{E}) where E = E
+
+change_eltype(a::T,::Type{E}) where {T<:Real,E} = change_eltype(T,E)
+

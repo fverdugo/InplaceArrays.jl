@@ -42,6 +42,7 @@ export inner, outer, meas
 export mutable
 export symmetic_part
 export n_components
+export change_eltype
 
 import Base: show
 import Base: zero, one

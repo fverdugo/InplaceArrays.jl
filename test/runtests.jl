@@ -14,6 +14,8 @@ using Test
 
 @time @testset "Polynomials" begin include("PolynomialsTests/runtests.jl") end
 
+@time @testset "ReferenceFEs" begin include("ReferenceFEsTests/runtests.jl") end
+
 include("../bench/runbenchs.jl")
 
 end # module

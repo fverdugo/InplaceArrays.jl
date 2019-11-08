@@ -1,7 +1,7 @@
 
 # Home
 
-Documentation for Gridap.jl
+Documentation the Gridap.jl library
 
 ```@contents
 Pages = [
@@ -13,6 +13,7 @@ Pages = [
   "Arrays.md",
   "Fields.md",
   "Polynomials.md",
+  "ReferenceFEs.md",
   ]
 ```
 

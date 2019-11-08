@@ -10,6 +10,7 @@ pages = [
   "Gridap.Arrays" => "Arrays.md",
   "Gridap.Fields" => "Fields.md",
   "Gridap.Polynomials" => "Polynomials.md",
+  "Gridap.ReferenceFEs" => "ReferenceFEs.md",
  ]
 
 makedocs(

@@ -260,4 +260,12 @@ v = VectorValue(m)
 @test n_components(VectorValue{3,Float64}) == 3
 @test n_components(VectorValue(1,2,3)) == 3
 
+a = VectorValue(1,2,3,4)
+@test change_eltype(a,Float64) == VectorValue{4,Float64}
+
+a = TensorValue(1,2,3,4)
+@test change_eltype(a,Float64) == TensorValue{2,Float64,4}
+
+@test change_eltype(1,Float64) == Float64
+
 end # module TypesTests

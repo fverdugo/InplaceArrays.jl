@@ -12,6 +12,7 @@ The module is structured in the following sub-modules:
 - [`InplaceArrays.Arrays`](@ref)
 - [`InplaceArrays.Fields`](@ref)
 - [`InplaceArrays.Polynomials`](@ref)
+- [`InplaceArrays.ReferenceFEs`](@ref)
 
 The exported names are:
 $(EXPORTS)
@@ -28,14 +29,10 @@ include("TensorValues/TensorValues.jl")
 
 include("Arrays/Arrays.jl")
 
-using InplaceArrays.Arrays
-export array_cache
-export getindex!
-export apply
-export bcast
-
 include("Fields/Fields.jl")
 
 include("Polynomials/Polynomials.jl")
+
+include("ReferenceFEs/ReferenceFEs.jl")
 
 end # module
