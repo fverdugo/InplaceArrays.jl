@@ -13,6 +13,48 @@ In other words, the resulting array is numerically equivalent to:
 
 
 See the [`apply_kernel`](@ref) function for details.
+
+# Examples
+
+Using a function as kernel
+
+```jldoctest
+using InplaceArrays.Arrays
+
+a = collect(0:5)
+b = collect(10:15)
+
+c = apply(+,a,b)
+
+println(c)
+
+# output
+[10, 12, 14, 16, 18, 20]
+```
+
+Using a user-defined kernel
+
+```jldoctest
+using InplaceArrays.Arrays
+import InplaceArrays.Arrays: apply_kernel!
+
+a = collect(0:5)
+b = collect(10:15)
+
+struct MySum <: Kernel end
+
+apply_kernel!(cache,::MySum,x,y) = x + y
+
+k = MySum()
+
+c = apply(k,a,b)
+
+println(c)
+
+# output
+[10, 12, 14, 16, 18, 20]
+```
+
 """
 function apply(f,a::AbstractArray...)
   s = common_size(a...)
@@ -39,6 +81,25 @@ The resulting array has the same entries as the one obtained with:
     map( apply_kernel, f, a...)
 
 See the [`apply_kernel`](@ref) function for details.
+
+# Example
+
+"Evaluating" an array of functions
+
+```jldoctest
+using InplaceArrays.Arrays
+
+f = [+,-,max,min]
+a = [1,2,3,4]
+b = [4,3,2,1]
+
+c = apply(f,a,b)
+
+println(c)
+
+# output
+[5, -1, 3, 1]
+```
 """
 function apply(f::AbstractArray,a::AbstractArray...)
   AppliedArray(f,a...)
@@ -60,6 +121,26 @@ end
 Numerically equivalent to 
 
     tuple( ( apply(fi, a...) for fi in f)... )
+
+# Examples
+
+```jldoctest
+using InplaceArrays.Arrays
+
+a = [1,2,3,4]
+b = [4,3,2,1]
+
+c = apply_all( (+,-), a, b)
+
+# Equivalent to
+# c = ( apply(+,a,b), apply(-,a,b) )
+
+println(c)
+
+# output
+([5, 5, 5, 5], [-3, -1, 1, 3])
+
+```
 """
 function apply_all(f::Tuple,a::AbstractArray...)
   _apply_several(a,f...)

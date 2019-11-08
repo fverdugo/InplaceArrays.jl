@@ -8,6 +8,30 @@ It defaults to
 
     getindex!(cache,a::AbstractArray,i...) = a[i...]
 
+# Examples
+
+Iterating over an array using the `getindex!` function
+
+```jldoctest
+using InplaceArrays.Arrays
+
+a = collect(10:15)
+
+cache = array_cache(a)
+for i in eachindex(a)
+  ai = getindex!(cache,a,i)
+  println("\$i -> \$ai")
+end
+
+# output
+1 -> 10
+2 -> 11
+3 -> 12
+4 -> 13
+5 -> 14
+6 -> 15
+```
+
 """
 getindex!(cache,a::AbstractArray,i...) = a[i...]
 
@@ -89,6 +113,25 @@ $(TYPEDSIGNATURES)
 Returns an arbitrary instance of `eltype(a)`. The default returned value is the first entry
 in the array if `length(a)>0` and `testvalue(eltype(a))` if `length(a)==0`
 See the [`testvalue`](@ref) function.
+
+# Examples
+
+```jldoctest
+using InplaceArrays.Arrays
+
+a = collect(3:10)
+ai = testitem(a)
+
+b = Int[]
+bi = testitem(b)
+
+(ai, bi)
+
+# output
+(3, 0)
+
+```
+
 """
 function testitem(a::AbstractArray{T}) where T
   if length(a) >0
@@ -140,6 +183,23 @@ end
 
 Returns a tuple with the result of `testitem` applied to each of the
 arrays in `b`.
+
+# Examples
+
+```jldoctest
+using InplaceArrays.Arrays
+
+a = collect(3:10)
+b = Int[]
+c = Float64[]
+d = ones(10)
+
+testitems(a,b,c,d)
+
+# output
+(3, 0, 0.0, 1.0)
+
+```
 """
 function testitems(a::AbstractArray,b::AbstractArray...)
   va = testitem(a)
@@ -178,6 +238,33 @@ end
 
 Extracts the `i`-th entry of all arrays in the tuple `a` using the caches in the tuple
 `c`. The results is a tuple containing each one of the extracted entries.
+
+# Example
+
+Iterating over three different arrays simultaneously using `getitems!`
+
+```jldoctest
+using InplaceArrays.Arrays
+
+a = collect(0:5)
+b = collect(10:15)
+c = collect(20:25)
+
+caches = array_caches(a,b,c)
+for i in eachindex(a)
+   s = getitems!(caches,(a,b,c),i)
+   println("\$i -> \$s")
+end
+
+# output
+1 -> (0, 10, 20)
+2 -> (1, 11, 21)
+3 -> (2, 12, 22)
+4 -> (3, 13, 23)
+5 -> (4, 14, 24)
+6 -> (5, 15, 25)
+```
+
 """
 @inline function getitems!(cf::Tuple,a::Tuple{Vararg{<:AbstractArray}},i...)
   _getitems!(cf,i,a...)
