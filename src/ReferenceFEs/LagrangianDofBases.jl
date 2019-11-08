@@ -27,7 +27,7 @@ end
 # Node major implementation
 function _generate_dof_layout(::Type{T},nnodes::Integer) where T<:MultiValue
   ncomps = n_components(T)
-  V = VectorValue{ncomps,Int}
+  V = change_eltype(T,Int)
   ndofs = ncomps*nnodes
   dof_to_comp = zeros(Int,ndofs)
   dof_to_node = zeros(Int,ndofs)

@@ -2,7 +2,7 @@
 CurrentModule = InplaceArrays.ReferenceFEs
 ```
 
-# Gridap.Polynomials
+# Gridap.ReferenceFEs
 
 ```@autodocs
 Modules = [ReferenceFEs,]

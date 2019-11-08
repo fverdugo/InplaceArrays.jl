@@ -19,6 +19,7 @@ TensorValue
 
 ```@docs
 mutable
+change_eltype
 ```
 ## Info getters
 
