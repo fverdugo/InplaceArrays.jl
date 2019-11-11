@@ -15,7 +15,7 @@ G = gradient_type(V,xi)
 H = gradient_type(G,xi)
 f = MonomialBasis{2}(V,order)
 
-change = inv(collect(evaluate(f,nodes))) #TODO collect
+change = inv(evaluate(f,nodes))
 
 g = change_basis(f,change)
 

@@ -89,7 +89,7 @@ function evaluate_field!(cache,f::MonomialBasis{D,T},x) where {D,T}
       @inbounds r[i,j] = v[j]
     end
   end
-  r
+  r.array
 end
 
 function gradient_cache(f::MonomialBasis{D,V},x) where {D,V}
@@ -122,7 +122,7 @@ function evaluate_gradient!(cache,f::MonomialBasis{D,T},x) where {D,T}
       @inbounds r[i,j] = v[j]
     end
   end
-  r
+  r.array
 end
 
 function hessian_cache(f::MonomialBasis{D,V},x) where {D,V}
@@ -157,7 +157,7 @@ function evaluate_hessian!(cache,f::MonomialBasis{D,T},x) where {D,T}
       @inbounds r[i,j] = v[j]
     end
   end
-  r
+  r.array
 end
 
 # Helpers

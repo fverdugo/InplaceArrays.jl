@@ -26,8 +26,8 @@ function evaluate_field!(cache,b::BasisFromChangeOfBasis,x)
   c, cb = cache
   bx = evaluate_field!(cb,b.basis,x)
   setsize!(c,size(bx))
-  mul!(c,bx,b.change)
-  c
+  mul!(c.array,bx,b.change)
+  c.array
 end
 
 function gradient_cache(b::BasisFromChangeOfBasis,x)
@@ -41,8 +41,8 @@ function evaluate_gradient!(cache,b::BasisFromChangeOfBasis,x)
   c, cb = cache
   bx = evaluate_gradient!(cb,b.basis,x)
   setsize!(c,size(bx))
-  mul!(c,bx,b.change)
-  c
+  mul!(c.array,bx,b.change)
+  c.array
 end
 
 function hessian_cache(b::BasisFromChangeOfBasis,x)
@@ -56,7 +56,7 @@ function evaluate_hessian!(cache,b::BasisFromChangeOfBasis,x)
   c, cb = cache
   bx = evaluate_hessian!(cb,b.basis,x)
   setsize!(c,size(bx))
-  mul!(c,bx,b.change)
-  c
+  mul!(c.array,bx,b.change)
+  c.array
 end
 
