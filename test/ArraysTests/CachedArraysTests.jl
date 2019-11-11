@@ -14,20 +14,28 @@ z = y + x
 a = y.array
 
 setsize!(y,(5,3))
+y .= 0
+@test y == y.array
+
+
+setsize!(y,(10,5))
+@test y == y.array
+@test x === y.array
+
+setsize!(y,(5,3))
+@test y == y.array
 
 b = x[1:5,1:3]
 
-@test y.array === a
-
 @test size(y) == size(b)
-
-@test y == b
 
 setsize!(y,(15,30))
 
-@test ! ( y.array === a )
-
 @test size(y) == size(y.array)
+
+@test size(y) == (15,30)
+y .= 0
+@test y == y.array
 
 y = CachedArray(Float64,2)
 

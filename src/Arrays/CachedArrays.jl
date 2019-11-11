@@ -2,8 +2,7 @@
 """
 $(TYPEDEF)
 
-Type providing a re-sizable array that only allocates memory
-when the underlying buffer needs to grow.
+Type providing a re-sizable array.
 
 The size of a `CachedArray` is changed via the [`setsize!`](@ref) function.
 
@@ -24,7 +23,19 @@ size(a)
 """
 mutable struct CachedArray{T,N,A<:AbstractArray{T,N}} <: AbstractArray{T,N}
   array::A
-  size::NTuple{N,Int}
+  buffer::Dict{NTuple{N,Int},A}
+
+  """
+      CachedArray(a::AbstractArray)
+  
+  Constructs a `CachedArray` from a given array.
+  """
+  function CachedArray(array::AbstractArray{T,N}) where {T,N}
+    A = typeof(array)
+    buffer = Dict{NTuple{N,Int},A}()
+    buffer[size(array)] = array
+    new{T,N,A}(array,buffer)
+  end
 end
 
 """
@@ -39,21 +50,14 @@ const CachedVector{T,A} = CachedArray{T,1,A}
 
 
 """
-    CachedArray(a::AbstractArray)
-
-Constructs a `CachedArray` from a given array.
+$(SIGNATURES)
 """
-CachedArray(a::AbstractArray) = CachedArray(a,size(a))
+CachedVector(a::AbstractVector) = CachedArray(a)
 
 """
 $(SIGNATURES)
 """
-CachedVector(a::AbstractVector) = CachedArray(a,size(a))
-
-"""
-$(SIGNATURES)
-"""
-CachedMatrix(a::AbstractMatrix) = CachedArray(a,size(a))
+CachedMatrix(a::AbstractMatrix) = CachedArray(a)
 
 """
     CachedArray(T,N)
@@ -80,7 +84,7 @@ function CachedMatrix(T)
   CachedArray(T,2)
 end
 
-size(self::CachedArray) = self.size
+size(self::CachedArray) = size(self.array)
 
 """
 $(SIGNATURES)
@@ -90,11 +94,13 @@ Changes the size of the `CachedArray` `a` to the size described the the tuple
 After calling `setsize!`, the array can store uninitialized values.
 """
 function setsize!(a::CachedArray{T,N},s::NTuple{N,Int}) where {T,N}
-  if s <= size(a.array)
-    a.size = s
-  else
-    a.array = similar(a.array,T,s...)
-    a.size = s
+  if s != size(a.array)
+    if haskey(a.buffer,s)
+      a.array = a.buffer[s]
+    else
+      a.array = similar(a.array,T,s...)
+      a.buffer[s] = a.array
+    end
   end
 end
 
