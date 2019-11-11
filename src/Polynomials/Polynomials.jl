@@ -8,6 +8,7 @@ $(EXPORTS)
 module Polynomials
 
 using DocStringExtensions
+using LinearAlgebra: mul!
 using InplaceArrays.Helpers
 using InplaceArrays.Inference
 using InplaceArrays.Arrays
@@ -24,11 +25,14 @@ import InplaceArrays.Fields: hessian_cache
 export MonomialBasis
 export QGradMonomialBasis
 export QCurlGradMonomialBasis
+export change_basis
 
 include("MonomialBases.jl")
 
 include("QGradMonomialBases.jl")
 
 include("QCurlGradMonomialBases.jl")
+
+include("ChangeBasis.jl")
 
 end # module
