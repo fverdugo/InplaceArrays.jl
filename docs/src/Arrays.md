@@ -94,4 +94,18 @@ CompressedArray
 CompressedArray(::AbstractArray,::AbstractArray)
 ```
 
+### Table
+
+```@docs
+Table
+Table(data::AbstractVector,ptrs::AbstractVector)
+```
+
+### LocalToGlobalArray
+
+```@docs
+LocalToGlobalArray
+LocalToGlobalArray(::AbstractArray{<:AbstractArray},::AbstractArray)
+```
+
 

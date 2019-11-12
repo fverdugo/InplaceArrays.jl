@@ -12,6 +12,8 @@ using Test
 
 @testset "CompressedArrays" begin include("CompressedArraysTests.jl") end
 
+@testset "LocalToGlobalArrays" begin include("LocalToGlobalArraysTests.jl") end
+
 @testset "Tables" begin include("TablesTests.jl") end
 
 end # module
