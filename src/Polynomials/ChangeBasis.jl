@@ -1,5 +1,30 @@
 
 """
+    change_basis(basis,changeofbasis::AbstractMatrix)
+
+# Examples
+
+Compute the Lagrangian basis associated with a set of nodes
+
+```jldoctests
+using LinearAlgebra
+using InplaceArrays.Fields
+using InplaceArrays.Polynomials
+
+D = 2
+order = 1
+f = MonomialBasis{D}(Float64,order)
+
+nodes = Point{2,Int}[(0,0),(1,0),(0,1),(1,1)]
+change = inv(evaluate(f,nodes))
+
+g = change_basis(f,change)
+println(evaluate(g,nodes))
+
+# output
+[1.0 0.0 0.0 0.0; 0.0 1.0 0.0 0.0; 0.0 0.0 1.0 0.0; 0.0 0.0 0.0 1.0]
+
+```
 """
 function change_basis(basis,changeofbasis::AbstractMatrix)
   BasisFromChangeOfBasis(basis,changeofbasis)

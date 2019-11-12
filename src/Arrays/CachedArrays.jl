@@ -25,7 +25,7 @@ mutable struct CachedArray{T,N,A<:AbstractArray{T,N}} <: AbstractArray{T,N}
   array::A
   buffer::Dict{NTuple{N,Int},A}
 
-  """
+  @doc """
       CachedArray(a::AbstractArray)
   
   Constructs a `CachedArray` from a given array.
