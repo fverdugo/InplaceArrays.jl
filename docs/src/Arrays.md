@@ -85,3 +85,13 @@ setsize!
 CachedMatrix
 CachedVector
 ```
+
+### CompressedArray
+
+
+```@docs
+CompressedArray
+CompressedArray(::AbstractArray,::AbstractArray)
+```
+
+

@@ -314,6 +314,5 @@ function getvalues(a::Fill)
   (ai,)
 end
 
-# TODO Implement Compressed
 # TODO Think about iteration and sub-iteration
 

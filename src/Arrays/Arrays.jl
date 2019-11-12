@@ -32,6 +32,8 @@ export CachedMatrix
 export CachedVector
 export setsize!
 
+export CompressedArray
+
 export kernel_cache
 export kernel_caches
 export apply_kernels!
@@ -51,6 +53,7 @@ export apply_all
 import Base: size
 import Base: getindex, setindex!
 import Base: similar
+import Base: IndexStyle
 
 include("Interface.jl")
 
@@ -59,5 +62,7 @@ include("CachedArrays.jl")
 include("Kernels.jl")
 
 include("Apply.jl")
+
+include("CompressedArrays.jl")
 
 end # module
