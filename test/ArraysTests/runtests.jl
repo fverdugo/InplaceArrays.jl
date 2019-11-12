@@ -10,4 +10,8 @@ using Test
 
 @testset "Apply" begin include("ApplyTests.jl") end
 
+@testset "CompressedArrays" begin include("CompressedArraysTests.jl") end
+
+@testset "Tables" begin include("TablesTests.jl") end
+
 end # module

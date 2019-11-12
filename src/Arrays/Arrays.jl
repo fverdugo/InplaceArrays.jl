@@ -33,6 +33,8 @@ export CachedVector
 export setsize!
 
 export CompressedArray
+export LocalToGlobalArray
+export Table
 
 export kernel_cache
 export kernel_caches
@@ -64,5 +66,9 @@ include("Kernels.jl")
 include("Apply.jl")
 
 include("CompressedArrays.jl")
+
+include("Tables.jl")
+
+include("LocalToGlobalArrays.jl")
 
 end # module
