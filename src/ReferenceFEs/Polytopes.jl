@@ -6,6 +6,7 @@ struct Polytope
   facedims::Vector{UnitRange{Int}}
   facetypes::Vector{Int}
   reffaces::Vector{Polytope}
+  permutations::Vector{Vector{Int}}
   vertexcoordinates::Matrix{Float64}
   edgetangents::Matrix{Float64}
   facetnormals::Matrix{Float64}
@@ -70,7 +71,7 @@ end
 """
 """
 const VERTEX = Polytope(
-  [[1]],[1:1],Int[],Polytope[],zeros(0,1),zeros(0,0),zeros(0,0),Int[])
+  [[1]],[1:1],Int[],Polytope[],[[1]],zeros(0,1),zeros(0,0),zeros(0,0),Int[])
 
 """
 """
@@ -91,9 +92,11 @@ function _to_Polytope(p)
   et = collect(reinterpret(etv))
   fnv, or = _face_normals(p)
   fn = collect(reinterpret(fnv))
-  Polytope(p.nf_nfs, p.nfacesdim, facetype, reffaces, x, et, fn, or)
+  m = _admissible_permutations(p)
+  Polytope(p.nf_nfs, p.nfacesdim, facetype, reffaces, m, x, et, fn, or)
 end
 
+# Helper type
 # n-face of the polytope, i.e., any polytope of lower dimension `N` representing
 # its boundary and the polytope itself (for `N` equal to the space dimension `D`)
 struct NFace{D}
@@ -464,3 +467,62 @@ function _vertex_not_in_facet(p, i_f, nf_vs)
     end
   end
 end
+
+
+# It generates all the admissible permutations of nodes that lead to an
+# admissible polytope
+function _admissible_permutations(p::ExtPolytope)
+  p_dims = length(p.extrusion)
+  p_vs = _dimfrom_fs_dimto_fs(p, p_dims, 0)
+  vs = p.nfaces[p_vs...]
+  num_vs = length(vs)
+  ext = p.extrusion
+  l = [i for i = 1:num_vs]
+  permuted_polytopes = Vector{Int}[]
+  for c in Combinatorics.permutations(l)#, p_dims + 1)
+    admissible_polytope = true
+    c1 = vs[c[1]].anchor
+    for j = 2:p_dims+1
+      c2 = vs[c[j]].anchor
+      if (!_are_nodes_connected(c1, c2, ext))
+        admissible_polytope = false
+      end
+    end
+    if (admissible_polytope)
+      push!(permuted_polytopes, c)
+    end
+  end
+  return permuted_polytopes
+end
+
+# Auxiliary function that determines whether two nodes are connected
+function _are_nodes_connected(c1, c2, ext)
+  sp_dims = length(c1)
+  d = zeros(length(c1))
+  for i = 1:length(d)
+    d[i] = c2[i] - c1[i]
+  end
+  dn = sum(d .* d)
+  connected = false
+  if (dn == 1)
+    connected = true
+  else
+    k = 0
+    for j = 1:sp_dims
+      if (ext[j] == 2)
+        if (c1[j] == 1 || c2[j] == 1)
+          k = j
+        end
+      end
+    end
+    for l = 1:k
+      d[l] = 0
+    end
+    dn = sum(d .* d)
+    if (dn == 0)
+      connected = true
+    end
+  end
+  return connected
+end
+

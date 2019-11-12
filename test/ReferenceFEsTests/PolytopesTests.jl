@@ -2,6 +2,7 @@ module PolytopesTests
 
 using Test
 using LinearAlgebra
+using Combinatorics
 using InplaceArrays.Helpers
 using InplaceArrays.TensorValues
 using InplaceArrays.Arrays
@@ -17,6 +18,11 @@ p = Polytope(HEX_AXIS, HEX_AXIS)
 
 r = Point{2,Float64}[(1.0, 0.0), (1.0, 0.0), (0.0, 1.0), (0.0, 1.0)]
 @test edge_tangents(Point{2,Float64},p) == r
+
+r = [
+  [1, 2, 3, 4], [1, 3, 2, 4], [2, 1, 4, 3], [2, 4, 1, 3],
+  [3, 1, 4, 2], [3, 4, 1, 2], [4, 2, 3, 1], [4, 3, 2, 1]]
+@test p.permutations == r
 
 r = Point{2,Float64}[(-0.0, -1.0), (0.0, 1.0), (-1.0, 0.0), (1.0, -0.0)]
 @test facet_normals(Point{2,Float64},p) == r
