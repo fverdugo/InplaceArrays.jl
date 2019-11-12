@@ -7,9 +7,9 @@ struct Polytope
   facetypes::Vector{Int}
   reffaces::Vector{Polytope}
   vertexcoordinates::Matrix{Float64}
-  #facetnormal::Matrix{Float64}
-  #facetorientation::Vector{Int}
   edgetangents::Matrix{Float64}
+  facetnormals::Matrix{Float64}
+  facetorientation::Vector{Int}
 end
 
 """
@@ -27,11 +27,33 @@ function vertex_coordinates(T::Type{<:Point{D,Float64}}, p::Polytope) where D
   collect(dropdims(permutedims(reinterpret(T,p.vertexcoordinates)),dims=2))
 end
 
+function vertex_coordinates(T::Type{<:Point{0,Float64}}, p::Polytope)
+  @assert 0 == num_dims(p)
+  Point{0,Float64}[]
+end
+
 """
 """
 function edge_tangents(T::Type{<:Point{D,Float64}}, p::Polytope) where D
   @assert D == num_dims(p)
   collect(dropdims(permutedims(reinterpret(T,p.edgetangents)),dims=2))
+end
+
+function edge_tangents(T::Type{<:Point{0,Float64}}, p::Polytope)
+  @assert 0 == num_dims(p)
+  Point{0,Float64}[]
+end
+
+"""
+"""
+function facet_normals(T::Type{<:Point{D,Float64}}, p::Polytope) where D
+  @assert D == num_dims(p)
+  collect(dropdims(permutedims(reinterpret(T,p.facetnormals)),dims=2))
+end
+
+function facet_normals(T::Type{<:Point{0,Float64}}, p::Polytope)
+  @assert 0 == num_dims(p)
+  Point{0,Float64}[]
 end
 
 """
@@ -47,7 +69,8 @@ end
 
 """
 """
-const VERTEX = Polytope([[1]],[1:1],Int[],Polytope[],zeros(0,1),zeros(0,1))
+const VERTEX = Polytope(
+  [[1]],[1:1],Int[],Polytope[],zeros(0,1),zeros(0,0),zeros(0,0),Int[])
 
 """
 """
@@ -66,7 +89,9 @@ function _to_Polytope(p)
   x = collect(reinterpret(xv))
   etv = _edge_tangents(p)
   et = collect(reinterpret(etv))
-  Polytope(p.nf_nfs, p.nfacesdim, facetype, reffaces, x, et)
+  fnv, or = _face_normals(p)
+  fn = collect(reinterpret(fnv))
+  Polytope(p.nf_nfs, p.nfacesdim, facetype, reffaces, x, et, fn, or)
 end
 
 # n-face of the polytope, i.e., any polytope of lower dimension `N` representing
@@ -368,7 +393,7 @@ end
 # arrays, the first one being the outward normal and the second one the orientation.
 function _face_normals(p::ExtPolytope{D}) where D
   nf_vs = _dimfrom_fs_dimto_fs(p, D - 1, 0)
-  vs = vertices_coordinates(p)
+  vs = _vertices_coordinates(p)
   f_ns = Point{D,Float64}[]
   f_os = Int[]
   for i_f = 1:length(p.nf_dim[end][end-1])
@@ -377,6 +402,14 @@ function _face_normals(p::ExtPolytope{D}) where D
     push!(f_os, f_o)
   end
   return f_ns, f_os
+end
+
+function _face_normals(p::ExtPolytope{0})
+  (VectorValue{0,Float64}[], Int[])
+end
+
+function _face_normals(p::ExtPolytope{1})
+  (VectorValue{1,Float64}[], Int[])
 end
 
 # It generates the tangent vectors for polytope edges.
