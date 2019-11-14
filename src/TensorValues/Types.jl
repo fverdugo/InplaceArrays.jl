@@ -174,12 +174,12 @@ function convert(::Type{<:MultiValue{S,T,N,L}},a::StaticArray{S,T,N}) where {S,T
 end
 
 function convert(
-  ::Type{<:MultiValue{S,T,N,L}},a::AbstractArray{T,N}) where {S,T,N,L}
+  ::Type{<:MultiValue{S,T,N,L}},a::AbstractArray{R,N}) where {S,T,N,L,R}
   b = convert(SArray{S,T,N,L},a)
   MultiValue(b)
 end
 
-function convert(::Type{<:MultiValue{S,T,N,L}},a::NTuple{L,T}) where {S,T,N,L}
+function convert(::Type{<:MultiValue{S,T,N,L}},a::NTuple{L,R}) where {S,T,N,L,R}
   MultiValue(SArray{S,T}(a))
 end
 

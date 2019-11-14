@@ -8,4 +8,8 @@ using Test
 
 @testset "LagrangianDofBases" begin include("LagrangianDofBasesTests.jl") end
 
+@testset "Polytopes" begin include("PolytopesTests.jl") end
+
+@testset "ExtrusionPolytopes" begin include("ExtrusionPolytopesTests.jl") end
+
 end # module

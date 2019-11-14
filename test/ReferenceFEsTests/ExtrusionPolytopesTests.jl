@@ -1,0 +1,62 @@
+module ExtrusionPolytopesTests
+
+using Test
+using InplaceArrays.Helpers
+using InplaceArrays.TensorValues
+using InplaceArrays.Arrays
+using InplaceArrays.Fields
+using InplaceArrays.ReferenceFEs
+
+@test num_faces(VERTEX) == 1
+@test num_dims(VERTEX) == 0
+
+p = Polytope(HEX_AXIS, HEX_AXIS)
+test_polytope(p,optional=true)
+
+r = Point{2,Float64}[(1, 0), (1, 0), (0, 1), (0, 1)]
+@test edge_tangents(p) == r
+
+r = [
+  [1, 2, 3, 4], [1, 3, 2, 4], [2, 1, 4, 3], [2, 4, 1, 3],
+  [3, 1, 4, 2], [3, 4, 1, 2], [4, 2, 3, 1], [4, 3, 2, 1]]
+@test vertex_permutations(p) == r
+
+r = Point{2,Float64}[(0, -1), (0, 1), (-1, 0), (1, 0)]
+@test facet_normals(p) == r
+
+@test num_faces(p) == 9
+@test num_dims(p) == 2
+
+p = Polytope(TET_AXIS, TET_AXIS, TET_AXIS)
+test_polytope(p,optional=true)
+
+@test num_faces(p) == 15
+@test num_dims(p) == 3
+
+x = Point{3,Float64}[(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)]
+@test vertex_coordinates(p) == x
+
+p = SEGMENT
+test_polytope(p,optional=true)
+@test vertex_coordinates(p) == VectorValue{1,Float64}[(0),(1)]
+@test edge_tangents(p) == VectorValue{1,Float64}[(1)]
+@test facet_normals(p) == VectorValue{1,Float64}[(-1),(1)]
+
+p = VERTEX
+test_polytope(p,optional=true)
+@test vertex_coordinates(p) == VectorValue{0,Float64}[()]
+@test edge_tangents(p) == VectorValue{0,Float64}[]
+@test facet_normals(p) == VectorValue{0,Float64}[]
+
+test_polytope(TRI,optional=true)
+test_polytope(QUAD,optional=true)
+test_polytope(TET,optional=true)
+test_polytope(HEX,optional=true)
+
+@test num_facets(SEGMENT) == 2
+@test num_facets(TRI) == 3
+@test num_facets(QUAD) == 4
+@test num_facets(TET) == 4
+@test num_facets(HEX) == 6
+
+end # module

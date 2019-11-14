@@ -2,49 +2,125 @@ module PolytopesTests
 
 using Test
 using LinearAlgebra
-using Combinatorics
 using InplaceArrays.Helpers
 using InplaceArrays.TensorValues
 using InplaceArrays.Arrays
 using InplaceArrays.Fields
+using InplaceArrays.ReferenceFEs
 
+import InplaceArrays.ReferenceFEs: Polytope
+import InplaceArrays.ReferenceFEs: polytope_faces
+import InplaceArrays.ReferenceFEs: polytope_dimrange
+import InplaceArrays.ReferenceFEs: vertex_coordinates
+import Base: ==
 
-include("../../src/ReferenceFEs/Polytopes.jl")
+struct MockVertex <: Polytope{0} end
 
-@test num_faces(VERTEX) == 1
-@test num_dims(VERTEX) == 0
+polytope_faces(p::MockVertex) = [[1]]
 
-p = Polytope(HEX_AXIS, HEX_AXIS)
+polytope_dimrange(p::MockVertex) = [1:1]
 
-r = Point{2,Float64}[(1.0, 0.0), (1.0, 0.0), (0.0, 1.0), (0.0, 1.0)]
-@test edge_tangents(Point{2,Float64},p) == r
+function Polytope{0}(p::MockVertex,faceid)
+  @assert faceid == 1
+  p
+end
 
-r = [
-  [1, 2, 3, 4], [1, 3, 2, 4], [2, 1, 4, 3], [2, 4, 1, 3],
-  [3, 1, 4, 2], [3, 4, 1, 2], [4, 2, 3, 1], [4, 3, 2, 1]]
-@test p.permutations == r
+function (==)(a::MockVertex,b::MockVertex)
+  true
+end
 
-r = Point{2,Float64}[(-0.0, -1.0), (0.0, 1.0), (-1.0, 0.0), (1.0, -0.0)]
-@test facet_normals(Point{2,Float64},p) == r
+vertex_coordinates(p::MockVertex) = [zero(Point{0,Float64})]
 
-@test num_faces(p) == 9
-@test num_dims(p) == 2
+struct MockSegment <: Polytope{1} end
 
-p = Polytope(TET_AXIS, TET_AXIS, TET_AXIS)
+polytope_faces(p::MockSegment) = [[1],[2],[1,2,3]]
 
-@test num_faces(p) == 15
-@test num_dims(p) == 3
+polytope_dimrange(p::MockSegment) = [1:2,3:3]
 
-x = Point{3,Float64}[(0.0, 0.0, 0.0), (1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0)]
-@test vertex_coordinates(Point{3,Float64},p) == x
+function Polytope{0}(p::MockSegment,faceid)
+  @assert faceid in 1:2
+  MockVertex()
+end
 
-p = Polytope(HEX_AXIS)
-vertex_coordinates(Point{1,Float64},p)
-edge_tangents(Point{1,Float64},p)
-facet_normals(Point{1,Float64},p)
+function Polytope{1}(p::MockSegment,faceid)
+  @assert faceid == 1
+  p
+end
 
-vertex_coordinates(Point{0,Float64},VERTEX)
-edge_tangents(Point{0,Float64},VERTEX)
-facet_normals(Point{0,Float64},VERTEX)
+function (==)(a::MockSegment,b::MockSegment)
+  true
+end
+
+vertex_coordinates(p::MockSegment) = Point{1,Float64}[(0),(1)]
+
+struct MockQuad <: Polytope{2} end
+
+function polytope_faces(p::MockQuad)
+  [
+    [1],[2],[3],[4],
+    [1,2,5],[3,4,6],[1,3,7],[2,4,8],
+    [1,2,3,4,5,6,7,8,9]
+  ]
+end
+
+function polytope_dimrange(p::MockQuad)
+  [1:4,5:8,9:9]
+end
+
+function Polytope{0}(p::MockQuad,faceid)
+  @assert faceid in 1:4
+  MockVertex()
+end
+
+function Polytope{1}(p::MockQuad,faceid)
+  @assert faceid in 1:4
+  MockSegment()
+end
+
+function Polytope{2}(p::MockQuad,faceid)
+  @assert faceid == 1
+  p
+end
+
+function (==)(a::MockQuad,b::MockQuad)
+  true
+end
+
+vertex_coordinates(p::MockQuad) = Point{2,Float64}[(0,0),(1,0),(0,1),(1,1)]
+
+v = MockVertex()
+test_polytope(v)
+@test polytope_faces(v,0,0) == [[1]]
+@test polytope_facedims(v) == [0]
+@test polytope_offsets(v) == [0]
+@test num_facets(v) == 0
+@test num_edges(v) == 0
+
+s = MockSegment()
+test_polytope(s)
+@test polytope_faces(s,0,0) == [[1], [2]]
+@test polytope_faces(s,1,0) == [[1, 2]]
+@test polytope_faces(s,0,1) == [[1], [1]]
+@test polytope_faces(s,1,1) == [[1]]
+@test polytope_facedims(s) == [0,0,1]
+@test polytope_offsets(s) == [0,2]
+@test num_facets(s) == 2
+@test num_edges(s) == 1
+
+q = MockQuad()
+test_polytope(q)
+@test polytope_faces(q,0,0) == [[1], [2], [3], [4]]
+@test polytope_faces(q,1,0) == [[1, 2], [3, 4], [1, 3], [2, 4]]
+@test polytope_faces(q,2,0) == [[1, 2, 3, 4]]
+@test polytope_faces(q,0,1) == [[1, 3], [1, 4], [2, 3], [2, 4]]
+@test polytope_faces(q,1,1) == [[1], [2], [3], [4]]
+@test polytope_faces(q,2,1) == [[1, 2, 3, 4]]
+@test polytope_faces(q,0,2) == [[1], [1], [1], [1]]
+@test polytope_faces(q,1,2) == [[1], [1], [1], [1]]
+@test polytope_faces(q,2,2) == [[1]]
+@test polytope_facedims(q) == [0,0,0,0,1,1,1,1,2]
+@test polytope_offsets(q) == [0,4,8]
+@test num_facets(q) == 4
+@test num_edges(q) == 4
 
 end # module
