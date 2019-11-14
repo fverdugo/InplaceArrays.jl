@@ -28,12 +28,12 @@ function Polytope(extrusion::NTuple{D,Int}) where D
   ExtrusionPolytope(extrusion)
 end
 
-"""
-"""
 function ExtrusionPolytope(extrusion::NTuple{N,Int}) where N
   ExtrusionPolytope(Point{N,Int}(extrusion))
 end
 
+"""
+"""
 function ExtrusionPolytope(extrusion::Int...)
   ExtrusionPolytope(extrusion)
 end

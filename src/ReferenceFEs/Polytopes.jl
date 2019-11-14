@@ -102,7 +102,7 @@ end
 
 """
 """
-function num_facets(p)
+function num_facets(p::Polytope)
   D = num_dims(p)
   if D > 0
     num_faces(p,D-1)
@@ -113,7 +113,7 @@ end
 
 """
 """
-function num_edges(p)
+function num_edges(p::Polytope)
   D = num_dims(p)
   if D > 0
     num_faces(p,1)
@@ -124,7 +124,7 @@ end
 
 """
 """
-function num_vertices(p)
+function num_vertices(p::Polytope)
   num_faces(p,0)
 end
 
