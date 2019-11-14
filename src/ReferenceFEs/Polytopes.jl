@@ -43,6 +43,26 @@ abstract type Polytope{D} end
 
 """
     polytope_faces(p) -> Vector{Vector{Int}}
+
+Given a polytope `p` the function returns a vector of vectors
+defining the *incidence* relation of the faces in the polytope.
+
+Each face in the polytope receives a unique integer id. The id 1 is assigned
+to the first 0-face. Consecutive increasing ids are assigned to the other
+0-faces, then to 1-faces, and so on. The polytope itself receives the largest id
+which coincides with `num_faces(p)`. For a face id `iface`, `polytope_faces(p)[iface]`
+is a vector of face ids, corresponding to the faces that are *incident* with the face
+labeled with `iface`. That is, faces that are either on its boundary or the face itself. 
+In this vector of incident face ids, faces are ordered by dimension, starting with 0-faces.
+
+# Examples
+
+The face labels associated with a segment are `[1,2,3]`, being `1` and `2` for the vertices and 
+`3` for the segment itself. In this case, this function would return the vector of vectors
+`[[1],[2],[1,2,3]]` meaning that vertex `1` is incident with vertex `1` (idem for vertex 2), and that 
+the segment (id `3`) is incident with the vertices `1` and `2` and the segment itself.
+
+
 """
 function polytope_faces(p)
   @abstractmethod
