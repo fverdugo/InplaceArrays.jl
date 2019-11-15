@@ -79,3 +79,27 @@ LagrangianDofBasis
 LagrangianDofBasis(::Type{T},nodes::Vector{<:Point}) where T
 ```
 
+## Referece Finite Elements
+
+### Interface
+
+```@docs
+ReferenceFE
+reffe_polytope(reffe)
+reffe_prebasis(reffe)
+reffe_dofs(reffe)
+reffe_face_dofids(reffe)
+ReferenceFE{N}(reffe,nfaceid) where N
+reffe_dof_permutations(reffe)
+reffe_shapefuns(reffe)
+compute_shapefuns(dofs,prebasis)
+num_dims(::Type{<:ReferenceFE{D}}) where D
+test_reference_fe(reffe::ReferenceFE{D}) where D
+```
+
+### Concrete Implementations
+
+```@docs
+GenericRefFE
+GenericRefFE(::Polytope{D},::Field,::Dof,::Vector{Vector{Int}},::Field) where D
+```

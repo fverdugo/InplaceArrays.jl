@@ -3,7 +3,8 @@
     struct MonomialBasis{...} <: Field
 
 Type representing a basis of multivariate scalar-valued, vector-valued, or
-tensor-valued, iso- or aniso-tropic monomials. The type parameters and fields of this `struct` are not public, they are 
+tensor-valued, iso- or aniso-tropic monomials. The type parameters and fields
+of this `struct` are not public, they are 
 private implementation details.  
 This type fully implements the [`Field`](@ref) interface, with up to second order
 derivatives.

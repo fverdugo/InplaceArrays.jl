@@ -59,6 +59,18 @@ export dof_return_type
 export test_dof
 export evaluate_dof_array
 
+export ReferenceFE
+export GenericRefFE
+export reffe_polytope
+export reffe_prebasis
+export reffe_dofs
+export reffe_face_dofids
+export reffe_dof_permutations
+export reffe_shapefuns
+export compute_shapefuns
+export test_reference_fe
+
+
 export LagrangianDofBasis
 
 include("Polytopes.jl")
@@ -70,5 +82,7 @@ include("Dofs.jl")
 include("MockDofs.jl")
 
 include("LagrangianDofBases.jl")
+
+include("ReferenceFEInterfaces.jl")
 
 end # module
