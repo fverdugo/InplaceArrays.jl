@@ -54,6 +54,9 @@ which coincides with `num_faces(p)`. For a face id `iface`, `polytope_faces(p)[i
 is a vector of face ids, corresponding to the faces that are *incident* with the face
 labeled with `iface`. That is, faces that are either on its boundary or the face itself. 
 In this vector of incident face ids, faces are ordered by dimension, starting with 0-faces.
+Within each dimension, the labels are ordered in a consistent way with the polyope object
+for the face `iface` itself. The polytope object associated with a face in another polytope
+is obtained with the [`Polytope{N}(p,faceid) where N`](@ref) constructor.
 
 # Examples
 
