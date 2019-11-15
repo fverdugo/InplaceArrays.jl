@@ -20,6 +20,7 @@ import InplaceArrays.Arrays: kernel_cache
 import InplaceArrays.Arrays: apply_kernel!
 import InplaceArrays.Arrays: kernel_return_type
 import InplaceArrays.Fields: evaluate
+import InplaceArrays.Polynomials: MonomialBasis
 
 import Base: ==
 
@@ -35,6 +36,7 @@ export vertex_permutations
 export polytope_vtkid
 export polytope_vtknodes
 export num_dims
+export num_vertices
 export num_faces
 export num_facets
 export num_edges
@@ -48,6 +50,8 @@ export TRI
 export QUAD
 export TET
 export HEX
+export WEDGE
+export PYRAMID
 export HEX_AXIS
 export TET_AXIS
 
@@ -70,7 +74,6 @@ export reffe_shapefuns
 export compute_shapefuns
 export test_reference_fe
 
-
 export LagrangianDofBasis
 
 include("Polytopes.jl")
@@ -84,5 +87,7 @@ include("MockDofs.jl")
 include("LagrangianDofBases.jl")
 
 include("ReferenceFEInterfaces.jl")
+
+include("LagrangianRefFEs.jl")
 
 end # module

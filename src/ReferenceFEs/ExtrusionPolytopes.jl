@@ -431,6 +431,7 @@ const VERTEX = _vertex()
 """
 const SEGMENT = Polytope(HEX_AXIS)
 
+# TODO use larger names
 """
 """
 const TRI = Polytope(TET_AXIS,TET_AXIS)
@@ -447,4 +448,11 @@ const TET = Polytope(TET_AXIS,TET_AXIS,TET_AXIS)
 """
 const HEX = Polytope(HEX_AXIS,HEX_AXIS,HEX_AXIS)
 
+"""
+"""
+const WEDGE = Polytope(TET_AXIS,TET_AXIS,HEX_AXIS) 
+
+"""
+"""
+const PYRAMID = Polytope(HEX_AXIS,HEX_AXIS,TET_AXIS) 
 

@@ -12,4 +12,8 @@ using Test
 
 @testset "ExtrusionPolytopes" begin include("ExtrusionPolytopesTests.jl") end
 
+@testset "ReferenceFEInterfaces" begin include("ReferenceFEInterfacesTests.jl") end
+
+@testset "LagrangianRefFEs" begin include("LagrangianRefFEsTests.jl") end
+
 end # module

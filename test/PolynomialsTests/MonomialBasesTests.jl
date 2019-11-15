@@ -157,4 +157,9 @@ bx = repeat(permutedims(v),np)
 ∇bx = repeat(permutedims(g),np)
 test_field(b,x,bx,grad=∇bx)
 
+order = 1
+b = MonomialBasis{1}(Float64,order)
+@show evaluate(b,Point{1,Float64}[(0,),(1,)])
+
+
 end # module
