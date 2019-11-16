@@ -8,12 +8,19 @@ function MonomialBasis(::Type{T},p::ExtrusionPolytope{D}, orders::NTuple{D,Int})
   MonomialBasis{D}(T,orders,terms)
 end
 
-"""
-"""
 function MonomialBasis(::Type{T},p::ExtrusionPolytope{D}, order::Int) where {T,D}
   orders = tfill(order,Val{D}())
   MonomialBasis(T,p,orders)
 end
+
+"""
+"""
+function LagrangianDofBasis(::Type{T},p::ExtrusionPolytope,orders) where T
+  nodes, _ = _polytope_nodes(p,orders)
+  LagrangianDofBasis(T,nodes)
+end
+
+# Helpers
 
 function _monomial_terms(extrusion::NTuple{D,Int},orders) where D
   _check_orders(extrusion,orders)

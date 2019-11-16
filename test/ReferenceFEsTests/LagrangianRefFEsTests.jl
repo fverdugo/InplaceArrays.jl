@@ -1,6 +1,7 @@
 module LagrangianRefFEsTests
 
 using Test
+using InplaceArrays.TensorValues
 using InplaceArrays.Fields
 using InplaceArrays.Polynomials
 using InplaceArrays.ReferenceFEs
@@ -30,10 +31,19 @@ r = [(0,0,0), (1,0,0), (0,1,0), (0,0,1)]
 orders = (2,2)
 extrusion = Tuple(QUAD.extrusion.array)
 
-using InplaceArrays.ReferenceFEs: _polytope_nodes
+dofs = LagrangianDofBasis(VectorValue{3,Float64},TET,1)
+@test dofs.nodes == Point{3,Float64}[(0,0,0), (1,0,0), (0,1,0), (0,0,1)]
+@test dofs.node_and_comp_to_dof == VectorValue{3,Int}[(1,5,9), (2,6,10), (3,7,11), (4,8,12)]
 
-@show _polytope_nodes(TET,1)
+dofs = LagrangianDofBasis(Float64,WEDGE,(2,2,2))
+@test dofs.nodes == Point{3,Float64}[
+  (0.0, 0.0, 0.0), (1.0, 0.0, 0.0), (0.0, 1.0, 0.0),
+  (0.0, 0.0, 1.0), (1.0, 0.0, 1.0), (0.0, 1.0, 1.0),
+  (0.0, 0.0, 0.5), (1.0, 0.0, 0.5), (0.0, 1.0, 0.5),
+  (0.5, 0.0, 0.0), (0.5, 0.0, 1.0), (0.0, 0.5, 0.0),
+  (0.5, 0.5, 0.0), (0.0, 0.5, 1.0), (0.5, 0.5, 1.0),
+  (0.5, 0.0, 0.5), (0.0, 0.5, 0.5), (0.5, 0.5, 0.5)]
 
-@show _polytope_nodes(WEDGE,(1,1,3))
+dofs = LagrangianDofBasis(Float64,PYRAMID,1)
 
 end # module
