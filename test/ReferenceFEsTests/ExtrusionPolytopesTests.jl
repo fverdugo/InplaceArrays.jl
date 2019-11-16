@@ -73,4 +73,9 @@ test_polytope(HEX,optional=true)
 @test num_facets(TET) == 4
 @test num_facets(HEX) == 6
 
+@test num_vertices(PYRAMID) == 5
+# TODO There is a problem with PYRAMID
+#@test num_edges(PYRAMID) == 8
+#@test num_facets(PYRAMID) == 5
+
 end # module

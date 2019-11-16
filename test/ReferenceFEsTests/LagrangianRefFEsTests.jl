@@ -44,6 +44,5 @@ dofs = LagrangianDofBasis(Float64,WEDGE,(2,2,2))
   (0.5, 0.5, 0.0), (0.0, 0.5, 1.0), (0.5, 0.5, 1.0),
   (0.5, 0.0, 0.5), (0.0, 0.5, 0.5), (0.5, 0.5, 0.5)]
 
-dofs = LagrangianDofBasis(Float64,PYRAMID,1)
 
 end # module
