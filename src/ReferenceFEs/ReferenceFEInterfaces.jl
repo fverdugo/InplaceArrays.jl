@@ -4,6 +4,12 @@ abstract type ReferenceFE{D} end
 
 """
 """
+function num_dofs(reffe::ReferenceFE)
+  @abstractmethod
+end
+
+"""
+"""
 function reffe_polytope(reffe)
   @abstractmethod
 end
@@ -77,48 +83,61 @@ function test_reference_fe(reffe::ReferenceFE{D}) where D
   facedofs = reffe_face_dofids(reffe)
   @test isa(facedofs,Vector{Vector{Int}})
   @test length(facedofs) == num_faces(p)
+  shapefuns = reffe_shapefuns(reffe)
+  @test isa(shapefuns,Field)
+  ndofs = num_dofs(reffe)
+  m = evaluate(dofs,basis)
+  @test ndofs == size(m,1)
+  @test ndofs == size(m,2)
 end
 
 
 # Concrete implementation
 
 """
-    struct GenericRefFE{D,P,B,F,I,S} <: ReferenceFE{D}
-      polytope::P
-      prebasis::B
-      dofs::F
-      facedofids::I
-      shapefuns::S
+    struct GenericRefFE{D} <: ReferenceFE{D}
+      ndofs::Int
+      polytope::Polytope{D}
+      prebasis::Field
+      dofs::Dof
+      facedofids::Vector{Vector{Int}}
+      shapefuns::Field
+      reffaces::Tuple
     end
 
 This type is a *materialization* of the `ReferenceFE` interface. That is, it is a 
 `struct` that stores the values of all abstract methods in the `ReferenceFE` interface.
-It only implements the required methods, not the optional ones.
 This type is useful to build reference FEs from the underlying ingredients without
 the need to create a new type.
+
+Note that this `struct` is type unstable deliberately in order to simplify the
+type signature and speed up compilation times. Don't use it in computationally expensive functions,
+instead extract the required fields and pass them to the computationally expensive function.
 """
-struct GenericRefFE{D,P,B,F,I,S} <: ReferenceFE{D}
-  polytope::P
-  prebasis::B
-  dofs::F
-  facedofids::I
-  shapefuns::S
+struct GenericRefFE{D} <: ReferenceFE{D}
+    ndofs::Int
+    polytope::Polytope{D}
+    prebasis::Field
+    dofs::Dof
+    facedofids::Vector{Vector{Int}}
+    shapefuns::Field
+    reffaces
   @doc """
   """
   function GenericRefFE(
     polytope::Polytope{D},
     prebasis::Field,
     dofs::Dof,
-    facedofids::Vector{Vector{Int}},
-    shapefuns::Field=compute_shapefuns(dofs,prebasis)) where D
-    P = typeof(polytope)
-    B = typeof(prebasis)
-    F = typeof(dofs)
-    I = typeof(facedofids)
-    S = typeof(shapefuns)
-    new{D,P,B,F,I,S}(polytope,prebasis,dofs,facedofids,shapefuns)
+    facedofids::Vector{Vector{Int}};
+    shapefuns::Field = compute_shapefuns(dofs,prebasis),
+    ndofs::Int = size(evaluate(dofs,prebasis),1),
+    reffaces = nothing) where D
+
+    new{D}(ndofs,polytope,prebasis,dofs,facedofids,shapefuns,reffaces)
   end
 end
+
+num_dofs(reffe::GenericRefFE) = reffe.ndofs
 
 reffe_polytope(reffe::GenericRefFE) = reffe.polytope
 
@@ -129,4 +148,14 @@ reffe_dofs(reffe::GenericRefFE) = reffe.dofs
 reffe_face_dofids(reffe::GenericRefFE) = reffe.facedofids
 
 reffe_shapefuns(reffe::GenericRefFE) = reffe.shapefuns
+
+function ReferenceFE{N}(reffe::GenericRefFE,iface) where N
+  @assert reffe.reffaces != nothing "ReferenceFE cannot be provided. Make sure that you are using the keyword argument reffaces in the GenericRefFE constructor."
+  reffe.reffaces[N+1][iface]
+end
+
+function ReferenceFE{D}(reffe::GenericRefFE{D},iface) where D
+  @assert iface == 1 "Only one D-face"
+  reffe
+end
 

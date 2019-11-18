@@ -1,4 +1,72 @@
 
+"""
+    struct LagrangianRefFE{D} <: ReferenceFE{D}
+      data::GenericRefFE{D}
+      facenodeids::Vector{Vector{Int}}
+    end
+
+For this type
+
+-  `reffe_dofs(reffe)` returns a `LagrangianDofBasis`
+-  `reffe_prebasis(reffe)` returns a `MonomialBasis`
+-  `ReferenceFE{N}(reffe,faceid) where N` returns a `LagrangianRefFE{N}`
+"""
+struct LagrangianRefFE{D} <: ReferenceFE{D}
+  data::GenericRefFE{D}
+  facenodeids::Vector{Vector{Int}}
+  @doc """
+  """
+  function LagrangianRefFE(
+    polytope::Polytope{D},
+    prebasis::MonomialBasis,
+    dofs::LagrangianDofBasis,
+    facenodeids::Vector{Vector{Int}},
+    reffaces::Vector{<:LagrangianRefFE}...) where D
+
+    facedofids = _generate_nfacedofs(facenodeids,dofs.node_and_comp_to_dof)
+
+    data = GenericRefFE(
+      polytope,prebasis,dofs,facedofids;
+      reffaces = reffaces)
+
+    new{D}(data,facenodeids)
+  end
+end
+
+"""
+    LagrangianRefFE(::Type{T},p::ExtrusionPolytope,orders) where T
+    LagrangianRefFE(::Type{T},p::ExtrusionPolytope,order::Int) where T
+"""
+function LagrangianRefFE(::Type{T},p::ExtrusionPolytope{D},orders) where {T,D}
+  prebasis = MonomialBasis(T,p,orders)
+  nodes, facenodeids = _polytope_nodes(p,orders)
+  dofs = LagrangianDofBasis(T,nodes)
+  reffaces = _compute_lagrangian_reffaces(T,p,orders)
+  LagrangianRefFE(p,prebasis,dofs,facenodeids,reffaces...)
+end
+
+function _compute_lagrangian_reffaces(::Type{T},p::ExtrusionPolytope{D},orders) where {T,D}
+  if D == 0
+    return ()
+  end
+  reffaces = [ LagrangianRefFE{d}[]  for d in 0:D ]
+  reffe0 = LagrangianRefFE(T,VERTEX,())
+  for vertex in 1:num_vertices(p)
+    push!(reffaces[0+1],reffe0)
+  end
+  offsets = polytope_offsets(p)
+  for d in 1:(num_dims(p)-1)
+    offset = offsets[d+1]
+    for iface in 1:num_faces(p,d)
+      nface = p.nfaces[iface+offset]
+      face_orders = _extract_nonzeros(nface.extrusion,orders)
+      face = Polytope{d}(p,iface)
+      reffe_face = LagrangianRefFE(T,face,face_orders)
+      push!(reffaces[d+1],reffe_face)
+    end
+  end
+  tuple(reffaces...)
+end
 
 """
 """
@@ -23,8 +91,12 @@ end
 # Helpers
 
 function _monomial_terms(extrusion::NTuple{D,Int},orders) where D
-  _check_orders(extrusion,orders)
   terms = CartesianIndex{D}[]
+  if D == 0
+    push!(terms,CartesianIndex(()))
+    return terms
+  end
+  _check_orders(extrusion,orders)
   M = mutable(VectorValue{D,Int})
   term = zero(M)
   _orders = M(orders)
@@ -188,5 +260,24 @@ function _coords_to_terms(coords::Vector{<:Point{D}},orders) where D
     push!(terms,term)
   end
   terms
+end
+
+function _generate_nfacedofs(nfacenodes,node_and_comp_to_dof)
+  faces = 1:length(nfacenodes)
+  T = eltype(node_and_comp_to_dof)
+  comps = 1:n_components(T)
+  nfacedofs = [Int[] for i in faces]
+  for face in faces
+    nodes = nfacenodes[face]
+    # Node major
+    for comp in comps
+      for node in nodes
+        comp_to_dofs = node_and_comp_to_dof[node]
+        dof = comp_to_dofs[comp]
+        push!(nfacedofs[face],dof)
+      end
+    end
+  end
+  nfacedofs
 end
 

@@ -44,5 +44,16 @@ dofs = LagrangianDofBasis(Float64,WEDGE,(2,2,2))
   (0.5, 0.5, 0.0), (0.0, 0.5, 1.0), (0.5, 0.5, 1.0),
   (0.5, 0.0, 0.5), (0.0, 0.5, 0.5), (0.5, 0.5, 0.5)]
 
+dofs = LagrangianDofBasis(VectorValue{2,Int},VERTEX,())
+@test dofs.node_and_comp_to_dof == VectorValue{2,Int}[(1,2)]
+
+b = MonomialBasis(VectorValue{2,Int},VERTEX,())
+@test evaluate(b,Point{0,Int}[(),()]) == VectorValue{2,Int}[(1, 0) (0, 1); (1, 0) (0, 1)]
+
+reffe = LagrangianRefFE(VectorValue{2,Int},VERTEX,())
+@show reffe.facenodeids
+@show reffe.data.facedofids
+
+
 
 end # module

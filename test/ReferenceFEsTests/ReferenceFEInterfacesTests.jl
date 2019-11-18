@@ -5,10 +5,6 @@ using InplaceArrays.Fields
 using InplaceArrays.Polynomials
 using InplaceArrays.ReferenceFEs
 
-#using Test
-#using InplaceArrays.Helpers
-#include("../../src/ReferenceFEs/ReferenceFEInterfaces.jl")
-
 D = 2
 T = Float64
 order = 1

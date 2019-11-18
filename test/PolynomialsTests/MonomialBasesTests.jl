@@ -164,5 +164,4 @@ b = MonomialBasis{1}(Float64,order)
 b = MonomialBasis{0}(VectorValue{2,Float64},order)
 @test evaluate(b,Point{0,Float64}[(),()]) == VectorValue{2,Float64}[(1.0, 0.0) (0.0, 1.0); (1.0, 0.0) (0.0, 1.0)] 
 
-
 end # module

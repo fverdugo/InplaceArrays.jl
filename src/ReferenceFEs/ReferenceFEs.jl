@@ -74,6 +74,7 @@ export reffe_shapefuns
 export compute_shapefuns
 export test_reference_fe
 
+export LagrangianRefFE
 export LagrangianDofBasis
 
 include("Polytopes.jl")
