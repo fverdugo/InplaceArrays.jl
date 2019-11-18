@@ -159,7 +159,10 @@ test_field(b,x,bx,grad=∇bx)
 
 order = 1
 b = MonomialBasis{1}(Float64,order)
-@show evaluate(b,Point{1,Float64}[(0,),(1,)])
+@test evaluate(b,Point{1,Float64}[(0,),(1,)]) == [1.0 0.0; 1.0 1.0]
+
+b = MonomialBasis{0}(VectorValue{2,Float64},order)
+@test evaluate(b,Point{0,Float64}[(),()]) == VectorValue{2,Float64}[(1.0, 0.0) (0.0, 1.0); (1.0, 0.0) (0.0, 1.0)] 
 
 
 end # module
