@@ -45,6 +45,10 @@ function LagrangianRefFE(::Type{T},p::ExtrusionPolytope{D},orders) where {T,D}
   LagrangianRefFE(p,prebasis,dofs,facenodeids,reffaces...)
 end
 
+function _compute_lagrangian_reffaces(::Type{T},p::ExtrusionPolytope{D},order::Int) where {T,D}
+  orders = tfill(order,Val{D}())
+  _compute_lagrangian_reffaces(T,p,orders)
+end
 function _compute_lagrangian_reffaces(::Type{T},p::ExtrusionPolytope{D},orders) where {T,D}
   if D == 0
     return ()
@@ -86,6 +90,27 @@ end
 function LagrangianDofBasis(::Type{T},p::ExtrusionPolytope,orders) where T
   nodes, _ = _polytope_nodes(p,orders)
   LagrangianDofBasis(T,nodes)
+end
+
+num_dofs(reffe::LagrangianRefFE) = reffe.data.ndofs
+
+reffe_polytope(reffe::LagrangianRefFE) = reffe.data.polytope
+
+reffe_prebasis(reffe::LagrangianRefFE) = reffe.data.prebasis
+
+reffe_dofs(reffe::LagrangianRefFE) = reffe.data.dofs
+
+reffe_face_dofids(reffe::LagrangianRefFE) = reffe.data.facedofids
+
+reffe_shapefuns(reffe::LagrangianRefFE) = reffe.data.shapefuns
+
+function ReferenceFE{N}(reffe::LagrangianRefFE,iface) where N
+  ReferenceFE{N}(reffe.data,iface)
+end
+
+function ReferenceFE{D}(reffe::LagrangianRefFE{D},iface) where D
+  @assert iface==1 "Only one D-face"
+  reffe
 end
 
 # Helpers

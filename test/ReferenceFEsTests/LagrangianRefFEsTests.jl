@@ -51,9 +51,27 @@ b = MonomialBasis(VectorValue{2,Int},VERTEX,())
 @test evaluate(b,Point{0,Int}[(),()]) == VectorValue{2,Int}[(1, 0) (0, 1); (1, 0) (0, 1)]
 
 reffe = LagrangianRefFE(VectorValue{2,Int},VERTEX,())
-@show reffe.facenodeids
-@show reffe.data.facedofids
+@test reffe.facenodeids == [[1]]
+@test reffe.data.facedofids == [[1,2]]
+test_reference_fe(reffe)
+@test ReferenceFE{0}(reffe,1) === reffe
 
+reffe = LagrangianRefFE(VectorValue{2,Float64},SEGMENT,(2,))
+@test reffe_face_dofids(reffe) == [[1, 4], [2, 5], [3, 6]]
+test_reference_fe(reffe)
 
+reffe = LagrangianRefFE(VectorValue{2,Float64},TRI,3)
+@test reffe_face_dofids(reffe) == [[1, 11], [2, 12], [3, 13], [4, 5, 14, 15], [6, 7, 16, 17], [8, 9, 18, 19], [10, 20]]
+test_reference_fe(reffe)
+
+reffe = LagrangianRefFE(Float64,HEX,2)
+test_reference_fe(reffe)
+
+reffe = LagrangianRefFE(Float64,WEDGE,(1,1,2))
+test_reference_fe(reffe)
+refface = ReferenceFE{1}(reffe,3)
+@test reffe_face_dofids(refface) == [[1], [2], [3]]
+refface = ReferenceFE{1}(reffe,4)
+@test reffe_face_dofids(refface) == [[1], [2], []]
 
 end # module
