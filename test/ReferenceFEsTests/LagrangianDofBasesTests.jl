@@ -43,12 +43,15 @@ db = LagrangianDofBasis(T,x)
 v = VectorValue(1,2)
 d = 2
 f = MockField{d}(v)
-fx = evaluate(f,x)
-test_dof(db,f,fx)
+dbf = [0, 1, 0, 1, 0, 2, 0, 2]
+test_dof(db,f,dbf)
 
 ndof = 8
 b = MockBasis{d}(v,ndof)
 bx = evaluate(b,x)
-test_dof(db,b,bx)
+dbb = [
+  0 0 0 0 0 0 0 0; 1 1 1 1 1 1 1 1; 0 0 0 0 0 0 0 0; 1 1 1 1 1 1 1 1;
+  0 0 0 0 0 0 0 0; 2 2 2 2 2 2 2 2; 0 0 0 0 0 0 0 0; 2 2 2 2 2 2 2 2]
+test_dof(db,b,dbb)
 
 end # module

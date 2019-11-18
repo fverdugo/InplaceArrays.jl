@@ -47,9 +47,65 @@ function _generate_dof_layout(::Type{T},nnodes::Integer) where T<:MultiValue
 end
 
 function dof_cache(b::LagrangianDofBasis,field)
-  field_cache(field,b.nodes)
+  cf = field_cache(field,b.nodes)
+  vals = evaluate_field!(cf,field,b.nodes)
+  ndofs = length(b.dof_to_node)
+  r = _lagr_dof_cache(vals,ndofs)
+  c = CachedArray(r)
+  (c, cf)
+end
+
+function _lagr_dof_cache(node_comp_to_val::AbstractVector,ndofs)
+  T = eltype(node_comp_to_val)
+  r = zeros(eltype(T),ndofs)
+end
+
+function _lagr_dof_cache(node_pdof_comp_to_val::AbstractMatrix,ndofs)
+  _, npdofs = size(node_pdof_comp_to_val)
+  T = eltype(node_pdof_comp_to_val)
+  r = zeros(eltype(T),ndofs,npdofs)
 end
 
 @inline function evaluate_dof!(cache,b::LagrangianDofBasis,field)
-  evaluate_field!(cache,field,b.nodes)
+  c, cf = cache
+  vals = evaluate_field!(cf,field,b.nodes)
+  ndofs = length(b.dof_to_node)
+  T = eltype(vals)
+  ncomps = n_components(T)
+  _evaluate_lagr_dof!(c,vals,b.node_and_comp_to_dof,ndofs,ncomps)
 end
+
+function _evaluate_lagr_dof!(c::AbstractVector,node_comp_to_val,node_and_comp_to_dof,ndofs,ncomps)
+  setsize!(c,(ndofs,))
+  r = c.array
+  for node in LinearIndices(node_and_comp_to_dof)
+    comp_to_dof = node_and_comp_to_dof[node]
+    comp_to_val = node_comp_to_val[node]
+    for comp in 1:ncomps
+      dof = comp_to_dof[comp]
+      val = comp_to_val[comp]
+      r[dof] = val
+    end
+  end
+  r
+end
+
+function _evaluate_lagr_dof!(c::AbstractMatrix,node_pdof_comp_to_val,node_and_comp_to_dof,ndofs,ncomps)
+  _, npdofs = size(node_pdof_comp_to_val)
+  setsize!(c,(ndofs,npdofs))
+  r = c.array
+  for node in LinearIndices(node_and_comp_to_dof)
+    comp_to_dof = node_and_comp_to_dof[node]
+    for pdof in 1:npdofs
+      comp_to_val = node_pdof_comp_to_val[node,pdof]
+      for comp in 1:ncomps
+        dof = comp_to_dof[comp]
+        val = comp_to_val[comp]
+        r[dof,pdof] = val
+      end
+    end
+  end
+  r
+end
+
+
