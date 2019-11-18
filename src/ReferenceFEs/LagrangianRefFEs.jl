@@ -306,3 +306,59 @@ function _generate_nfacedofs(nfacenodes,node_and_comp_to_dof)
   nfacedofs
 end
 
+const INVALID_PERM = 0
+
+function _find_node_permutaions(polytope, interior_nodes, orders)
+  vertex_to_coord = vertex_coordinates(polytope)
+  lbasis = MonomialBasis(Float64,polytope,1)
+  change = inv(evaluate(lbasis,vertex_to_coord))
+  lshapefuns = change_basis(lbasis,change)
+  perms = vertex_permutations(polytope)
+  map = evaluate(lshapefuns,interior_nodes) 
+  pvertex_to_coord = similar(vertex_to_coord)
+  node_perms = Vector{Int}[]
+  tol = 1.0e-10
+  for vertex_to_pvertex in perms
+    node_to_pnode = fill(INVALID_PERM,length(interior_nodes))
+    pvertex_to_coord[vertex_to_pvertex] = vertex_to_coord
+    pinterior_nodes = map*pvertex_to_coord
+    for node in 1:length(interior_nodes)
+      x = interior_nodes[node]
+      pnode = findfirst(i->norm(i-x)<tol,pinterior_nodes)
+      if pnode != nothing
+         node_to_pnode[node] = pnode
+      end
+    end
+    push!(node_perms,node_to_pnode)
+  end
+  node_perms
+end
+
+function _find_dof_permutaions(node_perms,node_and_comp_to_dof,nfacenodeids,nfacedofsids)
+  dof_perms = Vector{Int}[]
+  T = eltype(node_and_comp_to_dof)
+  ncomps = n_components(T)
+  idof_to_dof = nfacedofsids[end]
+  inode_to_node = nfacenodeids[end]
+  for inode_to_pinode in node_perms
+    ninodes = length(inode_to_pinode)
+    nidofs = ncomps*ninodes
+    idof_to_pidof = zeros(Int,nidofs)
+    for (inode,ipnode) in enumerate(inode_to_pinode)
+      node = inode_to_node[inode]
+      pnode = inode_to_node[ipnode]
+      comp_to_dof = node_and_comp_to_dof[node]
+      comp_to_pdof = node_and_comp_to_dof[pnode]
+      for comp in 1:ncomps
+        dof = comp_to_dof[comp]
+        pdof = comp_to_pdof[comp]
+        idof = findfirst(i->i==dof,idof_to_dof)
+        ipdof = findfirst(i->i==pdof,idof_to_dof)
+        idof_to_pidof[idof] = ipdof
+      end
+    end
+    push!(dof_perms,idof_to_pidof)
+  end
+  dof_perms
+end
+

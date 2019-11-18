@@ -74,4 +74,32 @@ refface = ReferenceFE{1}(reffe,3)
 refface = ReferenceFE{1}(reffe,4)
 @test reffe_face_dofids(refface) == [[1], [2], []]
 
+using InplaceArrays.ReferenceFEs: _interior_nodes, _coords_to_terms
+using InplaceArrays.ReferenceFEs: _find_node_permutaions
+using InplaceArrays.ReferenceFEs: _find_dof_permutaions
+
+
+orders = (4,)
+interior_nodes = _interior_nodes(SEGMENT,orders)
+vertex_perms = vertex_permutations(SEGMENT)
+node_perms = _find_node_permutaions(SEGMENT,interior_nodes,orders)
+@show node_perms
+@show vertex_perms
+
+#reffe = LagrangianRefFE(VectorValue{2,Float64},SEGMENT,orders)
+#node_and_comp_to_dof = reffe_dofs(reffe).node_and_comp_to_dof
+#nfacedofsids = reffe_face_dofids(reffe)
+#nfacenodeids = reffe.facenodeids
+#dof_perms = _find_dof_permutaions(node_perms,node_and_comp_to_dof,nfacenodeids,nfacedofsids)
+#
+#@show dof_perms
+#@show nfacedofsids[end]
+
+orders = (2,3)
+interior_nodes = _interior_nodes(QUAD,orders)
+vertex_perms = vertex_permutations(QUAD)
+node_perms = _find_node_permutaions(QUAD,interior_nodes,orders)
+@show node_perms
+@show vertex_perms
+
 end # module
