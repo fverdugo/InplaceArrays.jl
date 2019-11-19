@@ -56,6 +56,8 @@ TRI
 QUAD
 TET
 HEX
+WEDGE
+PYRAMID
 ```
 ## Degrees of freedom
 
@@ -79,27 +81,57 @@ LagrangianDofBasis
 LagrangianDofBasis(::Type{T},nodes::Vector{<:Point}) where T
 ```
 
-## Referece Finite Elements
-
-### Interface
+## The reference Finite Element interface
 
 ```@docs
 ReferenceFE
+num_dofs(reffe::ReferenceFE)
 reffe_polytope(reffe)
 reffe_prebasis(reffe)
 reffe_dofs(reffe)
 reffe_face_dofids(reffe)
 ReferenceFE{N}(reffe,nfaceid) where N
 reffe_dof_permutations(reffe)
+INVALID_PERM
 reffe_shapefuns(reffe)
 compute_shapefuns(dofs,prebasis)
 num_dims(::Type{<:ReferenceFE{D}}) where D
 test_reference_fe(reffe::ReferenceFE{D}) where D
 ```
 
-### Concrete Implementations
+## Generic reference elements
 
 ```@docs
 GenericRefFE
-GenericRefFE(::Polytope{D},::Field,::Dof,::Vector{Vector{Int}},::Field) where D
+GenericRefFE(
+  polytope::Polytope{D},
+  prebasis::Field,
+  dofs::Dof,
+  facedofids::Vector{Vector{Int}};
+  shapefuns::Field,
+  ndofs::Int,
+  dofperms::Vector{Vector{Int}},
+  reffaces) where D
 ```
+
+## Lagrangian reference elements
+
+```@docs
+LagrangianRefFE
+LagrangianRefFE(::Type{T},p::Polytope{D},orders) where {T,D}
+MonomialBasis(::Type{T},p::Polytope,orders) where T
+LagrangianDofBasis(::Type{T},p::Polytope,orders) where T
+compute_monomial_basis(::Type{T},p::Polytope,orders) where T
+compute_interior_nodes(p::Polytope,orders)
+compute_face_orders(p::Polytope,face::Polytope,iface::Int,orders)
+compute_nodes(p::Polytope,orders)
+compute_node_permutations(p::Polytope, interior_nodes)
+compute_lagrangian_reffaces(::Type{T},p::Polytope,orders) where T
+```
+## Serendipity reference elements
+
+```@docs
+SerendipityRefFE
+is_serendipity_compatible(p::Polytope)
+```
+
