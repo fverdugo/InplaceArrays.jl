@@ -1,6 +1,22 @@
 
 
 """
+    struct LagrangianDofBasis{P,V} <: Dof
+      nodes::Vector{P}
+      dof_to_node::Vector{Int}
+      dof_to_comp::Vector{Int}
+      node_and_comp_to_dof::Vector{V}
+    end
+
+Type that implements a Lagrangian dof basis.
+
+Fields:
+
+- `nodes::Vector{P}` vector of points (`P<:Point`) storing the nodal coordinates
+- `node_and_comp_to_dof::Vector{V}` vector such that `node_and_comp_to_dof[node][comp]` returns the dof associated with node `node` and the component `comp` in the type `V`.
+- `dof_to_node::Vector{Int}` vector of integers such that `dof_to_node[dof]` returns the node id associated with dof id `dof`.
+- `dof_to_comp::Vector{Int}` vector of integers such that `dof_to_comp[dof]` returns the component id associated with dof id `dof`.
+
 """
 struct LagrangianDofBasis{P,V} <: Dof
   nodes::Vector{P}
@@ -10,6 +26,10 @@ struct LagrangianDofBasis{P,V} <: Dof
 end
 
 """
+    LagrangianDofBasis(::Type{T},nodes::Vector{<:Point}) where T
+
+Creates a `LagrangianDofBasis` for fields of value type `T` associated
+with the vector of nodal coordinates `nodes`.
 """
 function LagrangianDofBasis(::Type{T},nodes::Vector{<:Point}) where T
   r = _generate_dof_layout(T,length(nodes))
