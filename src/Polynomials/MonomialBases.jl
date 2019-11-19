@@ -54,7 +54,7 @@ are used to select well known polynomial spaces
 
 - Q space: `(e,order) -> true`
 - P space: `(e,order) -> sum(e) <= order`
-- "Serendipity" space: `(e,order) -> sum( ( i for i in e if i>1 ) ) <= order`
+- "Serendipity" space: `(e,order) -> sum( [ i for i in e if i>1 ] ) <= order`
 
 """
 function MonomialBasis{D}(
@@ -171,7 +171,7 @@ function _define_terms(filter,orders)
   cis = CartesianIndices(t)
   co = CartesianIndex(g)
   maxorder = _maximum(orders)
-  [ ci for ci in cis if filter(Tuple(ci-co),maxorder) ]
+  [ ci for ci in cis if filter(Int[Tuple(ci-co)...],maxorder) ]
 end
 
 function _evaluate_1d!(v::AbstractMatrix{T},x,order,d) where T

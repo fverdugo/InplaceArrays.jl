@@ -77,6 +77,8 @@ export test_reference_fe
 export LagrangianRefFE
 export LagrangianDofBasis
 
+export SerendipityRefFE
+
 include("Polytopes.jl")
 
 include("ExtrusionPolytopes.jl")
@@ -90,5 +92,7 @@ include("LagrangianDofBases.jl")
 include("ReferenceFEInterfaces.jl")
 
 include("LagrangianRefFEs.jl")
+
+include("SerendipityRefFEs.jl")
 
 end # module
