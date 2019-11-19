@@ -37,12 +37,12 @@ polytope_offsets(p)
 polytope_offset(p,d)
 polytope_faces(p,dimfrom,dimto)
 ```
-### Concrete implementations
+### Extrusion polytopes
 
 ```@docs
 ExtrusionPolytope
-Polytope(extrusion::Int...)
 ExtrusionPolytope(extrusion::Int...)
+Polytope(extrusion::Int...)
 HEX_AXIS
 TET_AXIS
 ```
@@ -65,23 +65,30 @@ PYRAMID
 
 ```@docs
 Dof
+evaluate_dof!(cache,dof,field)
 dof_cache(dof,field)
-evaluate_dof!(dof,field)
 dof_return_type(dof,field)
 test_dof(dof,field,v,comp::Function)
 evaluate_dof(dof,field)
 evaluate(dof::Dof,field)
+```
+
+### Working with arrays of DOFs
+
+```@docs
 evaluate_dof_array(dof::AbstractArray,field::AbstractArray)
 evaluate(dof::AbstractArray{<:Dof},field::AbstractArray)
 ```
-### Concrete implementations
+### Lagrangian dof bases
 
 ```@docs
 LagrangianDofBasis
 LagrangianDofBasis(::Type{T},nodes::Vector{<:Point}) where T
 ```
 
-## The reference Finite Element interface
+## Reference Finite Elements
+
+### Interface
 
 ```@docs
 ReferenceFE
@@ -99,7 +106,7 @@ num_dims(::Type{<:ReferenceFE{D}}) where D
 test_reference_fe(reffe::ReferenceFE{D}) where D
 ```
 
-## Generic reference elements
+### Generic reference elements
 
 ```@docs
 GenericRefFE
@@ -114,7 +121,7 @@ GenericRefFE(
   reffaces) where D
 ```
 
-## Lagrangian reference elements
+### Lagrangian reference elements
 
 ```@docs
 LagrangianRefFE
@@ -128,7 +135,7 @@ compute_nodes(p::Polytope,orders)
 compute_node_permutations(p::Polytope, interior_nodes)
 compute_lagrangian_reffaces(::Type{T},p::Polytope,orders) where T
 ```
-## Serendipity reference elements
+### Serendipity reference elements
 
 ```@docs
 SerendipityRefFE

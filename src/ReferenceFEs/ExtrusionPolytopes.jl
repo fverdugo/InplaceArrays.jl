@@ -8,7 +8,18 @@ struct NFace{D}
 end
 
 """
-Extrusion public, other fields private
+    struct ExtrusionPolytope{D} <: Polytope{D}
+      extrusion::Point{D,Int}
+      # + private fields
+    end
+
+Concrete type for polytopes that can be
+represented with an "extrusion" tuple. The underlying extrusion is available
+in the field `extrusion`. Instances of this type can be obtained with the constructors
+
+- [`Polytope(extrusion::Int...)`](@ref)
+- [`ExtrusionPolytope(extrusion::Int...)`](@ref)
+
 """
 struct ExtrusionPolytope{D} <: Polytope{D}
   extrusion::Point{D,Int}
@@ -21,6 +32,9 @@ end
 # Constructors
 
 """
+    Polytope(extrusion::Int...)
+
+Equivalent to `ExtrusionPolytope(extrusion...)`
 """
 Polytope(extrusion::Int...) = Polytope(extrusion)
 
@@ -33,16 +47,48 @@ function ExtrusionPolytope(extrusion::NTuple{N,Int}) where N
 end
 
 """
+    ExtrusionPolytope(extrusion::Int...)
+
+Generates an `ExtrusionPolytope` from the tuple `extrusion`.
+The values in `extrusion` are either equal to the constant
+[`HEX_AXIS`](@ref) or the constant [`TET_AXIS`](@ref).
+
+# Examples
+
+Creating a quadrilateral, a triangle, and a wedge
+
+```jldoctest
+using InplaceArrays.ReferenceFEs
+
+quad = ExtrusionPolytope(HEX_AXIS,HEX_AXIS)
+
+tri = ExtrusionPolytope(TET_AXIS,TET_AXIS)
+
+wedge = ExtrusionPolytope(TET_AXIS,TET_AXIS,HEX_AXIS)
+
+println(quad == QUAD)
+println(tri == TRI)
+println(wedge == WEDGE)
+
+# output
+true
+true
+true
+
+```
+
 """
 function ExtrusionPolytope(extrusion::Int...)
   ExtrusionPolytope(extrusion)
 end
 
 """
+Constant to be used in order to indicate a hex-like extrusion axis.
 """
 const HEX_AXIS = 1
 
 """
+Constant to be used in order to indicate a tet-like extrusion axis.
 """
 const TET_AXIS = 2
 
@@ -424,35 +470,44 @@ end
 # Some particular cases
 
 """
+Constant bound to a polytope instance
+representing a vertex.
 """
 const VERTEX = _vertex()
 
 """
+    const SEGMENT = Polytope(HEX_AXIS)
 """
 const SEGMENT = Polytope(HEX_AXIS)
 
 # TODO use larger names
 """
+    const TRI = Polytope(TET_AXIS,TET_AXIS)
 """
 const TRI = Polytope(TET_AXIS,TET_AXIS)
 
 """
+    const QUAD = Polytope(HEX_AXIS,HEX_AXIS)
 """
 const QUAD = Polytope(HEX_AXIS,HEX_AXIS)
 
 """
+    const TET = Polytope(TET_AXIS,TET_AXIS,TET_AXIS)
 """
 const TET = Polytope(TET_AXIS,TET_AXIS,TET_AXIS)
 
 """
+    const HEX = Polytope(HEX_AXIS,HEX_AXIS,HEX_AXIS)
 """
 const HEX = Polytope(HEX_AXIS,HEX_AXIS,HEX_AXIS)
 
 """
+    const WEDGE = Polytope(TET_AXIS,TET_AXIS,HEX_AXIS) 
 """
 const WEDGE = Polytope(TET_AXIS,TET_AXIS,HEX_AXIS) 
 
 """
+    const PYRAMID = Polytope(HEX_AXIS,HEX_AXIS,TET_AXIS) 
 """
 const PYRAMID = Polytope(HEX_AXIS,HEX_AXIS,TET_AXIS) 
 
