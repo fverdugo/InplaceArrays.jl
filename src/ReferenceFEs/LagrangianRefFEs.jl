@@ -3,6 +3,7 @@
     struct LagrangianRefFE{D} <: ReferenceFE{D}
       data::GenericRefFE{D}
       facenodeids::Vector{Vector{Int}}
+      nodeperms::Vector{Vector{Int}},
     end
 
 For this type
@@ -14,6 +15,7 @@ For this type
 struct LagrangianRefFE{D} <: ReferenceFE{D}
   data::GenericRefFE{D}
   facenodeids::Vector{Vector{Int}}
+  nodeperms::Vector{Vector{Int}}
   @doc """
   """
   function LagrangianRefFE(
@@ -21,15 +23,19 @@ struct LagrangianRefFE{D} <: ReferenceFE{D}
     prebasis::MonomialBasis,
     dofs::LagrangianDofBasis,
     facenodeids::Vector{Vector{Int}},
+    nodeperms::Vector{Vector{Int}},
     reffaces::Vector{<:LagrangianRefFE}...) where D
 
     facedofids = _generate_nfacedofs(facenodeids,dofs.node_and_comp_to_dof)
+    dofperms = _find_dof_permutaions(nodeperms,dofs.node_and_comp_to_dof,facenodeids,facedofids)
+
 
     data = GenericRefFE(
       polytope,prebasis,dofs,facedofids;
+      dofperms = dofperms,
       reffaces = reffaces)
 
-    new{D}(data,facenodeids)
+    new{D}(data,facenodeids,nodeperms)
   end
 end
 
@@ -41,8 +47,10 @@ function LagrangianRefFE(::Type{T},p::ExtrusionPolytope{D},orders) where {T,D}
   prebasis = MonomialBasis(T,p,orders)
   nodes, facenodeids = _polytope_nodes(p,orders)
   dofs = LagrangianDofBasis(T,nodes)
+  interior_nodes = dofs.nodes[facenodeids[end]]
+  nodeperms = _find_node_permutaions(p, interior_nodes, orders)
   reffaces = _compute_lagrangian_reffaces(T,p,orders)
-  LagrangianRefFE(p,prebasis,dofs,facenodeids,reffaces...)
+  LagrangianRefFE(p,prebasis,dofs,facenodeids,nodeperms,reffaces...)
 end
 
 function _compute_lagrangian_reffaces(::Type{T},p::ExtrusionPolytope{D},order::Int) where {T,D}
@@ -101,6 +109,8 @@ reffe_prebasis(reffe::LagrangianRefFE) = reffe.data.prebasis
 reffe_dofs(reffe::LagrangianRefFE) = reffe.data.dofs
 
 reffe_face_dofids(reffe::LagrangianRefFE) = reffe.data.facedofids
+
+reffe_dof_permutations(reffe::LagrangianRefFE) = reffe.data.dofperms
 
 reffe_shapefuns(reffe::LagrangianRefFE) = reffe.data.shapefuns
 
@@ -308,6 +318,8 @@ end
 
 const INVALID_PERM = 0
 
+_find_node_permutaions(::Polytope{0}, interior_nodes, orders) = [[1]]
+
 function _find_node_permutaions(polytope, interior_nodes, orders)
   vertex_to_coord = vertex_coordinates(polytope)
   lbasis = MonomialBasis(Float64,polytope,1)
@@ -343,12 +355,15 @@ function _find_dof_permutaions(node_perms,node_and_comp_to_dof,nfacenodeids,nfac
   for inode_to_pinode in node_perms
     ninodes = length(inode_to_pinode)
     nidofs = ncomps*ninodes
-    idof_to_pidof = zeros(Int,nidofs)
+    idof_to_pidof = fill(INVALID_PERM,nidofs)
     for (inode,ipnode) in enumerate(inode_to_pinode)
+      if ipnode == INVALID_PERM
+        continue
+      end
       node = inode_to_node[inode]
       pnode = inode_to_node[ipnode]
-      comp_to_dof = node_and_comp_to_dof[node]
       comp_to_pdof = node_and_comp_to_dof[pnode]
+      comp_to_dof = node_and_comp_to_dof[node]
       for comp in 1:ncomps
         dof = comp_to_dof[comp]
         pdof = comp_to_pdof[comp]

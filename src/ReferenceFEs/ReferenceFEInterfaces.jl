@@ -120,6 +120,7 @@ struct GenericRefFE{D} <: ReferenceFE{D}
     prebasis::Field
     dofs::Dof
     facedofids::Vector{Vector{Int}}
+    dofperms::Vector{Vector{Int}}
     shapefuns::Field
     reffaces
   @doc """
@@ -131,9 +132,10 @@ struct GenericRefFE{D} <: ReferenceFE{D}
     facedofids::Vector{Vector{Int}};
     shapefuns::Field = compute_shapefuns(dofs,prebasis),
     ndofs::Int = size(evaluate(dofs,prebasis),1),
+    dofperms::Vector{Vector{Int}} = [ fill(INVALID_PERM,length(fi)) for fi in facedofids],
     reffaces = nothing) where D
 
-    new{D}(ndofs,polytope,prebasis,dofs,facedofids,shapefuns,reffaces)
+    new{D}(ndofs,polytope,prebasis,dofs,facedofids,dofperms,shapefuns,reffaces)
   end
 end
 
@@ -146,6 +148,8 @@ reffe_prebasis(reffe::GenericRefFE) = reffe.prebasis
 reffe_dofs(reffe::GenericRefFE) = reffe.dofs
 
 reffe_face_dofids(reffe::GenericRefFE) = reffe.facedofids
+
+reffe_dof_permutations(reffe::GenericRefFE) = reffe.dofperms
 
 reffe_shapefuns(reffe::GenericRefFE) = reffe.shapefuns
 

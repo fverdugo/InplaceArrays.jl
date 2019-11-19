@@ -120,6 +120,8 @@ meas(a::TensorValue) = abs(det(a))
 
 @inline norm(u::VectorValue) = sqrt(inner(u,u))
 
+@inline norm(u::VectorValue{0,T}) where T = sqrt(zero(T))
+
 # conj
 
 conj(a::MultiValue) = MultiValue(conj(a.array))
