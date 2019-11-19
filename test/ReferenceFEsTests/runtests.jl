@@ -16,4 +16,6 @@ using Test
 
 @testset "LagrangianRefFEs" begin include("LagrangianRefFEsTests.jl") end
 
+@testset "SerendipityRefFEs" begin include("SerendipityRefFEsTests.jl") end
+
 end # module
