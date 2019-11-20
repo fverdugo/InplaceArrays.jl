@@ -94,9 +94,9 @@ const TET_AXIS = 2
 
 # Implementation of the interface
 
-polytope_faces(p::ExtrusionPolytope) = p.nf_nfs
+get_faces(p::ExtrusionPolytope) = p.nf_nfs
 
-polytope_dimrange(p::ExtrusionPolytope) = p.nfacesdim
+get_dimrange(p::ExtrusionPolytope) = p.nfacesdim
 
 function Polytope{0}(p::ExtrusionPolytope,Dfaceid::Integer)
   @assert Dfaceid in 1:num_vertices(p)
@@ -105,7 +105,7 @@ end
 
 function Polytope{D}(p::ExtrusionPolytope,Dfaceid::Integer)::ExtrusionPolytope{D} where D
   reffaces = _nface_ref_polytopes(p)
-  offset = polytope_offset(p,D)
+  offset = get_offset(p,D)
   id = Dfaceid + offset
   reffaces[id]
 end

@@ -17,8 +17,8 @@ use *face*. In addition, we say
 
 The `Polytope` interface is defined by overloading the following functions
 
-- [`polytope_faces(p::Polytope)`](@ref)
-- [`polytope_dimrange(p::Polytope)`](@ref)
+- [`get_faces(p::Polytope)`](@ref)
+- [`get_dimrange(p::Polytope)`](@ref)
 - [`Polytope{N}(p::Polytope,faceid::Integer) where N`](@ref)
 - [`vertex_coordinates(p::Polytope)`](@ref)
 - [`(==)(a::Polytope{D},b::Polytope{D}) where D`](@ref)
@@ -29,8 +29,8 @@ And optionally these ones:
 - [`facet_normals(p::Polytope)`](@ref)
 - [`facet_orientations(p::Polytope)`](@ref)
 - [`vertex_permutations(p::Polytope)`](@ref)
-- [`polytope_vtkid(p::Polytope)`](@ref)
-- [`polytope_vtknodes(p::Polytope)`](@ref)
+- [`get_vtkid(p::Polytope)`](@ref)
+- [`get_vtknodes(p::Polytope)`](@ref)
 
 The interface can be tested with the function
 
@@ -42,7 +42,7 @@ abstract type Polytope{D} end
 # Mandatory
 
 """
-    polytope_faces(p::Polytope) -> Vector{Vector{Int}}
+    get_faces(p::Polytope) -> Vector{Vector{Int}}
 
 Given a polytope `p` the function returns a vector of vectors
 defining the *incidence* relation of the faces in the polytope.
@@ -50,7 +50,7 @@ defining the *incidence* relation of the faces in the polytope.
 Each face in the polytope receives a unique integer id. The id 1 is assigned
 to the first 0-face. Consecutive increasing ids are assigned to the other
 0-faces, then to 1-faces, and so on. The polytope itself receives the largest id
-which coincides with `num_faces(p)`. For a face id `iface`, `polytope_faces(p)[iface]`
+which coincides with `num_faces(p)`. For a face id `iface`, `get_faces(p)[iface]`
 is a vector of face ids, corresponding to the faces that are *incident* with the face
 labeled with `iface`. That is, faces that are either on its boundary or the face itself. 
 In this vector of incident face ids, faces are ordered by dimension, starting with 0-faces.
@@ -62,7 +62,7 @@ for the face `iface` itself.
 ```jldoctest
 using InplaceArrays.ReferenceFEs
 
-faces = polytope_faces(SEGMENT)
+faces = get_faces(SEGMENT)
 println(faces)
 
 # output
@@ -77,12 +77,12 @@ The face labels associated with a segment are `[1,2,3]`, being `1` and `2` for t
 the segment (id `3`) is incident with the vertices `1` and `2` and the segment itself.
 
 """
-function polytope_faces(p::Polytope)
+function get_faces(p::Polytope)
   @abstractmethod
 end
 
 """
-    polytope_dimrange(p::Polytope) -> Vector{UnitRange{Int}}
+    get_dimrange(p::Polytope) -> Vector{UnitRange{Int}}
 
 Given a polytope `p` it returns a vector of ranges. The entry `d+1` in this vector
 contains the range of face ids for the faces of dimension `d`.
@@ -92,7 +92,7 @@ contains the range of face ids for the faces of dimension `d`.
 ```jldoctest
 using InplaceArrays.ReferenceFEs
 
-ranges = polytope_dimrange(SEGMENT)
+ranges = get_dimrange(SEGMENT)
 println(ranges)
 
 # output
@@ -102,7 +102,7 @@ Face ids for the vertices in the segment range from 1 to 2 (2 vertices),
 the face ids for edges in the segment range from 3 to 3 (only one edge with id 3).
 
 """
-function polytope_dimrange(p::Polytope)
+function get_dimrange(p::Polytope)
   @abstractmethod
 end
 
@@ -208,18 +208,18 @@ function vertex_permutations(p::Polytope)
 end
 
 """
-    polytope_vtkid(p::Polytope) -> Int
+    get_vtkid(p::Polytope) -> Int
 
 Given a polytope `p`, returns an integer with its vtk identifier.
 Overloading of this function is needed only in order to visualize the underlying polytope
 with Paraview.
 """
-function polytope_vtkid(p::Polytope)
+function get_vtkid(p::Polytope)
   @abstractmethod
 end
 
 """
-    polytope_vtknodes(p::Polytope) -> Vector{Int}
+    get_vtknodes(p::Polytope) -> Vector{Int}
 
 Given a polytope `p`, returns a vector of integers representing a permutation of the
 polytope vertices required to relabel the vertices according the criterion adopted in
@@ -227,7 +227,7 @@ Paraview.
 Overloading of this function is needed only in order to visualize the underlying polytope
 with Paraview.
 """
-function polytope_vtknodes(p::Polytope)
+function get_vtknodes(p::Polytope)
   @abstractmethod
 end
 
@@ -249,7 +249,7 @@ num_dims(p::Polytope) = num_dims(typeof(p))
 Returns the total number of faces in polytope `p` (from vertices to the polytope itself).
 """
 function num_faces(p::Polytope)
-  length(polytope_faces(p))
+  length(get_faces(p))
 end
 
 """
@@ -258,7 +258,7 @@ end
 Returns the number of faces of dimension `dim` in polytope `p`.
 """
 function num_faces(p::Polytope,dim::Integer)
-  length(polytope_dimrange(p)[dim+1])
+  length(get_dimrange(p)[dim+1])
 end
 
 """
@@ -299,7 +299,7 @@ function num_vertices(p::Polytope)
 end
 
 """
-    polytope_facedims(p::Polytope) -> Vector{Int}
+    get_facedims(p::Polytope) -> Vector{Int}
 
 Given a polytope `p`, returns a vector indicating
 the dimension of each face in the polytope
@@ -309,7 +309,7 @@ the dimension of each face in the polytope
 ```jldoctest
 using InplaceArrays.ReferenceFEs
 
-dims = polytope_facedims(SEGMENT)
+dims = get_facedims(SEGMENT)
 println(dims)
 
 # output
@@ -321,10 +321,10 @@ The first two faces in the segment (the two vertices) have dimension 0 and the
 third face (the segment itself) has dimension 1
 
 """
-function polytope_facedims(p::Polytope)
+function get_facedims(p::Polytope)
   n = num_faces(p)
   facedims = zeros(Int,n)
-  dimrange = polytope_dimrange(p)
+  dimrange = get_dimrange(p)
   for (i,r) in enumerate(dimrange)
     d = i-1
     facedims[r] .= d
@@ -333,7 +333,7 @@ function polytope_facedims(p::Polytope)
 end
 
 """
-    polytope_offsets(p::Polytope) -> Vector{Int}
+    get_offsets(p::Polytope) -> Vector{Int}
 
 Given a polytope `p`, it returns a vector of integers. The position in
 the `d+1` entry in this vector is the offset that transforms a face id in
@@ -345,7 +345,7 @@ to dimension `d`.
 ```jldoctest
 using InplaceArrays.ReferenceFEs
 
-offsets = polytope_offsets(SEGMENT)
+offsets = get_offsets(SEGMENT)
 println(offsets)
 
 # output
@@ -353,9 +353,9 @@ println(offsets)
 
 ```
 """
-function polytope_offsets(p::Polytope)
+function get_offsets(p::Polytope)
   D = num_dims(p)
-  dimrange = polytope_dimrange(p)
+  dimrange = get_dimrange(p)
   offsets = zeros(Int,D+1)
   k = 0
   for i in 0:D
@@ -368,16 +368,16 @@ function polytope_offsets(p::Polytope)
 end
 
 """
-    polytope_offset(p::Polytope,d::Integer)
+    get_offset(p::Polytope,d::Integer)
 
-Equivalent to `polytope_offsets(p)[d+1]`.
+Equivalent to `get_offsets(p)[d+1]`.
 """
-function polytope_offset(p::Polytope,d::Integer)
-  polytope_offsets(p)[d+1]
+function get_offset(p::Polytope,d::Integer)
+  get_offsets(p)[d+1]
 end
 
 """
-    polytope_faces(p::Polytope,dimfrom::Integer,dimto::Integer) -> Vector{Vector{Int}}
+    get_faces(p::Polytope,dimfrom::Integer,dimto::Integer) -> Vector{Vector{Int}}
 
 For `dimfrom >= dimto` returns a vector that for each face of
 dimension `dimfrom` stores a vector of the ids of faces of
@@ -391,10 +391,10 @@ The numerations used in this funcitons are the ones restricted to each dimension
 ```jldoctest
 using InplaceArrays.ReferenceFEs
 
-edge_to_vertices = polytope_faces(QUAD,1,0)
+edge_to_vertices = get_faces(QUAD,1,0)
 println(edge_to_vertices)
 
-vertex_to_edges_around = polytope_faces(QUAD,0,1)
+vertex_to_edges_around = get_faces(QUAD,0,1)
 println(vertex_to_edges_around)
 
 # output
@@ -402,32 +402,32 @@ Array{Int64,1}[[1, 2], [3, 4], [1, 3], [2, 4]]
 Array{Int64,1}[[1, 3], [1, 4], [2, 3], [2, 4]]
 ```
 """
-function polytope_faces(p::Polytope,dimfrom::Integer,dimto::Integer)
+function get_faces(p::Polytope,dimfrom::Integer,dimto::Integer)
   if dimfrom >= dimto
-    _polytope_faces_primal(p,dimfrom,dimto)
+    _get_faces_primal(p,dimfrom,dimto)
   else
-    _polytope_faces_dual(p,dimfrom,dimto)
+    _get_faces_dual(p,dimfrom,dimto)
   end
 end
 
-function _polytope_faces_primal(p,dimfrom,dimto)
-  dimrange = polytope_dimrange(p)
+function _get_faces_primal(p,dimfrom,dimto)
+  dimrange = get_dimrange(p)
   r = dimrange[dimfrom+1]
-  faces = polytope_faces(p)
+  faces = get_faces(p)
   faces_dimfrom = faces[r]
   n = length(faces_dimfrom)
   faces_dimfrom_dimto = Vector{Vector{Int}}(undef,n)
-  offset = polytope_offset(p,dimto)
+  offset = get_offset(p,dimto)
   for i in 1:n
     f = Polytope{dimfrom}(p,i)
-    rto = polytope_dimrange(f)[dimto+1]
+    rto = get_dimrange(f)[dimto+1]
     faces_dimfrom_dimto[i] = faces_dimfrom[i][rto].-offset
   end
   faces_dimfrom_dimto
 end
 
-function _polytope_faces_dual(p,dimfrom,dimto)
-  tface_to_ffaces = polytope_faces(p,dimto,dimfrom)
+function _get_faces_dual(p,dimfrom,dimto)
+  tface_to_ffaces = get_faces(p,dimto,dimfrom)
   nffaces = num_faces(p,dimfrom)
   fface_to_tfaces = [Int[] for in in 1:nffaces]
   for (tface,ffaces) in enumerate(tface_to_ffaces)
@@ -448,17 +448,17 @@ It tests whether the function in the polytope interface are defined
 for the given object, and whether they return objects of the expected type.
 With `optional=false` (the default), only the mandatory functions are checked.
 With `optional=true`, the optional functions are also tested except
-`polytope_vtkid`  and `polytope_vtknodes`.
+`get_vtkid`  and `get_vtknodes`.
 """
 function test_polytope(p::Polytope{D};optional::Bool=false) where D
   @test D == num_dims(p)
-  faces = polytope_faces(p)
+  faces = get_faces(p)
   @test isa(faces,Vector{Vector{Int}})
   @test num_faces(p) == length(faces)
-  offsets = polytope_offsets(p)
+  offsets = get_offsets(p)
   @test isa(offsets,Vector{Int})
   @test length(offsets) == D+1
-  dimrange = polytope_dimrange(p)
+  dimrange = get_dimrange(p)
   @test isa(dimrange,Vector{UnitRange{Int}})
   @test length(dimrange) == D+1
   @test p == p
@@ -470,7 +470,7 @@ function test_polytope(p::Polytope{D};optional::Bool=false) where D
   end
   for dimfrom in 0:D
     for dimto in 0:D
-      fs = polytope_faces(p,dimfrom,dimto)
+      fs = get_faces(p,dimfrom,dimto)
       @test isa(fs,Vector{Vector{Int}})
     end
   end

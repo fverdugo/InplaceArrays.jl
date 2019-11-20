@@ -28,12 +28,12 @@ end
 
 # Implemented polytope interface
 
-function polytope_faces(p::SerendipityPolytope)
-  polytope_faces(p.hex)
+function get_faces(p::SerendipityPolytope)
+  get_faces(p.hex)
 end
 
-function polytope_dimrange(p::SerendipityPolytope)
-  polytope_dimrange(p.hex)
+function get_dimrange(p::SerendipityPolytope)
+  get_dimrange(p.hex)
 end
 
 function Polytope{N}(p::SerendipityPolytope,Nfaceid::Integer) where N

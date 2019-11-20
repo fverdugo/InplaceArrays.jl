@@ -26,23 +26,23 @@ import Base: ==
 
 export Polytope
 export ExtrusionPolytope
-export polytope_faces
-export polytope_dimrange
+export get_faces
+export get_dimrange
 export vertex_coordinates
 export facet_normals
 export facet_orientations
 export edge_tangents
 export vertex_permutations
-export polytope_vtkid
-export polytope_vtknodes
+export get_vtkid
+export get_vtknodes
 export num_dims
 export num_vertices
 export num_faces
 export num_facets
 export num_edges
-export polytope_facedims
-export polytope_offsets
-export polytope_offset
+export get_facedims
+export get_offsets
+export get_offset
 export test_polytope
 export VERTEX
 export SEGMENT
@@ -65,12 +65,12 @@ export evaluate_dof_array
 
 export ReferenceFE
 export GenericRefFE
-export reffe_polytope
-export reffe_prebasis
-export reffe_dofs
-export reffe_face_dofids
-export reffe_dof_permutations
-export reffe_shapefuns
+export get_polytope
+export get_prebasis
+export get_dofs
+export get_face_dofids
+export get_dof_permutations
+export get_shapefuns
 export compute_shapefuns
 export test_reference_fe
 

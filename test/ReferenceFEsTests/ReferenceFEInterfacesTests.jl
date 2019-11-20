@@ -19,7 +19,7 @@ facedofids = [[1],[2],[3],[4],Int[],Int[],Int[],Int[],Int[]]
 reffe = GenericRefFE(polytope,prebasis,dofs,facedofids)
 test_reference_fe(reffe)
 
-shapefuns = reffe_shapefuns(reffe)
+shapefuns = get_shapefuns(reffe)
 
 @test evaluate(shapefuns,x) == [1.0 0.0 0.0 0.0; 0.0 1.0 0.0 0.0; 0.0 0.0 1.0 0.0; 0.0 0.0 0.0 1.0]
 

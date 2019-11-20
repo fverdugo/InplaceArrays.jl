@@ -10,25 +10,25 @@ end
 
 """
 """
-function reffe_polytope(reffe::ReferenceFE)
+function get_polytope(reffe::ReferenceFE)
   @abstractmethod
 end
 
 """
 """
-function reffe_prebasis(reffe::ReferenceFE)
+function get_prebasis(reffe::ReferenceFE)
   @abstractmethod
 end
 
 """
 """
-function reffe_dofs(reffe::ReferenceFE)
+function get_dofs(reffe::ReferenceFE)
   @abstractmethod
 end
 
 """
 """
-function reffe_face_dofids(reffe::ReferenceFE)
+function get_face_dofids(reffe::ReferenceFE)
   @abstractmethod
 end
 
@@ -42,7 +42,7 @@ end
 
 """
 """
-function reffe_dof_permutations(reffe::ReferenceFE)
+function get_dof_permutations(reffe::ReferenceFE)
   @abstractmethod
 end
 
@@ -50,9 +50,9 @@ end
 
 """
 """
-function reffe_shapefuns(reffe::ReferenceFE)
-  dofs = reffe_dofs(reffe)
-  prebasis = reffe_prebasis(reffe)
+function get_shapefuns(reffe::ReferenceFE)
+  dofs = get_dofs(reffe)
+  prebasis = get_prebasis(reffe)
   compute_shapefuns(dofs,prebasis)
 end
 
@@ -75,16 +75,16 @@ num_dims(reffe::ReferenceFE) = num_dims(typeof(reffe))
 """
 function test_reference_fe(reffe::ReferenceFE{D}) where D
   @test D == num_dims(reffe)
-  p = reffe_polytope(reffe)
+  p = get_polytope(reffe)
   @test isa(p,Polytope{D})
-  basis = reffe_prebasis(reffe)
+  basis = get_prebasis(reffe)
   @test isa(basis,Field)
-  dofs = reffe_dofs(reffe)
+  dofs = get_dofs(reffe)
   @test isa(dofs,Dof)
-  facedofs = reffe_face_dofids(reffe)
+  facedofs = get_face_dofids(reffe)
   @test isa(facedofs,Vector{Vector{Int}})
   @test length(facedofs) == num_faces(p)
-  shapefuns = reffe_shapefuns(reffe)
+  shapefuns = get_shapefuns(reffe)
   @test isa(shapefuns,Field)
   ndofs = num_dofs(reffe)
   m = evaluate(dofs,basis)
@@ -142,17 +142,17 @@ end
 
 num_dofs(reffe::GenericRefFE) = reffe.ndofs
 
-reffe_polytope(reffe::GenericRefFE) = reffe.polytope
+get_polytope(reffe::GenericRefFE) = reffe.polytope
 
-reffe_prebasis(reffe::GenericRefFE) = reffe.prebasis
+get_prebasis(reffe::GenericRefFE) = reffe.prebasis
 
-reffe_dofs(reffe::GenericRefFE) = reffe.dofs
+get_dofs(reffe::GenericRefFE) = reffe.dofs
 
-reffe_face_dofids(reffe::GenericRefFE) = reffe.facedofids
+get_face_dofids(reffe::GenericRefFE) = reffe.facedofids
 
-reffe_dof_permutations(reffe::GenericRefFE) = reffe.dofperms
+get_dof_permutations(reffe::GenericRefFE) = reffe.dofperms
 
-reffe_shapefuns(reffe::GenericRefFE) = reffe.shapefuns
+get_shapefuns(reffe::GenericRefFE) = reffe.shapefuns
 
 function ReferenceFE{N}(reffe::GenericRefFE,iface::Integer) where N
   @assert reffe.reffaces != nothing "ReferenceFE cannot be provided. Make sure that you are using the keyword argument reffaces in the GenericRefFE constructor."

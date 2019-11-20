@@ -12,8 +12,8 @@ const INVALID_PERM = 0
 
 For this type
 
--  `reffe_dofs(reffe)` returns a `LagrangianDofBasis`
--  `reffe_prebasis(reffe)` returns a `MonomialBasis`
+-  `get_dofs(reffe)` returns a `LagrangianDofBasis`
+-  `get_prebasis(reffe)` returns a `MonomialBasis`
 -  `ReferenceFE{N}(reffe,faceid) where N` returns a `LagrangianRefFE{N}`
 """
 struct LagrangianRefFE{D} <: ReferenceFE{D}
@@ -44,17 +44,17 @@ end
 
 num_dofs(reffe::LagrangianRefFE) = reffe.data.ndofs
 
-reffe_polytope(reffe::LagrangianRefFE) = reffe.data.polytope
+get_polytope(reffe::LagrangianRefFE) = reffe.data.polytope
 
-reffe_prebasis(reffe::LagrangianRefFE) = reffe.data.prebasis
+get_prebasis(reffe::LagrangianRefFE) = reffe.data.prebasis
 
-reffe_dofs(reffe::LagrangianRefFE) = reffe.data.dofs
+get_dofs(reffe::LagrangianRefFE) = reffe.data.dofs
 
-reffe_face_dofids(reffe::LagrangianRefFE) = reffe.data.facedofids
+get_face_dofids(reffe::LagrangianRefFE) = reffe.data.facedofids
 
-reffe_dof_permutations(reffe::LagrangianRefFE) = reffe.data.dofperms
+get_dof_permutations(reffe::LagrangianRefFE) = reffe.data.dofperms
 
-reffe_shapefuns(reffe::LagrangianRefFE) = reffe.data.shapefuns
+get_shapefuns(reffe::LagrangianRefFE) = reffe.data.shapefuns
 
 function ReferenceFE{N}(reffe::LagrangianRefFE,iface::Integer) where N
   ReferenceFE{N}(reffe.data,iface)
@@ -244,7 +244,7 @@ end
 
 @noinline function _compute_high_order_nodes_dim_d!(nodes,facenodes,p,orders,::Val{d}) where d
   x = vertex_coordinates(p)
-  offset = polytope_offset(p,d)
+  offset = get_offset(p,d)
   k = length(nodes)+1
   for iface in 1:num_faces(p,d)
     face = Polytope{d}(p,iface)
@@ -252,7 +252,7 @@ end
     face_prebasis = MonomialBasis(Float64,face,1)
     change = inv(evaluate(face_prebasis,face_ref_x))
     face_shapefuns = change_basis(face_prebasis,change)
-    face_vertex_ids = polytope_faces(p,d,0)[iface]
+    face_vertex_ids = get_faces(p,d,0)[iface]
     face_x = x[face_vertex_ids]
     face_orders = compute_face_orders(p,face,iface,orders)
     face_interior_nodes = compute_interior_nodes(face,face_orders)
@@ -312,14 +312,14 @@ function _compute_lagrangian_reffaces(::Type{T},p::Polytope{D},orders) where {T,
   for vertex in 1:num_vertices(p)
     push!(reffaces[0+1],reffe0)
   end
-  offsets = polytope_offsets(p)
+  offsets = get_offsets(p)
   for d in 1:(num_dims(p)-1)
     offset = offsets[d+1]
     for iface in 1:num_faces(p,d)
       face = Polytope{d}(p,iface)
       face_orders = compute_face_orders(p,face,iface,orders)
-      reffe_face = LagrangianRefFE(T,face,face_orders)
-      push!(reffaces[d+1],reffe_face)
+      refface = LagrangianRefFE(T,face,face_orders)
+      push!(reffaces[d+1],refface)
     end
   end
   tuple(reffaces...)
@@ -340,7 +340,7 @@ end
 
 function compute_face_orders(p::ExtrusionPolytope,face::ExtrusionPolytope{D},iface::Int,orders) where D
   d = num_dims(face)
-  offset = polytope_offset(p,d)
+  offset = get_offset(p,d)
   nface = p.nfaces[iface+offset]
   face_orders = _extract_nonzeros(nface.extrusion,orders)
   face_orders

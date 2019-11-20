@@ -13,17 +13,17 @@ using InplaceArrays.ReferenceFEs
 p = Polytope(HEX_AXIS, HEX_AXIS)
 test_polytope(p,optional=true)
 
-@test polytope_faces(p,0,0) == [[1], [2], [3], [4]]
-@test polytope_faces(p,1,0) == [[1, 2], [3, 4], [1, 3], [2, 4]]
-@test polytope_faces(p,2,0) == [[1, 2, 3, 4]]
-@test polytope_faces(p,0,1) == [[1, 3], [1, 4], [2, 3], [2, 4]]
-@test polytope_faces(p,1,1) == [[1], [2], [3], [4]]
-@test polytope_faces(p,2,1) == [[1, 2, 3, 4]]
-@test polytope_faces(p,0,2) == [[1], [1], [1], [1]]
-@test polytope_faces(p,1,2) == [[1], [1], [1], [1]]
-@test polytope_faces(p,2,2) == [[1]]
-@test polytope_facedims(p) == [0,0,0,0,1,1,1,1,2]
-@test polytope_offsets(p) == [0,4,8]
+@test get_faces(p,0,0) == [[1], [2], [3], [4]]
+@test get_faces(p,1,0) == [[1, 2], [3, 4], [1, 3], [2, 4]]
+@test get_faces(p,2,0) == [[1, 2, 3, 4]]
+@test get_faces(p,0,1) == [[1, 3], [1, 4], [2, 3], [2, 4]]
+@test get_faces(p,1,1) == [[1], [2], [3], [4]]
+@test get_faces(p,2,1) == [[1, 2, 3, 4]]
+@test get_faces(p,0,2) == [[1], [1], [1], [1]]
+@test get_faces(p,1,2) == [[1], [1], [1], [1]]
+@test get_faces(p,2,2) == [[1]]
+@test get_facedims(p) == [0,0,0,0,1,1,1,1,2]
+@test get_offsets(p) == [0,4,8]
 @test num_facets(p) == 4
 @test num_edges(p) == 4
 
