@@ -27,7 +27,11 @@ println( num_dofs(reffe) )
 """
 function SerendipityRefFE(::Type{T},p::Polytope,order::Int) where T
   @assert is_serendipity_compatible(p) "Polytope not compatible with serendipity elements"
-  sp = SerendipityPolytope(p) 
+  if order > 0
+    sp = SerendipityPolytope(p) 
+  else
+    sp = p
+  end
   LagrangianRefFE(T,sp,order)
 end
 

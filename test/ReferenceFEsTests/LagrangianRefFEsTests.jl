@@ -86,4 +86,36 @@ reffe = LagrangianRefFE(VectorValue{2,Float64},QUAD,orders)
   [1, 2, 3, 4], [0, 0, 0, 0], [1, 2, 3, 4], [0, 0, 0, 0],
   [0, 0, 0, 0], [2, 1, 4, 3], [0, 0, 0, 0], [2, 1, 4, 3]]
 
+
+# 0-order degenerated case
+
+orders = (0,0)
+
+b = compute_monomial_basis(Float64,QUAD,orders)
+@test length(b.terms) == 1
+
+own_nodes = compute_own_nodes(QUAD,orders)
+@test own_nodes == Point{2,Float64}[(0.5, 0.5)]
+
+face_orders = compute_face_orders(QUAD,SEGMENT,1,orders)
+@test face_orders == (0,)
+
+nodes, facenodeids = compute_nodes(QUAD,orders)
+@test nodes == Point{2,Float64}[(0.5, 0.5)]
+@test facenodeids == [Int[], Int[], Int[], Int[], Int[], Int[], Int[], Int[], [1]]
+
+nodeperms = compute_own_nodes_permutations(QUAD,own_nodes)
+@test nodeperms == [[1], [1], [1], [1], [1], [1], [1], [1]]
+
+reffaces = compute_lagrangian_reffaces(Float64,QUAD,orders)
+
+reffe = LagrangianRefFE(Float64,QUAD,orders)
+@test num_dofs(reffe) == 1
+
+reffe = LagrangianRefFE(VectorValue{2,Float64},QUAD,orders)
+@test num_dofs(reffe) == 2
+
+own_nodes = compute_own_nodes(TRI,orders)
+@test own_nodes == Point{2,Float64}[(1.0/3,1.0/3)]
+
 end # module

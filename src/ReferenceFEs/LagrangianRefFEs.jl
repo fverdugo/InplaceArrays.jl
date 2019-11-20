@@ -297,11 +297,21 @@ end
 # Default implementations
 
 function _compute_nodes(p,orders)
-  if all(orders .== 1)
+  if any( orders .== 0)
+    _compute_constant_nodes(p,orders)
+  elseif all(orders .== 1)
     _compute_linear_nodes(p)
   else
     _compute_high_order_nodes(p,orders)
   end
+end
+
+function _compute_constant_nodes(p,orders)
+  @assert all( orders .== 0) "If an order is 0 in some direction, it should be 0 also in the others"
+  x = compute_own_nodes(p,orders)
+  facenodes = [Int[] for i in 1:num_faces(p)]
+  push!(facenodes[end],1)
+  x, facenodes
 end
 
 function _compute_linear_nodes(p)
@@ -427,7 +437,17 @@ end
 
 function compute_own_nodes(p::ExtrusionPolytope{D},orders) where D
   extrusion = Tuple(p.extrusion.array)
-  _interior_nodes(extrusion,orders)
+  if all(orders .== 0)
+    _interior_nodes_order_0(p)
+  else
+    _interior_nodes(extrusion,orders)
+  end
+end
+
+function _interior_nodes_order_0(p)
+  x = get_vertex_coordinates(p)
+  x0 = sum(x) / length(x)
+  [x0,]
 end
 
 function compute_face_orders(p::ExtrusionPolytope,face::ExtrusionPolytope{D},iface::Int,orders) where D
@@ -440,6 +460,9 @@ end
 
 function compute_nodes(p::ExtrusionPolytope{D},orders) where D
   _nodes, facenodes = _compute_nodes(p,orders)
+  if any( orders .== 0)
+    return (_nodes, facenodes)
+  end
   terms = _coords_to_terms(_nodes,orders)
   nodes = _terms_to_coords(terms,orders)
   (nodes, facenodes)
