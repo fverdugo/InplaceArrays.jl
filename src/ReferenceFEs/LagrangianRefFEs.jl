@@ -56,11 +56,11 @@ reffe_dof_permutations(reffe::LagrangianRefFE) = reffe.data.dofperms
 
 reffe_shapefuns(reffe::LagrangianRefFE) = reffe.data.shapefuns
 
-function ReferenceFE{N}(reffe::LagrangianRefFE,iface) where N
+function ReferenceFE{N}(reffe::LagrangianRefFE,iface::Integer) where N
   ReferenceFE{N}(reffe.data,iface)
 end
 
-function ReferenceFE{D}(reffe::LagrangianRefFE{D},iface) where D
+function ReferenceFE{D}(reffe::LagrangianRefFE{D},iface::Integer) where D
   @assert iface==1 "Only one D-face"
   reffe
 end

@@ -10,25 +10,25 @@ end
 
 """
 """
-function reffe_polytope(reffe)
+function reffe_polytope(reffe::ReferenceFE)
   @abstractmethod
 end
 
 """
 """
-function reffe_prebasis(reffe)
+function reffe_prebasis(reffe::ReferenceFE)
   @abstractmethod
 end
 
 """
 """
-function reffe_dofs(reffe)
+function reffe_dofs(reffe::ReferenceFE)
   @abstractmethod
 end
 
 """
 """
-function reffe_face_dofids(reffe)
+function reffe_face_dofids(reffe::ReferenceFE)
   @abstractmethod
 end
 
@@ -36,13 +36,13 @@ end
 
 """
 """
-function ReferenceFE{N}(reffe,nfaceid) where N
+function ReferenceFE{N}(reffe::ReferenceFE,nfaceid::Integer) where N
   @abstractmethod
 end
 
 """
 """
-function reffe_dof_permutations(reffe)
+function reffe_dof_permutations(reffe::ReferenceFE)
   @abstractmethod
 end
 
@@ -50,7 +50,7 @@ end
 
 """
 """
-function reffe_shapefuns(reffe)
+function reffe_shapefuns(reffe::ReferenceFE)
   dofs = reffe_dofs(reffe)
   prebasis = reffe_prebasis(reffe)
   compute_shapefuns(dofs,prebasis)
@@ -63,10 +63,11 @@ function compute_shapefuns(dofs,prebasis)
   change_basis(prebasis,change)
 end
 
-"""
-"""
 num_dims(::Type{<:ReferenceFE{D}}) where D = D
-num_dims(reffe::T) where T<:ReferenceFE = num_dims(T)
+
+"""
+"""
+num_dims(reffe::ReferenceFE) = num_dims(typeof(reffe))
 
 # Test
 
@@ -153,12 +154,12 @@ reffe_dof_permutations(reffe::GenericRefFE) = reffe.dofperms
 
 reffe_shapefuns(reffe::GenericRefFE) = reffe.shapefuns
 
-function ReferenceFE{N}(reffe::GenericRefFE,iface) where N
+function ReferenceFE{N}(reffe::GenericRefFE,iface::Integer) where N
   @assert reffe.reffaces != nothing "ReferenceFE cannot be provided. Make sure that you are using the keyword argument reffaces in the GenericRefFE constructor."
   reffe.reffaces[N+1][iface]
 end
 
-function ReferenceFE{D}(reffe::GenericRefFE{D},iface) where D
+function ReferenceFE{D}(reffe::GenericRefFE{D},iface::Integer) where D
   @assert iface == 1 "Only one D-face"
   reffe
 end

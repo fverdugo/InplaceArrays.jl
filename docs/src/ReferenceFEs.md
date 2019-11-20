@@ -14,28 +14,28 @@ ReferenceFEs
 
 ```@docs
 Polytope
-polytope_faces(p)
-polytope_dimrange(p)
-Polytope{D}(p,Dfaceid) where D
-vertex_coordinates(p)
+polytope_faces(p::Polytope)
+polytope_dimrange(p::Polytope)
+Polytope{D}(p::Polytope,Dfaceid::Integer) where D
+vertex_coordinates(p::Polytope)
 (==)(a::Polytope{D},b::Polytope{D}) where D
-edge_tangents(p)
-facet_normals(p)
-facet_orientations(p)
-vertex_permutations(p)
-polytope_vtkid(p)
-polytope_vtknodes(p)
+edge_tangents(p::Polytope)
+facet_normals(p::Polytope)
+facet_orientations(p::Polytope)
+vertex_permutations(p::Polytope)
+polytope_vtkid(p::Polytope)
+polytope_vtknodes(p::Polytope)
 test_polytope(p::Polytope{D};optional::Bool) where D
-num_dims(::Type{<:Polytope{D}}) where D
+num_dims(::::Polytope)
 num_faces(p::Polytope)
 num_faces(p::Polytope,dim::Integer)
 num_facets(p::Polytope)
 num_edges(p::Polytope)
 num_vertices(p::Polytope)
-polytope_facedims(p)
-polytope_offsets(p)
-polytope_offset(p,d)
-polytope_faces(p,dimfrom,dimto)
+polytope_facedims(p::Polytope)
+polytope_offsets(p::Polytope)
+polytope_offset(p::Polytope,d::Integer)
+polytope_faces(p::Polytope,dimfrom::Integer,dimto::Integer)
 ```
 ### Extrusion polytopes
 
@@ -93,16 +93,16 @@ LagrangianDofBasis(::Type{T},nodes::Vector{<:Point}) where T
 ```@docs
 ReferenceFE
 num_dofs(reffe::ReferenceFE)
-reffe_polytope(reffe)
-reffe_prebasis(reffe)
-reffe_dofs(reffe)
-reffe_face_dofids(reffe)
-ReferenceFE{N}(reffe,nfaceid) where N
-reffe_dof_permutations(reffe)
+reffe_polytope(reffe::ReferenceFE)
+reffe_prebasis(reffe::ReferenceFE)
+reffe_dofs(reffe::ReferenceFE)
+reffe_face_dofids(reffe::ReferenceFE)
+ReferenceFE{N}(reffe::ReferenceFE,nfaceid::Integer) where N
+reffe_dof_permutations(reffe::ReferenceFE)
 INVALID_PERM
-reffe_shapefuns(reffe)
+reffe_shapefuns(reffe::ReferenceFE)
 compute_shapefuns(dofs,prebasis)
-num_dims(::Type{<:ReferenceFE{D}}) where D
+num_dims(::ReferenceFE)
 test_reference_fe(reffe::ReferenceFE{D}) where D
 ```
 

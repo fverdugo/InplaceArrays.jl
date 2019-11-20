@@ -36,12 +36,12 @@ function polytope_dimrange(p::SerendipityPolytope)
   polytope_dimrange(p.hex)
 end
 
-function Polytope{N}(p::SerendipityPolytope,Nfaceid) where N
+function Polytope{N}(p::SerendipityPolytope,Nfaceid::Integer) where N
   face_hex = Polytope{N}(p.hex, Nfaceid)
   SerendipityPolytope(face_hex)
 end
 
-function Polytope{D}(p::SerendipityPolytope{D},Dfaceid) where D
+function Polytope{D}(p::SerendipityPolytope{D},Dfaceid::Integer) where D
   @assert Dfaceid == 1 "Only one D-face"
   p
 end

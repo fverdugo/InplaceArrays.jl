@@ -17,20 +17,20 @@ use *face*. In addition, we say
 
 The `Polytope` interface is defined by overloading the following functions
 
-- [`polytope_faces(p)`](@ref)
-- [`polytope_dimrange(p)`](@ref)
-- [`Polytope{N}(p,faceid) where N`](@ref)
-- [`vertex_coordinates(p)`](@ref)
+- [`polytope_faces(p::Polytope)`](@ref)
+- [`polytope_dimrange(p::Polytope)`](@ref)
+- [`Polytope{N}(p::Polytope,faceid::Integer) where N`](@ref)
+- [`vertex_coordinates(p::Polytope)`](@ref)
 - [`(==)(a::Polytope{D},b::Polytope{D}) where D`](@ref)
 
 And optionally these ones:
 
-- [`edge_tangents(p)`](@ref)
-- [`facet_normals(p)`](@ref)
-- [`facet_orientations(p)`](@ref)
-- [`vertex_permutations(p)`](@ref)
-- [`polytope_vtkid(p)`](@ref)
-- [`polytope_vtknodes(p)`](@ref)
+- [`edge_tangents(p::Polytope)`](@ref)
+- [`facet_normals(p::Polytope)`](@ref)
+- [`facet_orientations(p::Polytope)`](@ref)
+- [`vertex_permutations(p::Polytope)`](@ref)
+- [`polytope_vtkid(p::Polytope)`](@ref)
+- [`polytope_vtknodes(p::Polytope)`](@ref)
 
 The interface can be tested with the function
 
@@ -42,7 +42,7 @@ abstract type Polytope{D} end
 # Mandatory
 
 """
-    polytope_faces(p) -> Vector{Vector{Int}}
+    polytope_faces(p::Polytope) -> Vector{Vector{Int}}
 
 Given a polytope `p` the function returns a vector of vectors
 defining the *incidence* relation of the faces in the polytope.
@@ -77,12 +77,12 @@ The face labels associated with a segment are `[1,2,3]`, being `1` and `2` for t
 the segment (id `3`) is incident with the vertices `1` and `2` and the segment itself.
 
 """
-function polytope_faces(p)
+function polytope_faces(p::Polytope)
   @abstractmethod
 end
 
 """
-    polytope_dimrange(p) -> Vector{UnitRange{Int}}
+    polytope_dimrange(p::Polytope) -> Vector{UnitRange{Int}}
 
 Given a polytope `p` it returns a vector of ranges. The entry `d+1` in this vector
 contains the range of face ids for the faces of dimension `d`.
@@ -102,28 +102,28 @@ Face ids for the vertices in the segment range from 1 to 2 (2 vertices),
 the face ids for edges in the segment range from 3 to 3 (only one edge with id 3).
 
 """
-function polytope_dimrange(p)
+function polytope_dimrange(p::Polytope)
   @abstractmethod
 end
 
 """
-    Polytope{N}(p,faceid) where N
+    Polytope{N}(p::Polytope,faceid::Integer) where N
 
 Returns a `Polytope{N}` object representing the "reference" polytope of the `N`-face with id `faceid`.
 The value `faceid` refers to the numeration restricted to the dimension `N`
 (it starts with 1 for the first `N`-face).
 """
-function Polytope{D}(p,Dfaceid) where D
+function Polytope{D}(p::Polytope,Dfaceid::Integer) where D
   @abstractmethod
 end
 
 """
-    vertex_coordinates(p) -> Vector{Point{D,Float64}}
+    vertex_coordinates(p::Polytope) -> Vector{Point{D,Float64}}
 
 Given a polytope `p` return a vector of points
 representing containing the coordinates of the vertices.
 """
-function vertex_coordinates(p)
+function vertex_coordinates(p::Polytope)
   @abstractmethod
 end
 
@@ -147,39 +147,39 @@ end
 # Optional
 
 """
-    edge_tangents(p) -> Vector{VectorValue{D,Float64}}
+    edge_tangents(p::Polytope) -> Vector{VectorValue{D,Float64}}
 
 Given a polytope `p`, returns a vector of `VectorValue` objects
 representing the unit tangent vectors to the polytope edges.
 """
-function edge_tangents(p)
+function edge_tangents(p::Polytope)
   @abstractmethod
 end
 
 """
-    facet_normals(p) -> Vector{VectorValue{D,Float64}}
+    facet_normals(p::Polytope) -> Vector{VectorValue{D,Float64}}
 
 Given a polytope `p`, returns a vector of `VectorValue` objects
 representing the unit outward normal vectors to the polytope facets.
 """
-function facet_normals(p)
+function facet_normals(p::Polytope)
   @abstractmethod
 end
 
 """
-    facet_orientations(p) -> Vector{Int}
+    facet_orientations(p::Polytope) -> Vector{Int}
 
 Given a polytope `p` returns a vector of integers of length `num_facets(p)`.
 Facets, whose vertices are ordered consistently with the
 outwards normal vector, receive value `1` in this vector. Otherwise, facets
 receive value `-1`.
 """
-function facet_orientations(p)
+function facet_orientations(p::Polytope)
   @abstractmethod
 end
 
 """
-    vertex_permutations(p) -> Vector{Vector{Int}}
+    vertex_permutations(p::Polytope) -> Vector{Vector{Int}}
 
 Given a polytope `p`, returns a vector of vectors containing all admissible permutations
 of the polytope vertices. An admissible permutation is one such that, if the vertices of the polytope
@@ -203,23 +203,23 @@ The second one is `[2,1]`, i.e., the first vertex is relabeled as `2` and the
 second vertex is relabeled as `1`.
 
 """
-function vertex_permutations(p)
+function vertex_permutations(p::Polytope)
   @abstractmethod
 end
 
 """
-    polytope_vtkid(p) -> Int
+    polytope_vtkid(p::Polytope) -> Int
 
 Given a polytope `p`, returns an integer with its vtk identifier.
 Overloading of this function is needed only in order to visualize the underlying polytope
 with Paraview.
 """
-function polytope_vtkid(p)
+function polytope_vtkid(p::Polytope)
   @abstractmethod
 end
 
 """
-    polytope_vtknodes(p) -> Vector{Int}
+    polytope_vtknodes(p::Polytope) -> Vector{Int}
 
 Given a polytope `p`, returns a vector of integers representing a permutation of the
 polytope vertices required to relabel the vertices according the criterion adopted in
@@ -227,11 +227,13 @@ Paraview.
 Overloading of this function is needed only in order to visualize the underlying polytope
 with Paraview.
 """
-function polytope_vtknodes(p)
+function polytope_vtknodes(p::Polytope)
   @abstractmethod
 end
 
 # Some generic API
+
+num_dims(::Type{<:Polytope{D}}) where D = D
 
 """
     num_dims(::Type{<:Polytope{D}}) where D
@@ -239,9 +241,7 @@ end
 
 Returns `D`. 
 """
-num_dims(::Type{<:Polytope{D}}) where D = D
-
-num_dims(p::T) where T<:Polytope = num_dims(T)
+num_dims(p::Polytope) = num_dims(typeof(p))
 
 """
     num_faces(p::Polytope)
@@ -299,7 +299,7 @@ function num_vertices(p::Polytope)
 end
 
 """
-    polytope_facedims(p) -> Vector{Int}
+    polytope_facedims(p::Polytope) -> Vector{Int}
 
 Given a polytope `p`, returns a vector indicating
 the dimension of each face in the polytope
@@ -321,7 +321,7 @@ The first two faces in the segment (the two vertices) have dimension 0 and the
 third face (the segment itself) has dimension 1
 
 """
-function polytope_facedims(p)
+function polytope_facedims(p::Polytope)
   n = num_faces(p)
   facedims = zeros(Int,n)
   dimrange = polytope_dimrange(p)
@@ -333,7 +333,7 @@ function polytope_facedims(p)
 end
 
 """
-    polytope_offsets(p) -> Vector{Int}
+    polytope_offsets(p::Polytope) -> Vector{Int}
 
 Given a polytope `p`, it returns a vector of integers. The position in
 the `d+1` entry in this vector is the offset that transforms a face id in
@@ -353,7 +353,7 @@ println(offsets)
 
 ```
 """
-function polytope_offsets(p)
+function polytope_offsets(p::Polytope)
   D = num_dims(p)
   dimrange = polytope_dimrange(p)
   offsets = zeros(Int,D+1)
@@ -368,16 +368,16 @@ function polytope_offsets(p)
 end
 
 """
-    polytope_offset(p,d)
+    polytope_offset(p::Polytope,d::Integer)
 
 Equivalent to `polytope_offsets(p)[d+1]`.
 """
-function polytope_offset(p,d)
+function polytope_offset(p::Polytope,d::Integer)
   polytope_offsets(p)[d+1]
 end
 
 """
-    polytope_faces(p,dimfrom,dimto) -> Vector{Vector{Int}}
+    polytope_faces(p::Polytope,dimfrom::Integer,dimto::Integer) -> Vector{Vector{Int}}
 
 For `dimfrom >= dimto` returns a vector that for each face of
 dimension `dimfrom` stores a vector of the ids of faces of
@@ -402,7 +402,7 @@ Array{Int64,1}[[1, 2], [3, 4], [1, 3], [2, 4]]
 Array{Int64,1}[[1, 3], [1, 4], [2, 3], [2, 4]]
 ```
 """
-function polytope_faces(p,dimfrom,dimto)
+function polytope_faces(p::Polytope,dimfrom::Integer,dimto::Integer)
   if dimfrom >= dimto
     _polytope_faces_primal(p,dimfrom,dimto)
   else

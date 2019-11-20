@@ -20,7 +20,7 @@ polytope_faces(p::MockVertex) = [[1]]
 
 polytope_dimrange(p::MockVertex) = [1:1]
 
-function Polytope{0}(p::MockVertex,faceid)
+function Polytope{0}(p::MockVertex,faceid::Integer)
   @assert faceid == 1
   p
 end
@@ -37,12 +37,12 @@ polytope_faces(p::MockSegment) = [[1],[2],[1,2,3]]
 
 polytope_dimrange(p::MockSegment) = [1:2,3:3]
 
-function Polytope{0}(p::MockSegment,faceid)
+function Polytope{0}(p::MockSegment,faceid::Integer)
   @assert faceid in 1:2
   MockVertex()
 end
 
-function Polytope{1}(p::MockSegment,faceid)
+function Polytope{1}(p::MockSegment,faceid::Integer)
   @assert faceid == 1
   p
 end
@@ -67,17 +67,17 @@ function polytope_dimrange(p::MockQuad)
   [1:4,5:8,9:9]
 end
 
-function Polytope{0}(p::MockQuad,faceid)
+function Polytope{0}(p::MockQuad,faceid::Integer)
   @assert faceid in 1:4
   MockVertex()
 end
 
-function Polytope{1}(p::MockQuad,faceid)
+function Polytope{1}(p::MockQuad,faceid::Integer)
   @assert faceid in 1:4
   MockSegment()
 end
 
-function Polytope{2}(p::MockQuad,faceid)
+function Polytope{2}(p::MockQuad,faceid::Integer)
   @assert faceid == 1
   p
 end

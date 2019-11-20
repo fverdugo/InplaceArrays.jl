@@ -98,19 +98,19 @@ polytope_faces(p::ExtrusionPolytope) = p.nf_nfs
 
 polytope_dimrange(p::ExtrusionPolytope) = p.nfacesdim
 
-function Polytope{0}(p::ExtrusionPolytope,Dfaceid)
+function Polytope{0}(p::ExtrusionPolytope,Dfaceid::Integer)
   @assert Dfaceid in 1:num_vertices(p)
   _vertex()
 end
 
-function Polytope{D}(p::ExtrusionPolytope,Dfaceid)::ExtrusionPolytope{D} where D
+function Polytope{D}(p::ExtrusionPolytope,Dfaceid::Integer)::ExtrusionPolytope{D} where D
   reffaces = _nface_ref_polytopes(p)
   offset = polytope_offset(p,D)
   id = Dfaceid + offset
   reffaces[id]
 end
 
-function Polytope{D}(p::ExtrusionPolytope{D},Dfaceid) where D
+function Polytope{D}(p::ExtrusionPolytope{D},Dfaceid::Integer) where D
   @assert Dfaceid == 1
   p
 end
