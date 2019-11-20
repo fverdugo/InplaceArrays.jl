@@ -1,5 +1,29 @@
 
 """
+    SerendipityRefFE(::Type{T},p::Polytope,order::Int) where T
+
+Returns an instance of `LagrangianRefFE`, whose underlying approximation space
+is the serendipity space of order `order`. Implemented for order from 1 to 4.
+The type of the polytope `p` has to implement all the queries detailed in the
+constructor [`LagrangianRefFE(::Type{T},p::Polytope{D},orders) where {T,D}`](@ref)
+plus this additional method:
+
+- [`is_serendipity_compatible(p::Polytope)`](@ref)
+
+# Examples
+
+```jldoctest
+using InplaceArrays.ReferenceFEs
+
+order = 2
+reffe = SerendipityRefFE(Float64,QUAD,order)
+
+println( num_dofs(reffe) )
+
+# output
+8
+
+```
 """
 function SerendipityRefFE(::Type{T},p::Polytope,order::Int) where T
   @assert is_serendipity_compatible(p) "Polytope not compatible with serendipity elements"
@@ -8,6 +32,12 @@ function SerendipityRefFE(::Type{T},p::Polytope,order::Int) where T
 end
 
 """
+    is_serendipity_compatible(p::Polytope) -> Bool
+
+Returns `true` if the polytope `p` is compatible with the
+serendipity space (i.e., it is a n-cube). This method is implemented
+for `ExtrusionPolytope`, and should be implemented by new
+polytope types if they are to be used to build serendipity spaces.
 """
 function is_serendipity_compatible(p::Polytope)
   @abstractmethod
@@ -68,15 +98,15 @@ function compute_monomial_basis(::Type{T},p::SerendipityPolytope{D},orders) wher
   MonomialBasis{D}(T,orders,_s_filter)
 end
 
-function compute_interior_nodes(p::SerendipityPolytope{0},orders)
-  compute_interior_nodes(p.hex,orders)
+function compute_own_nodes(p::SerendipityPolytope{0},orders)
+  compute_own_nodes(p.hex,orders)
 end
 
-function compute_interior_nodes(p::SerendipityPolytope{1},orders)
-  compute_interior_nodes(p.hex,orders)
+function compute_own_nodes(p::SerendipityPolytope{1},orders)
+  compute_own_nodes(p.hex,orders)
 end
 
-function compute_interior_nodes(p::SerendipityPolytope{2},orders)
+function compute_own_nodes(p::SerendipityPolytope{2},orders)
   order, = orders
   if order == 4
     o = (2,2)
@@ -85,14 +115,14 @@ function compute_interior_nodes(p::SerendipityPolytope{2},orders)
   else
     @unreachable "Serendipity elements only up to order 4"
   end
-  compute_interior_nodes(p.hex,o)
+  compute_own_nodes(p.hex,o)
 end
 
-function compute_interior_nodes(p::SerendipityPolytope{3},orders)
+function compute_own_nodes(p::SerendipityPolytope{3},orders)
   Point{3,Float64}[]
 end
 
-function compute_interior_nodes(p::SerendipityPolytope,orders)
+function compute_own_nodes(p::SerendipityPolytope,orders)
   @unreachable "Serendipity elements only up to 3d"
 end
 

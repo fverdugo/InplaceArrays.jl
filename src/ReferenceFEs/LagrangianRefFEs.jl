@@ -1,14 +1,17 @@
 
 """
-"""
-const INVALID_PERM = 0
-
-"""
     struct LagrangianRefFE{D} <: ReferenceFE{D}
       data::GenericRefFE{D}
-      facenodeids::Vector{Vector{Int}}
-      nodeperms::Vector{Vector{Int}},
+      face_own_nodeids::Vector{Vector{Int}}
+      own_nodes_permutations::Vector{Vector{Int}},
     end
+
+Type representing a Lagrangian finite element. In addition to all the information
+provided by a `ReferenceFE`, this type also provides "node-based" information in the following
+fields:
+
+- `face_own_nodeids::Vector{Vector{Int}}`: nodes owned by each face
+- `own_nodes_permutations::Vector{Vector{Int}}`: permutations of the nodes when the vertices are permuted
 
 For this type
 
@@ -18,27 +21,36 @@ For this type
 """
 struct LagrangianRefFE{D} <: ReferenceFE{D}
   data::GenericRefFE{D}
-  facenodeids::Vector{Vector{Int}}
-  nodeperms::Vector{Vector{Int}}
+  face_own_nodeids::Vector{Vector{Int}}
+  own_nodes_permutations::Vector{Vector{Int}}
   @doc """
+      LagrangianRefFE(
+        polytope::Polytope{D},
+        prebasis::MonomialBasis,
+        dofs::LagrangianDofBasis,
+        face_own_nodeids::Vector{Vector{Int}},
+        own_nodes_permutations::Vector{Vector{Int}},
+        reffaces...) where D
+
+  Low level (inner) constructor of `LagrangianRefFE`.
   """
   function LagrangianRefFE(
     polytope::Polytope{D},
     prebasis::MonomialBasis,
     dofs::LagrangianDofBasis,
-    facenodeids::Vector{Vector{Int}},
-    nodeperms::Vector{Vector{Int}},
-    reffaces::Vector{<:LagrangianRefFE}...) where D
+    face_own_nodeids::Vector{Vector{Int}},
+    own_nodes_permutations::Vector{Vector{Int}},
+    reffaces...) where D
 
-    facedofids = _generate_nfacedofs(facenodeids,dofs.node_and_comp_to_dof)
-    dofperms = _find_dof_permutaions(nodeperms,dofs.node_and_comp_to_dof,facenodeids,facedofids)
+    face_own_dofids = _generate_nfacedofs(face_own_nodeids,dofs.node_and_comp_to_dof)
+    own_dofs_permutations = _find_own_dof_permutaions(own_nodes_permutations,dofs.node_and_comp_to_dof,face_own_nodeids,face_own_dofids)
 
     data = GenericRefFE(
-      polytope,prebasis,dofs,facedofids;
-      dofperms = dofperms,
+      polytope,prebasis,dofs,face_own_dofids;
+      own_dofs_permutations = own_dofs_permutations,
       reffaces = reffaces)
 
-    new{D}(data,facenodeids,nodeperms)
+    new{D}(data,face_own_nodeids,own_nodes_permutations)
   end
 end
 
@@ -50,11 +62,39 @@ get_prebasis(reffe::LagrangianRefFE) = reffe.data.prebasis
 
 get_dofs(reffe::LagrangianRefFE) = reffe.data.dofs
 
-get_face_own_dofids(reffe::LagrangianRefFE) = reffe.data.facedofids
+get_face_own_dofids(reffe::LagrangianRefFE) = reffe.data.face_own_dofids
 
-get_own_dofs_permutations(reffe::LagrangianRefFE) = reffe.data.dofperms
+get_own_dofs_permutations(reffe::LagrangianRefFE) = reffe.data.own_dofs_permutations
 
 get_shapefuns(reffe::LagrangianRefFE) = reffe.data.shapefuns
+
+"""
+    get_node_coordinates(reffe::LagrangianRefFE) -> Vector{Point{D,Float64}}
+
+Returns the nodal coordinates of the underlying `LagrangianDofBasis`.
+"""
+get_node_coordinates(reffe::LagrangianRefFE) = reffe.data.dofs.nodes
+
+"""
+    get_dof_to_node(reffe::LagrangianRefFE) -> Vector{Int}
+
+Returns the field `dof_to_node` of the underlying `LagrangianDofBasis`.
+"""
+get_dof_to_node(reffe::LagrangianRefFE) = reffe.data.dofs.dof_to_node
+
+"""
+    get_dof_to_comp(reffe::LagrangianRefFE) -> Vector{Int}
+
+Returns the field `dof_to_comp` of the underlying `LagrangianDofBasis`.
+"""
+get_dof_to_comp(reffe::LagrangianRefFE) = reffe.data.dofs.dof_to_comp
+
+"""
+    get_node_and_comp_to_dof(reffe::LagrangianRefFE) -> Vector
+
+Returns the field `node_and_comp_to_dof` of the underlying `LagrangianDofBasis`.
+"""
+get_node_and_comp_to_dof(reffe::LagrangianRefFE) = reffe.data.dofs.node_and_comp_to_dof
 
 function ReferenceFE{N}(reffe::LagrangianRefFE,iface::Integer) where N
   ReferenceFE{N}(reffe.data,iface)
@@ -86,7 +126,7 @@ function _generate_nfacedofs(nfacenodes,node_and_comp_to_dof)
   nfacedofs
 end
 
-function _find_dof_permutaions(node_perms,node_and_comp_to_dof,nfacenodeids,nfacedofsids)
+function _find_own_dof_permutaions(node_perms,node_and_comp_to_dof,nfacenodeids,nfacedofsids)
   dof_perms = Vector{Int}[]
   T = eltype(node_and_comp_to_dof)
   ncomps = n_components(T)
@@ -122,25 +162,45 @@ end
 """
     LagrangianRefFE(::Type{T},p::Polytope,orders) where T
     LagrangianRefFE(::Type{T},p::Polytope,order::Int) where T
+
+Builds a `LagrangianRefFE` object on top of the given polytope. `T` is the type of
+the value of the approximation space (e.g., `T=Float64` for scalar-valued problems,
+`T=VectorValue{N,Float64}` for vector-valued problems with `N` components). The arguments `order` or `orders`
+are for the polynomial order of the resulting space, which allows isotropic or anisotropic orders respectively
+(provided that the cell topology allows the given anisotropic order). The argument `orders` should be an
+indexable collection of `D` integers (e.g., a tuple or a vector), being `D` the number of space dimensions.
+
+In order to be able to use this function, the type of the provided polytope `p` has to implement the
+following additional methods. They have been implemented for `ExtrusionPolytope` in the library. They 
+need to be implemented for new polytope types in order to build Lagangian reference elements on top of them.
+
+- [`compute_monomial_basis(::Type{T},p::Polytope,orders) where T`](@ref)
+- [`compute_own_nodes(p::Polytope,orders)`](@ref)
+- [`compute_face_orders(p::Polytope,face::Polytope,iface::Int,orders)`](@ref)
+
+The following methods are also used in the construction of the `LagrangianRefFE` object. A default implementation
+of them is available in terms of the three previous methods. However, the user can also implement them for
+new polytope types increasing customization possibilities.
+
+- [`compute_nodes(p::Polytope,orders)`](@ref)
+- [`compute_own_nodes_permutations(p::Polytope, interior_nodes)`](@ref)
+- [`compute_lagrangian_reffaces(::Type{T},p::Polytope,orders) where T`](@ref)
+
 """
 function LagrangianRefFE(::Type{T},p::Polytope{D},orders) where {T,D}
   prebasis = compute_monomial_basis(T,p,orders)
-  nodes, facenodeids = compute_nodes(p,orders)
+  nodes, face_own_nodeids = compute_nodes(p,orders)
   dofs = LagrangianDofBasis(T,nodes)
-  interior_nodes = dofs.nodes[facenodeids[end]]
-  nodeperms = compute_node_permutations(p, interior_nodes)
+  interior_nodes = dofs.nodes[face_own_nodeids[end]]
+  own_nodes_permutations = compute_own_nodes_permutations(p, interior_nodes)
   reffaces = compute_lagrangian_reffaces(T,p,orders)
-  LagrangianRefFE(p,prebasis,dofs,facenodeids,nodeperms,reffaces...)
+  LagrangianRefFE(p,prebasis,dofs,face_own_nodeids,own_nodes_permutations,reffaces...)
 end
 
-"""
-"""
 function MonomialBasis(::Type{T},p::Polytope,orders) where T
   compute_monomial_basis(T,p,orders)
 end
 
-"""
-"""
 function LagrangianDofBasis(::Type{T},p::Polytope,orders) where T
   nodes, _ = compute_nodes(p,orders)
   LagrangianDofBasis(T,nodes)
@@ -167,36 +227,68 @@ end
 # for building LagrangianRefFEs in a seamless way
 
 """
+    compute_monomial_basis(::Type{T},p::Polytope,orders) where T -> MonomialBasis
+
+Returns the monomial basis of value type `T` and order per direction described by `orders`
+on top of the polytope `p`.
 """
 function compute_monomial_basis(::Type{T},p::Polytope,orders) where T
   @abstractmethod
 end
 
 """
+    compute_own_nodes(p::Polytope{D},orders) where D -> Vector{Point{D,Float64}}
+
+Returns the coordinates of the nodes owned by the interior of the polytope
+associated with a Lagrangian space with the order per direction described by `orders`.
 """
-function compute_interior_nodes(p::Polytope,orders)
+function compute_own_nodes(p::Polytope,orders)
   @abstractmethod
 end
 
 """
+    compute_face_orders(p::Polytope,face::Polytope,iface::Int,orders)
+
+Returns a vector or a tuple with the order per direction at the face `face`
+of the polytope `p` when restricting the order per direction `orders` to this face.
+`iface` is the face id of `face` in the numeration restricted to the face dimension.
 """
 function compute_face_orders(p::Polytope,face::Polytope,iface::Int,orders)
   @abstractmethod
 end
 
 """
+    compute_nodes(p::Polytope,orders)
+
+When called
+
+    node_coords, face_own_nodeids = compute_nodes(p,orders)
+
+Returns `node_coords`, the nodal coordinates of all the Lagrangian nodes associated with the order per direction
+`orders`, and `face_own_nodeids`, being a vector of vectors indicating which nodes are owned by each of
+the faces of the polytope `p`.
 """
 function compute_nodes(p::Polytope,orders)
   _compute_nodes(p,orders)
 end
 
 """
+    compute_own_nodes_permutations(
+      p::Polytope, own_nodes_coordinates) -> Vector{Vector{Int}}
+
+Returns a vector of vectors with the permutations of the nodes owned by the interior of the
+polytope.
 """
-function compute_node_permutations(p::Polytope, interior_nodes)
+function compute_own_nodes_permutations(p::Polytope, interior_nodes)
   _compute_node_permutations(p, interior_nodes)
 end
 
 """
+    compute_lagrangian_reffaces(::Type{T},p::Polytope,orders) where T
+
+Returns a tuple of length `D` being the number of space dimensions.
+The entry `d+1` of this tuple contains a vector of `LagrangianRefFE`
+one for each face of dimension `d` on the boundary of the polytope.
 """
 function compute_lagrangian_reffaces(::Type{T},p::Polytope,orders) where T
   _compute_lagrangian_reffaces(T,p,orders)
@@ -255,7 +347,7 @@ end
     face_vertex_ids = get_faces(p,d,0)[iface]
     face_x = x[face_vertex_ids]
     face_orders = compute_face_orders(p,face,iface,orders)
-    face_interior_nodes = compute_interior_nodes(face,face_orders)
+    face_interior_nodes = compute_own_nodes(face,face_orders)
     face_high_x = evaluate(face_shapefuns,face_interior_nodes)*face_x
     for xi in 1:length(face_high_x)
       push!(nodes,face_high_x[xi])
@@ -267,7 +359,7 @@ end
 
 function _compute_high_order_nodes_dim_D!(nodes,facenodes,p,orders)
   k = length(nodes)+1
-  p_high_x = compute_interior_nodes(p,orders)
+  p_high_x = compute_own_nodes(p,orders)
   for xi in 1:length(p_high_x)
     push!(nodes,p_high_x[xi])
     push!(facenodes[end],k)
@@ -333,7 +425,7 @@ function compute_monomial_basis(::Type{T},p::ExtrusionPolytope{D},orders) where 
   MonomialBasis{D}(T,orders,terms)
 end
 
-function compute_interior_nodes(p::ExtrusionPolytope{D},orders) where D
+function compute_own_nodes(p::ExtrusionPolytope{D},orders) where D
   extrusion = Tuple(p.extrusion.array)
   _interior_nodes(extrusion,orders)
 end

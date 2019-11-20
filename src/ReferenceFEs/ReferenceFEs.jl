@@ -54,6 +54,7 @@ export WEDGE
 export PYRAMID
 export HEX_AXIS
 export TET_AXIS
+export INVALID_PERM
 
 export Dof
 export evaluate_dof!
@@ -73,9 +74,20 @@ export get_own_dofs_permutations
 export get_shapefuns
 export compute_shapefuns
 export test_reference_fe
+export num_dofs
 
 export LagrangianRefFE
 export LagrangianDofBasis
+export compute_monomial_basis
+export compute_own_nodes
+export compute_face_orders
+export compute_nodes
+export compute_own_nodes_permutations
+export compute_lagrangian_reffaces
+export get_node_coordinates
+export get_dof_to_node
+export get_dof_to_comp
+export get_node_and_comp_to_dof
 
 export SerendipityRefFE
 

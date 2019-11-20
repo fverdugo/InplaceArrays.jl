@@ -17,7 +17,7 @@ Polytope
 get_faces(p::Polytope)
 get_dimrange(p::Polytope)
 Polytope{D}(p::Polytope,Dfaceid::Integer) where D
-vertex_coordinates(p::Polytope)
+get_vertex_coordinates(p::Polytope)
 (==)(a::Polytope{D},b::Polytope{D}) where D
 get_edge_tangents(p::Polytope)
 get_facet_normals(p::Polytope)
@@ -125,15 +125,24 @@ GenericRefFE(
 
 ```@docs
 LagrangianRefFE
+LagrangianRefFE(
+  polytope::Polytope{D},
+  prebasis::MonomialBasis,
+  dofs::LagrangianDofBasis,
+  face_own_nodeids::Vector{Vector{Int}},
+  own_nodes_permutations::Vector{Vector{Int}},
+  reffaces...) where D
 LagrangianRefFE(::Type{T},p::Polytope{D},orders) where {T,D}
-MonomialBasis(::Type{T},p::Polytope,orders) where T
-LagrangianDofBasis(::Type{T},p::Polytope,orders) where T
 compute_monomial_basis(::Type{T},p::Polytope,orders) where T
-compute_interior_nodes(p::Polytope,orders)
+compute_own_nodes(p::Polytope,orders)
 compute_face_orders(p::Polytope,face::Polytope,iface::Int,orders)
 compute_nodes(p::Polytope,orders)
-compute_node_permutations(p::Polytope, interior_nodes)
+compute_own_nodes_permutations(p::Polytope, interior_nodes)
 compute_lagrangian_reffaces(::Type{T},p::Polytope,orders) where T
+get_node_coordinates(reffe::LagrangianRefFE)
+get_dof_to_node(reffe::LagrangianRefFE)
+get_dof_to_comp(reffe::LagrangianRefFE)
+get_node_and_comp_to_dof(reffe::LagrangianRefFE)
 ```
 ### Serendipity reference elements
 
