@@ -53,36 +53,36 @@ b = MonomialBasis(VectorValue{2,Int},VERTEX,())
 reffe = LagrangianRefFE(VectorValue{2,Int},VERTEX,())
 @test reffe.facenodeids == [[1]]
 @test reffe.data.facedofids == [[1,2]]
-test_reference_fe(reffe)
+test_reference_fe(reffe,optional=true)
 @test ReferenceFE{0}(reffe,1) === reffe
 
 reffe = LagrangianRefFE(VectorValue{2,Float64},SEGMENT,(2,))
-@test get_face_dofids(reffe) == [[1, 4], [2, 5], [3, 6]]
-test_reference_fe(reffe)
+@test get_face_own_dofids(reffe) == [[1, 4], [2, 5], [3, 6]]
+test_reference_fe(reffe,optional=true)
 
 reffe = LagrangianRefFE(VectorValue{2,Float64},TRI,3)
-@test get_face_dofids(reffe) == [[1, 11], [2, 12], [3, 13], [4, 5, 14, 15], [6, 7, 16, 17], [8, 9, 18, 19], [10, 20]]
-test_reference_fe(reffe)
+@test get_face_own_dofids(reffe) == [[1, 11], [2, 12], [3, 13], [4, 5, 14, 15], [6, 7, 16, 17], [8, 9, 18, 19], [10, 20]]
+test_reference_fe(reffe,optional=true)
 
 reffe = LagrangianRefFE(Float64,HEX,2)
-test_reference_fe(reffe)
+test_reference_fe(reffe,optional=true)
 
 reffe = LagrangianRefFE(Float64,WEDGE,(1,1,2))
-test_reference_fe(reffe)
+test_reference_fe(reffe,optional=true)
 refface = ReferenceFE{1}(reffe,3)
-@test get_face_dofids(refface) == [[1], [2], [3]]
+@test get_face_own_dofids(refface) == [[1], [2], [3]]
 refface = ReferenceFE{1}(reffe,4)
-@test get_face_dofids(refface) == [[1], [2], []]
+@test get_face_own_dofids(refface) == [[1], [2], []]
 
 orders = (4,)
 reffe = LagrangianRefFE(VectorValue{2,Float64},SEGMENT,orders)
 @test reffe.nodeperms == [[1, 2, 3], [3, 2, 1]]
-@test get_dof_permutations(reffe) == [[1, 2, 3, 4, 5, 6], [3, 2, 1, 6, 5, 4]] 
+@test get_own_dofs_permutations(reffe) == [[1, 2, 3, 4, 5, 6], [3, 2, 1, 6, 5, 4]] 
 
 orders = (2,3)
 reffe = LagrangianRefFE(VectorValue{2,Float64},QUAD,orders)
 @test reffe.nodeperms ==[[1, 2], [0, 0], [1, 2], [0, 0], [0, 0], [2, 1], [0, 0], [2, 1]] 
-@test get_dof_permutations(reffe) == [
+@test get_own_dofs_permutations(reffe) == [
   [1, 2, 3, 4], [0, 0, 0, 0], [1, 2, 3, 4], [0, 0, 0, 0],
   [0, 0, 0, 0], [2, 1, 4, 3], [0, 0, 0, 0], [2, 1, 4, 3]]
 

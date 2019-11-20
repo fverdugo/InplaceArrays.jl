@@ -28,11 +28,11 @@ export Polytope
 export ExtrusionPolytope
 export get_faces
 export get_dimrange
-export vertex_coordinates
-export facet_normals
-export facet_orientations
-export edge_tangents
-export vertex_permutations
+export get_vertex_coordinates
+export get_facet_normals
+export get_facet_orientations
+export get_edge_tangents
+export get_vertex_permutations
 export get_vtkid
 export get_vtknodes
 export num_dims
@@ -68,8 +68,8 @@ export GenericRefFE
 export get_polytope
 export get_prebasis
 export get_dofs
-export get_face_dofids
-export get_dof_permutations
+export get_face_own_dofids
+export get_own_dofs_permutations
 export get_shapefuns
 export compute_shapefuns
 export test_reference_fe

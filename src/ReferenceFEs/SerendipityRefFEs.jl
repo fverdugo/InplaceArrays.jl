@@ -46,16 +46,16 @@ function Polytope{D}(p::SerendipityPolytope{D},Dfaceid::Integer) where D
   p
 end
 
-function vertex_coordinates(p::SerendipityPolytope)
-  vertex_coordinates(p.hex)
+function get_vertex_coordinates(p::SerendipityPolytope)
+  get_vertex_coordinates(p.hex)
 end
 
 function (==)(a::SerendipityPolytope{D},b::SerendipityPolytope{D}) where D
   a.hex == b.hex
 end
 
-function vertex_permutations(p::SerendipityPolytope)
-  vertex_permutations(p.hex)
+function get_vertex_permutations(p::SerendipityPolytope)
+  get_vertex_permutations(p.hex)
 end
 
 # Implemented polytope interface for LagrangianRefFEs

@@ -19,14 +19,14 @@ get_dimrange(p::Polytope)
 Polytope{D}(p::Polytope,Dfaceid::Integer) where D
 vertex_coordinates(p::Polytope)
 (==)(a::Polytope{D},b::Polytope{D}) where D
-edge_tangents(p::Polytope)
-facet_normals(p::Polytope)
-facet_orientations(p::Polytope)
-vertex_permutations(p::Polytope)
+get_edge_tangents(p::Polytope)
+get_facet_normals(p::Polytope)
+get_facet_orientations(p::Polytope)
+get_vertex_permutations(p::Polytope)
 get_vtkid(p::Polytope)
 get_vtknodes(p::Polytope)
 test_polytope(p::Polytope{D};optional::Bool) where D
-num_dims(::::Polytope)
+num_dims(::Polytope)
 num_faces(p::Polytope)
 num_faces(p::Polytope,dim::Integer)
 num_facets(p::Polytope)
@@ -91,14 +91,14 @@ LagrangianDofBasis(::Type{T},nodes::Vector{<:Point}) where T
 ### Interface
 
 ```@docs
-eFE
+ReferenceFE
 num_dofs(reffe::ReferenceFE)
 get_polytope(reffe::ReferenceFE)
 get_prebasis(reffe::ReferenceFE)
 get_dofs(reffe::ReferenceFE)
-get_face_dofids(reffe::ReferenceFE)
+get_face_own_dofids(reffe::ReferenceFE)
 ReferenceFE{N}(reffe::ReferenceFE,nfaceid::Integer) where N
-get_dof_permutations(reffe::ReferenceFE)
+get_own_dofs_permutations(reffe::ReferenceFE)
 INVALID_PERM
 get_shapefuns(reffe::ReferenceFE)
 compute_shapefuns(dofs,prebasis)

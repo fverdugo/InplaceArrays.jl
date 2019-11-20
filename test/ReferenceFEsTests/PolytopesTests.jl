@@ -11,7 +11,7 @@ using InplaceArrays.ReferenceFEs
 import InplaceArrays.ReferenceFEs: Polytope
 import InplaceArrays.ReferenceFEs: get_faces
 import InplaceArrays.ReferenceFEs: get_dimrange
-import InplaceArrays.ReferenceFEs: vertex_coordinates
+import InplaceArrays.ReferenceFEs: get_vertex_coordinates
 import Base: ==
 
 struct MockVertex <: Polytope{0} end
@@ -29,7 +29,7 @@ function (==)(a::MockVertex,b::MockVertex)
   true
 end
 
-vertex_coordinates(p::MockVertex) = [zero(Point{0,Float64})]
+get_vertex_coordinates(p::MockVertex) = [zero(Point{0,Float64})]
 
 struct MockSegment <: Polytope{1} end
 
@@ -51,7 +51,7 @@ function (==)(a::MockSegment,b::MockSegment)
   true
 end
 
-vertex_coordinates(p::MockSegment) = Point{1,Float64}[(0),(1)]
+get_vertex_coordinates(p::MockSegment) = Point{1,Float64}[(0),(1)]
 
 struct MockQuad <: Polytope{2} end
 
@@ -86,7 +86,7 @@ function (==)(a::MockQuad,b::MockQuad)
   true
 end
 
-vertex_coordinates(p::MockQuad) = Point{2,Float64}[(0,0),(1,0),(0,1),(1,1)]
+get_vertex_coordinates(p::MockQuad) = Point{2,Float64}[(0,0),(1,0),(0,1),(1,1)]
 
 v = MockVertex()
 test_polytope(v)

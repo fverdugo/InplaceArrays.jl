@@ -20,15 +20,15 @@ The `Polytope` interface is defined by overloading the following functions
 - [`get_faces(p::Polytope)`](@ref)
 - [`get_dimrange(p::Polytope)`](@ref)
 - [`Polytope{N}(p::Polytope,faceid::Integer) where N`](@ref)
-- [`vertex_coordinates(p::Polytope)`](@ref)
+- [`get_vertex_coordinates(p::Polytope)`](@ref)
 - [`(==)(a::Polytope{D},b::Polytope{D}) where D`](@ref)
 
 And optionally these ones:
 
-- [`edge_tangents(p::Polytope)`](@ref)
-- [`facet_normals(p::Polytope)`](@ref)
-- [`facet_orientations(p::Polytope)`](@ref)
-- [`vertex_permutations(p::Polytope)`](@ref)
+- [`get_edge_tangents(p::Polytope)`](@ref)
+- [`get_facet_normals(p::Polytope)`](@ref)
+- [`get_facet_orientations(p::Polytope)`](@ref)
+- [`get_vertex_permutations(p::Polytope)`](@ref)
 - [`get_vtkid(p::Polytope)`](@ref)
 - [`get_vtknodes(p::Polytope)`](@ref)
 
@@ -72,7 +72,7 @@ Array{Int64,1}[[1], [2], [1, 2, 3]]
 The constant [`SEGMENT`](@ref) is bound to a predefined instance of polytope
 that represents a segment.
 The face labels associated with a segment are `[1,2,3]`, being `1` and `2` for the vertices and 
-`3` for the segment itself. In this case, this function would return the vector of vectors
+`3` for the segment itself. In this case, this function returns the vector of vectors
 `[[1],[2],[1,2,3]]` meaning that vertex `1` is incident with vertex `1` (idem for vertex 2), and that 
 the segment (id `3`) is incident with the vertices `1` and `2` and the segment itself.
 
@@ -118,12 +118,12 @@ function Polytope{D}(p::Polytope,Dfaceid::Integer) where D
 end
 
 """
-    vertex_coordinates(p::Polytope) -> Vector{Point{D,Float64}}
+    get_vertex_coordinates(p::Polytope) -> Vector{Point{D,Float64}}
 
 Given a polytope `p` return a vector of points
 representing containing the coordinates of the vertices.
 """
-function vertex_coordinates(p::Polytope)
+function get_vertex_coordinates(p::Polytope)
   @abstractmethod
 end
 
@@ -147,39 +147,39 @@ end
 # Optional
 
 """
-    edge_tangents(p::Polytope) -> Vector{VectorValue{D,Float64}}
+    get_edge_tangents(p::Polytope) -> Vector{VectorValue{D,Float64}}
 
 Given a polytope `p`, returns a vector of `VectorValue` objects
 representing the unit tangent vectors to the polytope edges.
 """
-function edge_tangents(p::Polytope)
+function get_edge_tangents(p::Polytope)
   @abstractmethod
 end
 
 """
-    facet_normals(p::Polytope) -> Vector{VectorValue{D,Float64}}
+    get_facet_normals(p::Polytope) -> Vector{VectorValue{D,Float64}}
 
 Given a polytope `p`, returns a vector of `VectorValue` objects
 representing the unit outward normal vectors to the polytope facets.
 """
-function facet_normals(p::Polytope)
+function get_facet_normals(p::Polytope)
   @abstractmethod
 end
 
 """
-    facet_orientations(p::Polytope) -> Vector{Int}
+    get_facet_orientations(p::Polytope) -> Vector{Int}
 
 Given a polytope `p` returns a vector of integers of length `num_facets(p)`.
 Facets, whose vertices are ordered consistently with the
 outwards normal vector, receive value `1` in this vector. Otherwise, facets
 receive value `-1`.
 """
-function facet_orientations(p::Polytope)
+function get_facet_orientations(p::Polytope)
   @abstractmethod
 end
 
 """
-    vertex_permutations(p::Polytope) -> Vector{Vector{Int}}
+    get_vertex_permutations(p::Polytope) -> Vector{Vector{Int}}
 
 Given a polytope `p`, returns a vector of vectors containing all admissible permutations
 of the polytope vertices. An admissible permutation is one such that, if the vertices of the polytope
@@ -191,7 +191,7 @@ original one.
 ```jldoctest
 using InplaceArrays.ReferenceFEs
 
-perms = vertex_permutations(SEGMENT)
+perms = get_vertex_permutations(SEGMENT)
 println(perms)
 
 # output
@@ -203,7 +203,7 @@ The second one is `[2,1]`, i.e., the first vertex is relabeled as `2` and the
 second vertex is relabeled as `1`.
 
 """
-function vertex_permutations(p::Polytope)
+function get_vertex_permutations(p::Polytope)
   @abstractmethod
 end
 
@@ -474,20 +474,20 @@ function test_polytope(p::Polytope{D};optional::Bool=false) where D
       @test isa(fs,Vector{Vector{Int}})
     end
   end
-  x = vertex_coordinates(p)
+  x = get_vertex_coordinates(p)
   @test isa(x,Vector{Point{D,Float64}})
   @test length(x) == num_faces(p,0)
   if optional
-    fn = facet_normals(p)
+    fn = get_facet_normals(p)
     @test isa(fn,Vector{VectorValue{D,Float64}})
     @test length(fn) == num_facets(p)
-    or = facet_orientations(p)
+    or = get_facet_orientations(p)
     @test isa(or,Vector{Int})
     @test length(or) == num_facets(p)
-    et = edge_tangents(p)
+    et = get_edge_tangents(p)
     @test isa(et,Vector{VectorValue{D,Float64}})
     @test length(et) == num_edges(p)
-    perm = vertex_permutations(p)
+    perm = get_vertex_permutations(p)
     @test isa(perm,Vector{Vector{Int}})
   end
 end

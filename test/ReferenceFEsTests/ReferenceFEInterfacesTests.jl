@@ -11,7 +11,7 @@ order = 1
 prebasis = MonomialBasis{D}(T,order)
 
 polytope = QUAD
-x = vertex_coordinates(polytope)
+x = get_vertex_coordinates(polytope)
 dofs = LagrangianDofBasis(T,x)
 
 facedofids = [[1],[2],[3],[4],Int[],Int[],Int[],Int[],Int[]]

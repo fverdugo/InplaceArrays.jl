@@ -1,54 +1,95 @@
 """
+    abstract type ReferenceFE{D}
+
+Abstract type representing a Reference finite element. `D` is the underlying coordinate space dimension.
+We follow the Ciarlet definition. A reference finite element
+is defined by a polytope (cell topology), a basis of an interpolation space
+of top of this polytope (denoted here as the prebasis), and a basis of the dual of this space
+(i.e. the degrees of freedom). From this information one can compute the shape functions
+(i.e, the canonical basis of w.r.t. the degrees of freedom) with a simple change of basis.
+In addition, we also encode in this type information about how the interpolation space
+in a reference finite element is "glued" with neighbors in order to build conforming
+cell-wise spaces.
+
+The `ReferenceFE` interface is defined by overloading these methods:
+
+- [`num_dofs(reffe::ReferenceFE)`](@ref)
+- [`get_polytope(reffe::ReferenceFE)`](@ref)
+- [`get_prebasis(reffe::ReferenceFE)`](@ref)
+- [`get_dofs(reffe::ReferenceFE)`](@ref)
+- [`get_face_own_dofids(reffe::ReferenceFE)`](@ref)
+
+and optionally these ones:
+
+- [`ReferenceFE{N}(reffe::ReferenceFE,nfaceid::Integer) where N`](@ref)
+- [`get_own_dofs_permutations(reffe::ReferenceFE)`](@ref)
+
 """
 abstract type ReferenceFE{D} end
 
 """
+    num_dofs(reffe::ReferenceFE) -> Int
+
+Returns the number of DOFs.
 """
 function num_dofs(reffe::ReferenceFE)
   @abstractmethod
 end
 
 """
+    get_polytope(reffe::ReferenceFE) -> Polytope
+
+Returns the underlying polytope object.
 """
 function get_polytope(reffe::ReferenceFE)
   @abstractmethod
 end
 
 """
+    get_prebasis(reffe::ReferenceFE) -> Field
+
+Returns the underlying prebasis encoded as a `Field` object.
 """
 function get_prebasis(reffe::ReferenceFE)
   @abstractmethod
 end
 
 """
+    get_dofs(reffe::ReferenceFE) -> Dof
+
+Returns the underlying dof basis encoded in a `Dof` object. 
 """
 function get_dofs(reffe::ReferenceFE)
   @abstractmethod
 end
 
 """
+    get_face_own_dofids(reffe::ReferenceFE) -> Vector{Vector{Int}}
 """
-function get_face_dofids(reffe::ReferenceFE)
+function get_face_own_dofids(reffe::ReferenceFE)
   @abstractmethod
 end
 
 # optional
 
 """
+    ReferenceFE{N}(reffe::ReferenceFE,nfaceid::Integer) where N
 """
 function ReferenceFE{N}(reffe::ReferenceFE,nfaceid::Integer) where N
   @abstractmethod
 end
 
 """
+    get_own_dofs_permutations(reffe::ReferenceFE) -> Vector{Vector{Int}}
 """
-function get_dof_permutations(reffe::ReferenceFE)
+function get_own_dofs_permutations(reffe::ReferenceFE)
   @abstractmethod
 end
 
 # API
 
 """
+    get_shapefuns(reffe::ReferenceFE)
 """
 function get_shapefuns(reffe::ReferenceFE)
   dofs = get_dofs(reffe)
@@ -57,6 +98,7 @@ function get_shapefuns(reffe::ReferenceFE)
 end
 
 """
+    compute_shapefuns(dofs,prebasis)
 """
 function compute_shapefuns(dofs,prebasis)
   change = inv(evaluate(dofs,prebasis))
@@ -66,14 +108,19 @@ end
 num_dims(::Type{<:ReferenceFE{D}}) where D = D
 
 """
+    num_dims(::Type{<:ReferenceFE{D}}) where D
+    num_dims(reffe::ReferenceFE{D}) where D
+
+Returns `D`.
 """
 num_dims(reffe::ReferenceFE) = num_dims(typeof(reffe))
 
 # Test
 
 """
+    test_reference_fe(reffe::ReferenceFE{D};optional::Bool=false) where D
 """
-function test_reference_fe(reffe::ReferenceFE{D}) where D
+function test_reference_fe(reffe::ReferenceFE{D};optional::Bool=false) where D
   @test D == num_dims(reffe)
   p = get_polytope(reffe)
   @test isa(p,Polytope{D})
@@ -81,7 +128,7 @@ function test_reference_fe(reffe::ReferenceFE{D}) where D
   @test isa(basis,Field)
   dofs = get_dofs(reffe)
   @test isa(dofs,Dof)
-  facedofs = get_face_dofids(reffe)
+  facedofs = get_face_own_dofids(reffe)
   @test isa(facedofs,Vector{Vector{Int}})
   @test length(facedofs) == num_faces(p)
   shapefuns = get_shapefuns(reffe)
@@ -90,6 +137,19 @@ function test_reference_fe(reffe::ReferenceFE{D}) where D
   m = evaluate(dofs,basis)
   @test ndofs == size(m,1)
   @test ndofs == size(m,2)
+  if optional
+    dofperms = get_own_dofs_permutations(reffe)
+    @test isa(dofperms,Vector{Vector{Int}})
+    vertexperms = get_vertex_permutations(p)
+    @test length(vertexperms) == length(dofperms)
+    @test all( length.(dofperms) .== length(facedofs[end]) )
+    for d in 0:D
+      for iface in 1:num_faces(p,d)
+        refface = ReferenceFE{d}(reffe,iface)
+        @test isa(refface,ReferenceFE{d})
+      end
+    end
+  end
 end
 
 
@@ -148,9 +208,9 @@ get_prebasis(reffe::GenericRefFE) = reffe.prebasis
 
 get_dofs(reffe::GenericRefFE) = reffe.dofs
 
-get_face_dofids(reffe::GenericRefFE) = reffe.facedofids
+get_face_own_dofids(reffe::GenericRefFE) = reffe.facedofids
 
-get_dof_permutations(reffe::GenericRefFE) = reffe.dofperms
+get_own_dofs_permutations(reffe::GenericRefFE) = reffe.dofperms
 
 get_shapefuns(reffe::GenericRefFE) = reffe.shapefuns
 

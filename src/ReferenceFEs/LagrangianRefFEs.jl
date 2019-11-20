@@ -50,9 +50,9 @@ get_prebasis(reffe::LagrangianRefFE) = reffe.data.prebasis
 
 get_dofs(reffe::LagrangianRefFE) = reffe.data.dofs
 
-get_face_dofids(reffe::LagrangianRefFE) = reffe.data.facedofids
+get_face_own_dofids(reffe::LagrangianRefFE) = reffe.data.facedofids
 
-get_dof_permutations(reffe::LagrangianRefFE) = reffe.data.dofperms
+get_own_dofs_permutations(reffe::LagrangianRefFE) = reffe.data.dofperms
 
 get_shapefuns(reffe::LagrangianRefFE) = reffe.data.shapefuns
 
@@ -213,7 +213,7 @@ function _compute_nodes(p,orders)
 end
 
 function _compute_linear_nodes(p)
-  x = vertex_coordinates(p)
+  x = get_vertex_coordinates(p)
   facenodes = [Int[] for i in 1:num_faces(p)]
   for i in 1:num_vertices(p)
     push!(facenodes[i],i)
@@ -233,7 +233,7 @@ function _compute_high_order_nodes(p::Polytope{D},orders) where D
 end
 
 function _compute_high_order_nodes_dim_0!(nodes,facenodes,p)
-  x = vertex_coordinates(p)
+  x = get_vertex_coordinates(p)
   k = 1 
   for vertex in 1:num_vertices(p)
     push!(nodes,x[vertex])
@@ -243,12 +243,12 @@ function _compute_high_order_nodes_dim_0!(nodes,facenodes,p)
 end
 
 @noinline function _compute_high_order_nodes_dim_d!(nodes,facenodes,p,orders,::Val{d}) where d
-  x = vertex_coordinates(p)
+  x = get_vertex_coordinates(p)
   offset = get_offset(p,d)
   k = length(nodes)+1
   for iface in 1:num_faces(p,d)
     face = Polytope{d}(p,iface)
-    face_ref_x = vertex_coordinates(face)
+    face_ref_x = get_vertex_coordinates(face)
     face_prebasis = MonomialBasis(Float64,face,1)
     change = inv(evaluate(face_prebasis,face_ref_x))
     face_shapefuns = change_basis(face_prebasis,change)
@@ -278,11 +278,11 @@ end
 _compute_node_permutations(::Polytope{0}, interior_nodes) = [[1]]
 
 function _compute_node_permutations(p, interior_nodes)
-  vertex_to_coord = vertex_coordinates(p)
+  vertex_to_coord = get_vertex_coordinates(p)
   lbasis = MonomialBasis(Float64,p,1)
   change = inv(evaluate(lbasis,vertex_to_coord))
   lshapefuns = change_basis(lbasis,change)
-  perms = vertex_permutations(p)
+  perms = get_vertex_permutations(p)
   map = evaluate(lshapefuns,interior_nodes) 
   pvertex_to_coord = similar(vertex_to_coord)
   node_perms = Vector{Int}[]

@@ -119,25 +119,25 @@ function (==)(a::ExtrusionPolytope{D},b::ExtrusionPolytope{D}) where D
   a.extrusion == b.extrusion
 end
 
-function vertex_coordinates(p::ExtrusionPolytope)
+function get_vertex_coordinates(p::ExtrusionPolytope)
   _vertices_coordinates(p)
 end
 
-function edge_tangents(p::ExtrusionPolytope)
+function get_edge_tangents(p::ExtrusionPolytope)
   _edge_tangents(p)
 end
 
-function facet_normals(p::ExtrusionPolytope)
+function get_facet_normals(p::ExtrusionPolytope)
   n, _ = _face_normals(p)
   n
 end
 
-function facet_orientations(p::ExtrusionPolytope)
+function get_facet_orientations(p::ExtrusionPolytope)
   _, or = _face_normals(p)
   or
 end
 
-function vertex_permutations(p::ExtrusionPolytope)
+function get_vertex_permutations(p::ExtrusionPolytope)
   _admissible_permutations(p)
 end
 
@@ -153,6 +153,10 @@ function ExtrusionPolytope(extrusion::Point{D,Int}) where D
   nf_nfs = nf_nfs_dim[1]
   nf_dim = nf_nfs_dim[2]
   ExtrusionPolytope{D}(extrusion, pol_nfs, pol_dim, nf_nfs, nf_dim)
+end
+
+function ExtrusionPolytope(extrusion::Point{0,Int})
+  _vertex()
 end
 
 # Generates the array of n-faces of a polytope
@@ -470,10 +474,9 @@ end
 # Some particular cases
 
 """
-Constant bound to a polytope instance
-representing a vertex.
+    const VERTEX = Polytope()
 """
-const VERTEX = _vertex()
+const VERTEX = Polytope()
 
 """
     const SEGMENT = Polytope(HEX_AXIS)

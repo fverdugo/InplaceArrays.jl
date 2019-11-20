@@ -28,15 +28,15 @@ test_polytope(p,optional=true)
 @test num_edges(p) == 4
 
 r = Point{2,Float64}[(1, 0), (1, 0), (0, 1), (0, 1)]
-@test edge_tangents(p) == r
+@test get_edge_tangents(p) == r
 
 r = [
   [1, 2, 3, 4], [1, 3, 2, 4], [2, 1, 4, 3], [2, 4, 1, 3],
   [3, 1, 4, 2], [3, 4, 1, 2], [4, 2, 3, 1], [4, 3, 2, 1]]
-@test vertex_permutations(p) == r
+@test get_vertex_permutations(p) == r
 
 r = Point{2,Float64}[(0, -1), (0, 1), (-1, 0), (1, 0)]
-@test facet_normals(p) == r
+@test get_facet_normals(p) == r
 
 @test num_faces(p) == 9
 @test num_dims(p) == 2
@@ -48,19 +48,19 @@ test_polytope(p,optional=true)
 @test num_dims(p) == 3
 
 x = Point{3,Float64}[(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)]
-@test vertex_coordinates(p) == x
+@test get_vertex_coordinates(p) == x
 
 p = SEGMENT
 test_polytope(p,optional=true)
-@test vertex_coordinates(p) == VectorValue{1,Float64}[(0),(1)]
-@test edge_tangents(p) == VectorValue{1,Float64}[(1)]
-@test facet_normals(p) == VectorValue{1,Float64}[(-1),(1)]
+@test get_vertex_coordinates(p) == VectorValue{1,Float64}[(0),(1)]
+@test get_edge_tangents(p) == VectorValue{1,Float64}[(1)]
+@test get_facet_normals(p) == VectorValue{1,Float64}[(-1),(1)]
 
 p = VERTEX
 test_polytope(p,optional=true)
-@test vertex_coordinates(p) == VectorValue{0,Float64}[()]
-@test edge_tangents(p) == VectorValue{0,Float64}[]
-@test facet_normals(p) == VectorValue{0,Float64}[]
+@test get_vertex_coordinates(p) == VectorValue{0,Float64}[()]
+@test get_edge_tangents(p) == VectorValue{0,Float64}[]
+@test get_facet_normals(p) == VectorValue{0,Float64}[]
 
 test_polytope(TRI,optional=true)
 test_polytope(QUAD,optional=true)
